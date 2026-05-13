@@ -340,6 +340,29 @@ const server = http.createServer(async (req, res) => {
       const password = String(body.password || "");
       const ipKey = `ip:${getRequestIp(req)}`;
       const userKey = `user:${username.toLowerCase()}`;
+      const secureCookieSuffix = process.env.NODE_ENV === "production" ? "; Secure" : "";
+
+      if (await verifyConfiguredAdminLogin(username, password)) {
+        try {
+          const db = getDb("broadband");
+          await ensureAdminUser(db);
+          const adminUser = await upsertConfiguredAdminUser(db);
+          clearFailedLogins(ipKey);
+          clearFailedLogins(userKey);
+          send(res, 200, { authenticated: true, displayName: adminUser.display_name || "Administrator" }, {
+            "Set-Cookie": `sitaram_session=${createSession(String(adminUser.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
+          });
+          return;
+        } catch (error) {
+          console.warn("Configured admin login succeeded, but DB sync failed:", error);
+          clearFailedLogins(ipKey);
+          clearFailedLogins(userKey);
+          send(res, 200, { authenticated: true, displayName: "Administrator" }, {
+            "Set-Cookie": `sitaram_session=${createSession(`env-admin:${username}`)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
+          });
+          return;
+        }
+      }
 
       if (isBlocked(ipKey) || isBlocked(userKey)) {
         send(res, 429, { error: "Too many login attempts. Please try again later." });
@@ -359,7 +382,7 @@ const server = http.createServer(async (req, res) => {
           clearFailedLogins(ipKey);
           clearFailedLogins(userKey);
           send(res, 200, { authenticated: true, displayName: adminUser.display_name || "Administrator" }, {
-            "Set-Cookie": `sitaram_session=${createSession(String(adminUser.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${process.env.NODE_ENV === "production" ? "; Secure" : ""}`,
+            "Set-Cookie": `sitaram_session=${createSession(String(adminUser.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
           });
           return;
         }
@@ -377,7 +400,7 @@ const server = http.createServer(async (req, res) => {
           clearFailedLogins(ipKey);
           clearFailedLogins(userKey);
           send(res, 200, { authenticated: true, displayName: adminUser.display_name || "Administrator" }, {
-            "Set-Cookie": `sitaram_session=${createSession(String(adminUser.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${process.env.NODE_ENV === "production" ? "; Secure" : ""}`,
+            "Set-Cookie": `sitaram_session=${createSession(String(adminUser.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
           });
           return;
         }
@@ -398,7 +421,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       send(res, 200, { authenticated: true, displayName: user.display_name || "Administrator" }, {
-        "Set-Cookie": `sitaram_session=${createSession(String(user.id || ""))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${process.env.NODE_ENV === "production" ? "; Secure" : ""}`,
+        "Set-Cookie": `sitaram_session=${createSession(String(user.id || ""))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
       });
       return;
     }

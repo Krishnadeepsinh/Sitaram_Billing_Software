@@ -15,6 +15,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const passString = String(password || "");
 
   try {
+    const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+
+    if (await verifyConfiguredAdminLogin(userTrimmed, passString)) {
+      try {
+        const db = getDb("broadband");
+        await ensureAdminUser(db);
+        const adminUser = await upsertConfiguredAdminUser(db);
+        const session = createSession(String(adminUser.id));
+        res.setHeader("Set-Cookie", `sitaram_session=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${isProduction ? "; Secure" : ""}`);
+        return res.status(200).json({ authenticated: true, displayName: adminUser.display_name || "Administrator" });
+      } catch (error) {
+        console.warn("Configured admin login succeeded, but DB sync failed:", error);
+        const session = createSession(`env-admin:${userTrimmed}`);
+        res.setHeader("Set-Cookie", `sitaram_session=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${isProduction ? "; Secure" : ""}`);
+        return res.status(200).json({ authenticated: true, displayName: "Administrator" });
+      }
+    }
+
     const db = getDb("broadband");
     await ensureAdminUser(db);
     console.log("DB connected. Searching for user:", userTrimmed);
@@ -44,7 +62,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (await verifyConfiguredAdminLogin(userTrimmed, passString)) {
         const adminUser = await upsertConfiguredAdminUser(db);
         const session = createSession(String(adminUser.id));
-        const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
         res.setHeader("Set-Cookie", `sitaram_session=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${isProduction ? "; Secure" : ""}`);
         return res.status(200).json({ authenticated: true, displayName: adminUser.display_name || "Administrator" });
       }
@@ -62,7 +79,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const session = createSession(String(user.id));
-    const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
     res.setHeader("Set-Cookie", `sitaram_session=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${isProduction ? "; Secure" : ""}`);
     return res.status(200).json({ authenticated: true, displayName: user.display_name || "Administrator" });
   } catch (error) {

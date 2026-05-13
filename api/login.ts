@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { getDb, createSession, sessionTtlMs, ensureAdminUser, readJsonBody } from "./_utils";
+import { getDb, createSession, sessionTtlMs, ensureAdminUser, readJsonBody } from "./_utils.js";
 
 type LoginUserRow = {
   id?: string;

@@ -298,6 +298,12 @@ export default function Reports() {
     }
   }, [expenses, selectedMonth, selectedYear]);
 
+  const monthNameLong = useMemo(() => {
+    const start = new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
+    const end = new Date(selectedEndYear, selectedEndMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
+    return start === end ? start : `${start} - ${end}`;
+  }, [selectedMonth, selectedYear, selectedEndMonth, selectedEndYear]);
+
   const monthStats = useMemo(() => {
     const revenue = filteredPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     const expensesTotal = filteredExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
@@ -438,11 +444,11 @@ export default function Reports() {
   }
 
   const integrityScore = monthStats.revenue / (stats.pendingDues + monthStats.revenue || 1);
-  const startStr = new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'short', year: 'numeric' });
-  const endStr = new Date(selectedEndYear, selectedEndMonth).toLocaleString('default', { month: 'short', year: 'numeric' });
-  const monthNameLong = (selectedMonth === selectedEndMonth && selectedYear === selectedEndYear)
-    ? new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' })
-    : `${startStr} - ${endStr}`;
+
+
+
+
+
 
   return (
     <div className="space-y-8 animate-fade-in pb-20">

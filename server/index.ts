@@ -2,6 +2,7 @@ import { createClient } from "@libsql/client";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
+import path from "node:path";
 import { promisify } from "node:util";
 
 type BusinessMode = "cable" | "broadband";
@@ -171,6 +172,39 @@ const clearFailedLogins = (key: string) => {
   loginAttempts.delete(key);
 };
 
+const MIME_TYPES: Record<string, string> = {
+  ".html": "text/html",
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+};
+
+const serveStatic = async (res: http.ServerResponse, filePath: string) => {
+  try {
+    const stats = fs.statSync(filePath);
+    if (!stats.isFile()) return false;
+
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || "application/octet-stream";
+
+    res.writeHead(200, {
+      "Content-Type": contentType,
+      "Content-Length": stats.size,
+      "Cache-Control": "public, max-age=31536000",
+    });
+
+    fs.createReadStream(filePath).pipe(res);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
@@ -256,6 +290,17 @@ const server = http.createServer(async (req, res) => {
       const result = await db.batch(body.queries || [], body.txMode || "write");
       send(res, 200, result);
       return;
+    }
+
+    // Static File Serving (Frontend)
+    if (req.method === "GET") {
+      const distPath = path.join(process.cwd(), "dist");
+      let filePath = path.join(distPath, url.pathname === "/" ? "index.html" : url.pathname);
+
+      if (await serveStatic(res, filePath)) return;
+
+      // SPA Routing: If file not found, serve index.html for React Router
+      if (await serveStatic(res, path.join(distPath, "index.html"))) return;
     }
 
     send(res, 404, { error: "Not found" });

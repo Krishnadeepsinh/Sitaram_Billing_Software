@@ -65,8 +65,8 @@ export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[]) 
 
   if (invoice?.type === "legacy") {
     return {
-      description: "Previous Year Billing",
-      subDescription: "Previous dues / opening balance",
+      description: "Arrears / Previous Due",
+      subDescription: "Unpaid balance from previous billing periods",
       quantity: "-",
       rate: grossAmount,
       total: grossAmount,
@@ -77,13 +77,14 @@ export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[]) 
   const fallbackRate = Math.max(1, Number(plan?.price || grossAmount || 1));
   const quantity = Math.max(1, Math.round(grossAmount / fallbackRate));
   const validityDays = Number(plan?.validityDays || 30);
+  const speed = plan?.speedMbps ? `${plan.speedMbps} Mbps` : "";
 
   if (quantity === 1 && validityDays > 31) {
     return {
-      description: `${plan?.name || "Broadband Plan"} (${invoice?.billingPeriod || `${validityDays} DAYS`})`,
+      description: `${plan?.name || "Broadband Service"}${speed ? ` [${speed}]` : ""} (${invoice?.billingPeriod || `${validityDays} DAYS`})`,
       subDescription: subscriber?.customerUsername
-        ? `Username: ${subscriber.customerUsername}`
-        : `${validityDays}-day service plan`,
+        ? `User ID: ${subscriber.customerUsername}`
+        : `${validityDays}-day high-speed internet subscription`,
       quantity: "1",
       rate: grossAmount,
       total: grossAmount,
@@ -99,10 +100,10 @@ export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[]) 
   const rangeLabel = formatMonthRanges(months);
 
   return {
-    description: `${plan?.name || "Basic Pack"}${rangeLabel ? ` (${rangeLabel})` : ""}`,
+    description: `${plan?.name || "Broadband Service"}${speed ? ` [${speed}]` : ""}${rangeLabel ? ` (${rangeLabel})` : ""}`,
     subDescription: subscriber?.customerUsername
-      ? `Username: ${subscriber.customerUsername}`
-      : "Monthly subscription",
+      ? `User ID: ${subscriber.customerUsername}`
+      : "Monthly high-speed broadband service",
     quantity: String(quantity),
     rate: grossAmount / quantity,
     total: grossAmount,

@@ -7,6 +7,8 @@ export const BRAND_PHONE = "9825039825";
 export const BRAND_EMAIL = "";
 export const BRAND_UPI = "9825039825@ybl";
 
+export const BRAND_GSTIN = "";
+
 export const cleanBrandValue = (value: unknown, fallback: string) => {
   const text = String(value ?? "").trim();
   if (!text || text.toLowerCase() === "undefined" || text.toLowerCase() === "null") {
@@ -21,4 +23,5 @@ export const getBrandSettings = (settings?: Partial<CompanySettings>) => ({
   phone: cleanBrandValue(settings?.phone, BRAND_PHONE),
   email: cleanBrandValue(settings?.email, BRAND_EMAIL),
   upiId: cleanBrandValue(settings?.upiId, BRAND_UPI),
+  gstin: cleanBrandValue(settings?.gstin, BRAND_GSTIN),
 });

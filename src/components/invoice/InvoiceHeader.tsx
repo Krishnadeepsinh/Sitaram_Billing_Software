@@ -13,26 +13,31 @@ type InvoiceHeaderProps = {
 export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
   return (
     <>
-      <div className="bg-[#162f4f] px-8 py-7 flex justify-between items-center gap-8 text-white">
-        <div className="flex gap-5 items-center min-w-0">
+      <div className="bg-[#162f4f] px-8 py-5 flex justify-between items-center gap-8 text-white">
+        <div className="flex gap-4 items-center min-w-0">
           <Logo
-            size="xl"
+            size="lg"
             showText={false}
-            iconClassName="h-20 w-20 rounded-2xl p-2 shadow-[0_18px_35px_rgba(0,0,0,0.22)] border-white/30"
+            iconClassName="h-16 w-16 rounded-xl p-1.5 shadow-lg border-white/20"
           />
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-orange-300">{BRAND_DISPLAY_NAME}</p>
-            <h1 className="text-2xl font-black tracking-tight mt-1 leading-tight max-w-[360px]">{brand.name}</h1>
+            <p className="text-[9px] font-black uppercase tracking-[0.24em] text-orange-300">{BRAND_DISPLAY_NAME}</p>
+            <h1 className="text-xl font-black tracking-tight mt-1 leading-tight">{brand.name}</h1>
           </div>
         </div>
-        <div className="text-right text-sm space-y-2 max-w-[250px] shrink-0">
+        <div className="text-right text-xs space-y-1 max-w-[250px] shrink-0">
           <p className="font-black uppercase tracking-[0.14em] text-orange-200">Official Tax Invoice</p>
-          <p className="text-xl font-black tracking-tight text-white">{invoiceLabel}</p>
-          <p className="whitespace-pre-line leading-relaxed text-blue-50">{brand.address}</p>
-          <p className="font-bold">Phone: {brand.phone}</p>
+          <p className="text-lg font-black tracking-tight text-white leading-none mb-2">{invoiceLabel}</p>
+          <p className="whitespace-pre-line leading-tight text-blue-50 opacity-90">{brand.address}</p>
+          <div className="flex flex-col gap-0.5 mt-1">
+            <p className="font-bold">Phone: {brand.phone}</p>
+            {brand.gstin && (
+              <p className="text-[9px] font-black tracking-widest text-orange-200">GSTIN: {brand.gstin}</p>
+            )}
+          </div>
         </div>
       </div>
-      <div className="h-2 bg-orange-500" />
+      <div className="h-1.5 bg-orange-500" />
     </>
   );
 }

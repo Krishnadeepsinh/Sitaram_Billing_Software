@@ -18,13 +18,13 @@ loadEnv();
 const configs = [
   {
     mode: "Broadband",
-    url: process.env.VITE_BROADBAND_TURSO_DATABASE_URL || process.env.VITE_TURSO_DATABASE_URL,
-    authToken: process.env.VITE_BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_TURSO_AUTH_TOKEN,
+    url: process.env.BROADBAND_TURSO_DATABASE_URL || process.env.VITE_BROADBAND_TURSO_DATABASE_URL || process.env.VITE_TURSO_DATABASE_URL,
+    authToken: process.env.BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_TURSO_AUTH_TOKEN,
   },
   {
     mode: "Cable",
-    url: process.env.VITE_CABLE_TURSO_DATABASE_URL,
-    authToken: process.env.VITE_CABLE_TURSO_AUTH_TOKEN,
+    url: process.env.CABLE_TURSO_DATABASE_URL || process.env.VITE_CABLE_TURSO_DATABASE_URL,
+    authToken: process.env.CABLE_TURSO_AUTH_TOKEN || process.env.VITE_CABLE_TURSO_AUTH_TOKEN,
   },
 ].filter((config) => config.url && config.authToken);
 

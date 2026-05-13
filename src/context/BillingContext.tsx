@@ -1545,11 +1545,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     let legacyGenerated = 0;
     // Include any subscriber who isn't active but has a debt
     // We check for 'inactive', 'expired', and any status that isn't 'active'
-    const eligibleSubs = subscribers.filter(s => {
-      const status = (s.status || '').toLowerCase();
-      const hasDebt = (Number(s.openingBalance) || 0) > 0 || (Number(s.balance) || 0) < 0;
-      return (status !== 'active' || true) && hasDebt; // Include ACTIVE too if they have legacy debt
-    });
+      const eligibleSubs = subscribers.filter((s) => {
+        const hasDebt = (Number(s.openingBalance) || 0) > 0 || (Number(s.balance) || 0) < 0;
+        return hasDebt;
+      });
     if (eligibleSubs.length === 0) return 0;
 
     const newInvoices: Invoice[] = [];

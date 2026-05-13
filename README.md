@@ -27,12 +27,30 @@ A professional, high-performance billing and management system designed for Broa
    ```
 
 2. **Setup Environment**:
-   Create a `.env` file with your Turso database credentials (refer to `.env.example`).
+   Create a `.env` file with your Turso database credentials and admin login values (refer to `.env.example`).
 
 3. **Run Locally**:
    ```bash
    npm run dev
    ```
+
+## Vercel Deployment
+
+Set these environment variables in Vercel Project Settings before deploying:
+
+- `BROADBAND_TURSO_DATABASE_URL`
+- `BROADBAND_TURSO_AUTH_TOKEN`
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH`
+- `SESSION_SECRET`
+- `SYNC_ADMIN_PASSWORD_ON_BOOT=true` if you want the deployment to force-reset the DB admin password from env
+
+Notes:
+
+- The login API reads the server-side `BROADBAND_*` variables first.
+- On first login, the app can auto-create the admin user in `admin_users` from `ADMIN_USERNAME` plus `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH`.
+- If you want deployment env vars to reset the admin password in the database automatically, set `SYNC_ADMIN_PASSWORD_ON_BOOT=true`.
+- You can reset the database admin user locally with `npm run reset:admin`.
 
 ## 📄 License
 

@@ -17,11 +17,11 @@ loadEnv();
 
 const mode = process.argv.includes("--cable") ? "cable" : "broadband";
 const url = mode === "cable"
-  ? process.env.VITE_CABLE_TURSO_DATABASE_URL
-  : process.env.VITE_BROADBAND_TURSO_DATABASE_URL || process.env.VITE_TURSO_DATABASE_URL;
+  ? process.env.CABLE_TURSO_DATABASE_URL || process.env.VITE_CABLE_TURSO_DATABASE_URL
+  : process.env.BROADBAND_TURSO_DATABASE_URL || process.env.VITE_BROADBAND_TURSO_DATABASE_URL || process.env.VITE_TURSO_DATABASE_URL;
 const authToken = mode === "cable"
-  ? process.env.VITE_CABLE_TURSO_AUTH_TOKEN
-  : process.env.VITE_BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_TURSO_AUTH_TOKEN;
+  ? process.env.CABLE_TURSO_AUTH_TOKEN || process.env.VITE_CABLE_TURSO_AUTH_TOKEN
+  : process.env.BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_TURSO_AUTH_TOKEN;
 
 if (!url || !authToken) {
   throw new Error(`Missing ${mode} Turso credentials in .env.`);

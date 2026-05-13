@@ -16,12 +16,13 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
   
   const escapedTokens = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const regex = new RegExp(`(${escapedTokens.join('|')})`, 'gi');
+  const matchRegex = new RegExp(`^(${escapedTokens.join('|')})$`, 'i');
   const parts = String(text).split(regex);
   
   return (
     <>
       {parts.map((part, i) => 
-        regex.test(part) ? (
+        matchRegex.test(part) ? (
           <mark key={i} className="bg-amber-200 text-amber-900 px-0.5 rounded-sm font-bold">{part}</mark>
         ) : (
           part
@@ -83,7 +84,6 @@ export default function Payments() {
       });
 
     let historyLeft = prevTotalPaid;
-    let openingBalHistoryLeft = openingBal;
     const alreadyCoveredOpening = Math.max(0, Math.min(openingBal, historyLeft));
     historyLeft -= alreadyCoveredOpening;
     const remainingOpeningDue = openingBal - alreadyCoveredOpening;
@@ -106,7 +106,7 @@ export default function Payments() {
       return 0; // Keep chrono order for the rest
     });
 
-    let items: any[] = [];
+    const items: any[] = [];
     let remainingCurrentPayment = currentPaymentTotal;
 
     // Handle Opening Balance

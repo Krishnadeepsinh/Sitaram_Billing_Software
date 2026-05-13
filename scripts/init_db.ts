@@ -1,5 +1,6 @@
 import { createClient } from "@libsql/client";
 import fs from "node:fs";
+import crypto from "node:crypto";
 
 const loadEnv = () => {
   if (!fs.existsSync(".env")) return;
@@ -16,12 +17,25 @@ const loadEnv = () => {
 
 loadEnv();
 
+const scryptAsync = (password: string, salt: string): Promise<Buffer> =>
+  new Promise((resolve, reject) => {
+    crypto.scrypt(password, salt, 64, (err, derivedKey) => {
+      if (err) reject(err);
+      else resolve(derivedKey as Buffer);
+    });
+  });
+
+const hashPassword = async (password: string, salt = crypto.randomBytes(16).toString("hex")) => {
+  const derived = await scryptAsync(password, salt);
+  return `scrypt$${salt}$${derived.toString("hex")}`;
+};
+
 const configs = [
   {
     mode: "Broadband",
     companyName: "SITARAM BROADBAND",
-    url: process.env.VITE_BROADBAND_TURSO_DATABASE_URL || process.env.VITE_TURSO_DATABASE_URL,
-    authToken: process.env.VITE_BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_TURSO_AUTH_TOKEN,
+    url: process.env.BROADBAND_TURSO_DATABASE_URL || process.env.VITE_BROADBAND_TURSO_DATABASE_URL || process.env.VITE_TURSO_DATABASE_URL,
+    authToken: process.env.BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_TURSO_AUTH_TOKEN,
     plans: [
       ["p1", "30 Mbps Unlimited", 399, 30, 30],
       ["p2", "50 Mbps Unlimited", 499, 30, 50],
@@ -32,8 +46,8 @@ const configs = [
   {
     mode: "Cable",
     companyName: "SITARAM CABLE",
-    url: process.env.VITE_CABLE_TURSO_DATABASE_URL,
-    authToken: process.env.VITE_CABLE_TURSO_AUTH_TOKEN,
+    url: process.env.CABLE_TURSO_DATABASE_URL || process.env.VITE_CABLE_TURSO_DATABASE_URL,
+    authToken: process.env.CABLE_TURSO_AUTH_TOKEN || process.env.VITE_CABLE_TURSO_AUTH_TOKEN,
     plans: [
       ["p1", "Basic Pack", 200, 30, 100],
       ["p2", "Standard HD", 350, 30, 180],
@@ -205,9 +219,11 @@ async function init(config: typeof configs[number]) {
   const users = await db.execute("SELECT COUNT(*) AS count FROM admin_users");
   if (Number(users.rows[0]?.count || 0) === 0) {
     const username = process.env.ADMIN_USERNAME || "admin";
-    const passwordHash = process.env.ADMIN_PASSWORD_HASH;
+    const passwordHash = process.env.ADMIN_PASSWORD_HASH || (
+      process.env.ADMIN_PASSWORD ? await hashPassword(process.env.ADMIN_PASSWORD) : ""
+    );
     if (!passwordHash) {
-      throw new Error("Set ADMIN_PASSWORD_HASH in .env to seed the admin user.");
+      throw new Error("Set ADMIN_PASSWORD or ADMIN_PASSWORD_HASH in .env to seed the admin user.");
     }
     await db.execute({
       sql: "INSERT INTO admin_users (id, username, password_hash, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",

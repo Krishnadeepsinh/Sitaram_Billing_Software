@@ -94,3 +94,79 @@ export const verifyPassword = async (password: string, storedHash: string) => {
   const valid = safeCompare(sha256(password), legacyHash);
   return { valid, needsUpgrade: valid };
 };
+
+type AdminUserRow = {
+  id?: string;
+  password_hash?: string;
+};
+
+export const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => {
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS admin_users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      display_name TEXT,
+      role TEXT DEFAULT 'admin',
+      status TEXT DEFAULT 'active',
+      created_at TEXT
+    )
+  `);
+};
+
+const resolveAdminCredentials = () => {
+  const plainPassword = String(process.env.ADMIN_PASSWORD || "").trim();
+  const passwordHash = String(process.env.ADMIN_PASSWORD_HASH || "").trim();
+  return { plainPassword, passwordHash };
+};
+
+export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
+  await ensureAdminSchema(db);
+  const username = String(process.env.ADMIN_USERNAME || "admin").trim();
+  const { plainPassword, passwordHash: configuredHash } = resolveAdminCredentials();
+
+  if (!username || (!plainPassword && !configuredHash)) {
+    return { created: false, updated: false, skipped: true };
+  }
+
+  const existingUser = await db.execute({
+    sql: "SELECT id, password_hash FROM admin_users WHERE username = ? LIMIT 1",
+    args: [username],
+  });
+
+  if (existingUser.rows.length === 0) {
+    const passwordHash = plainPassword ? await hashPassword(plainPassword) : configuredHash;
+    await db.execute({
+      sql: "INSERT INTO admin_users (id, username, password_hash, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        `admin-${crypto.randomUUID()}`,
+        username,
+        passwordHash,
+        "Administrator",
+        "admin",
+        "active",
+        new Date().toISOString(),
+      ],
+    });
+    return { created: true, updated: false, skipped: false };
+  }
+
+  if (String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true") {
+    const currentUser = existingUser.rows[0] as AdminUserRow;
+    const currentHash = String(currentUser.password_hash || "");
+    const verification = plainPassword
+      ? await verifyPassword(plainPassword, currentHash)
+      : { valid: currentHash === configuredHash, needsUpgrade: false };
+
+    if (!verification.valid || verification.needsUpgrade) {
+      const nextHash = plainPassword ? await hashPassword(plainPassword) : configuredHash;
+      await db.execute({
+        sql: "UPDATE admin_users SET password_hash = ?, status = 'active' WHERE id = ?",
+        args: [nextHash, String(currentUser.id || "")],
+      });
+      return { created: false, updated: true, skipped: false };
+    }
+  }
+
+  return { created: false, updated: false, skipped: false };
+};

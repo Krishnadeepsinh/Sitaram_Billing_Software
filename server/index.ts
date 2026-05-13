@@ -138,6 +138,77 @@ const verifyPassword = async (password: string, storedHash: string) => {
   return { valid, needsUpgrade: valid };
 };
 
+type AdminUserRow = {
+  id?: string;
+  password_hash?: string;
+};
+
+const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => {
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS admin_users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      display_name TEXT,
+      role TEXT DEFAULT 'admin',
+      status TEXT DEFAULT 'active',
+      created_at TEXT
+    )
+  `);
+};
+
+const resolveAdminCredentials = () => {
+  const plainPassword = String(process.env.ADMIN_PASSWORD || "").trim();
+  const passwordHash = String(process.env.ADMIN_PASSWORD_HASH || "").trim();
+  return { plainPassword, passwordHash };
+};
+
+const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
+  await ensureAdminSchema(db);
+  const username = String(process.env.ADMIN_USERNAME || "admin").trim();
+  const { plainPassword, passwordHash: configuredHash } = resolveAdminCredentials();
+
+  if (!username || (!plainPassword && !configuredHash)) return;
+
+  const existingUser = await db.execute({
+    sql: "SELECT id, password_hash FROM admin_users WHERE username = ? LIMIT 1",
+    args: [username],
+  });
+
+  if (existingUser.rows.length === 0) {
+    const passwordHash = plainPassword ? await hashPassword(plainPassword) : configuredHash;
+    await db.execute({
+      sql: "INSERT INTO admin_users (id, username, password_hash, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        `admin-${crypto.randomUUID()}`,
+        username,
+        passwordHash,
+        "Administrator",
+        "admin",
+        "active",
+        new Date().toISOString(),
+      ],
+    });
+    return;
+  }
+
+  if (String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true") {
+    const currentUser = existingUser.rows[0] as AdminUserRow;
+    const currentHash = String(currentUser.password_hash || "");
+    const verification = plainPassword
+      ? await verifyPassword(plainPassword, currentHash)
+      : { valid: currentHash === configuredHash, needsUpgrade: false };
+
+    if (!verification.valid || verification.needsUpgrade) {
+      const nextHash = plainPassword ? await hashPassword(plainPassword) : configuredHash;
+      await db.execute({
+        sql: "UPDATE admin_users SET password_hash = ?, status = 'active' WHERE id = ?",
+        args: [nextHash, String(currentUser.id || "")],
+      });
+    }
+  }
+};
+
 const getRequestIp = (req: http.IncomingMessage) =>
   req.headers["x-forwarded-for"]?.toString().split(",")[0].trim() ||
   req.socket.remoteAddress ||
@@ -228,6 +299,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       const db = getDb("broadband");
+      await ensureAdminUser(db);
       const result = await db.execute({
         sql: "SELECT id, display_name, password_hash FROM admin_users WHERE username = ? AND status = 'active' LIMIT 1",
         args: [username],
@@ -240,7 +312,7 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      const user = result.rows[0] as any;
+      const user = result.rows[0] as AdminUserRow & { display_name?: string };
       const verification = await verifyPassword(password, String(user.password_hash || ""));
       if (!verification.valid) {
         recordFailedLogin(ipKey);
@@ -260,7 +332,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       send(res, 200, { authenticated: true, displayName: user.display_name || "Administrator" }, {
-        "Set-Cookie": `sitaram_session=${createSession(String(user.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}`,
+        "Set-Cookie": `sitaram_session=${createSession(String(user.id || ""))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${process.env.NODE_ENV === "production" ? "; Secure" : ""}`,
       });
       return;
     }
@@ -295,7 +367,7 @@ const server = http.createServer(async (req, res) => {
     // Static File Serving (Frontend)
     if (req.method === "GET") {
       const distPath = path.join(process.cwd(), "dist");
-      let filePath = path.join(distPath, url.pathname === "/" ? "index.html" : url.pathname);
+      const filePath = path.join(distPath, url.pathname === "/" ? "index.html" : url.pathname);
 
       if (await serveStatic(res, filePath)) return;
 

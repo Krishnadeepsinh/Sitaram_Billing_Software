@@ -10,6 +10,7 @@
     "start": "tsx server/index.ts",
     "build": "vite build",
     "backup:db": "tsx scripts/backup_db.ts",
+    "reset:admin": "tsx scripts/reset_admin.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",

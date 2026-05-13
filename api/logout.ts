@@ -4,6 +4,6 @@ import { isProduction } from "./_utils.js";
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   
-  res.setHeader("Set-Cookie", "sitaram_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0");
+  res.setHeader("Set-Cookie", `sitaram_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0${isProduction ? "; Secure" : ""}`);
   return res.status(200).json({ ok: true });
 }

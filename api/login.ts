@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { getDb, createSession, sessionTtlMs, ensureAdminUser, readJsonBody } from "./_utils.js";
+import { getDb, createSession, sessionTtlMs, ensureAdminUser, readJsonBody, isProduction } from "./_utils.js";
 
 type LoginUserRow = {
   id?: string;
@@ -15,7 +15,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = await readJsonBody<{ username?: string; password?: string }>(req);
     const userTrimmed = String(body.username || "").trim();
     const passString = String(body.password || "");
-    const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 
     const db = getDb("broadband");
     const syncResult = await ensureAdminUser(db);

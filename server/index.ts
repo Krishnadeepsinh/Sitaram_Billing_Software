@@ -150,33 +150,42 @@ const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => {
 };
 
 const resolveAdminCredentials = () => {
-  return {
-    username: String(process.env.ADMIN_USERNAME || "adminshakti").trim(),
-    password: String(process.env.ADMIN_PASSWORD || "Shaktisinh@22").trim(),
-  };
+  const username = String(process.env.ADMIN_USERNAME || "").trim() || "adminshakti";
+  const password = String(process.env.ADMIN_PASSWORD || "").trim() || "Shaktisinh@22";
+  return { username, password };
 };
 
 const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
-  await ensureAdminSchema(db);
-  const { username, password } = resolveAdminCredentials();
+  try {
+    await ensureAdminSchema(db);
+    const { username, password } = resolveAdminCredentials();
 
-  if (!username || !password) return;
-
-  if (String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true") {
-    await db.execute("DELETE FROM admin_users");
-    await db.execute({
-      sql: "INSERT INTO admin_users (id, username, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      args: [`admin-${crypto.randomUUID()}`, username, password, "Administrator", "admin", "active", new Date().toISOString()],
+    const existingUser = await db.execute({
+      sql: "SELECT id, password_text FROM admin_users WHERE username = ? LIMIT 1",
+      args: [username],
     });
-    return;
-  }
 
-  const existingUser = await db.execute("SELECT COUNT(*) AS count FROM admin_users");
-  if (Number((existingUser.rows[0] as { count?: number | string })?.count || 0) === 0) {
-    await db.execute({
-      sql: "INSERT INTO admin_users (id, username, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      args: [`admin-${crypto.randomUUID()}`, username, password, "Administrator", "admin", "active", new Date().toISOString()],
-    });
+    const userRow = existingUser.rows[0];
+    const userExists = existingUser.rows.length > 0;
+    const storedPassword = userRow ? String(userRow.password_text || "") : "";
+    
+    const passwordChanged = userExists && storedPassword.trim() !== password.trim();
+    const forceSync = String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true";
+    const shouldSync = !userExists || passwordChanged || forceSync;
+
+    if (shouldSync) {
+      console.log(`Syncing credentials for user: ${username} (Reason: ${!userExists ? 'New User' : passwordChanged ? 'Password Change' : 'Force Sync'})`);
+      await db.execute({
+        sql: "DELETE FROM admin_users WHERE username = ?",
+        args: [username],
+      });
+      await db.execute({
+        sql: "INSERT INTO admin_users (id, username, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        args: [`admin-${crypto.randomUUID()}`, username, password, "Administrator", "admin", "active", new Date().toISOString()],
+      });
+    }
+  } catch (error) {
+    console.error("Critical error in ensureAdminUser local sync:", error);
   }
 };
 

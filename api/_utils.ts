@@ -6,6 +6,7 @@ export type BusinessMode = "cable" | "broadband";
 
 const sessionSecret = process.env.SESSION_SECRET || "fallback-secret-for-dev-only";
 export const sessionTtlMs = 1000 * 60 * 60 * 12;
+export const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 
 const configs = {
   broadband: {
@@ -110,10 +111,9 @@ export const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => 
 };
 
 const resolveAdminCredentials = () => {
-  return {
-    username: String(process.env.ADMIN_USERNAME || "adminshakti").trim(),
-    password: String(process.env.ADMIN_PASSWORD || "Shaktisinh@22").trim(),
-  };
+  const username = String(process.env.ADMIN_USERNAME || "").trim() || "adminshakti";
+  const password = String(process.env.ADMIN_PASSWORD || "").trim() || "Shaktisinh@22";
+  return { username, password };
 };
 
 export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
@@ -121,21 +121,22 @@ export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
     await ensureAdminSchema(db);
     const { username, password } = resolveAdminCredentials();
 
-    if (!username || !password) {
-      console.log("Admin credentials not configured, skipping sync.");
-      return { created: false, updated: false, skipped: true };
-    }
-
     const existingUser = await db.execute({
       sql: "SELECT id, password_text FROM admin_users WHERE username = ? LIMIT 1",
       args: [username],
     });
 
+    const userRow = existingUser.rows[0];
     const userExists = existingUser.rows.length > 0;
-    const shouldSync = !userExists || String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true";
+    const storedPassword = userRow ? String(userRow.password_text || "") : "";
+    
+    // Only sync if user doesn't exist, password changed, or force sync is enabled
+    const passwordChanged = userExists && storedPassword.trim() !== password.trim();
+    const forceSync = String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true";
+    const shouldSync = !userExists || passwordChanged || forceSync;
 
     if (shouldSync) {
-      console.log(`Syncing credentials for user: ${username}`);
+      console.log(`Syncing credentials for user: ${username} (Reason: ${!userExists ? 'New User' : passwordChanged ? 'Password Change' : 'Force Sync'})`);
       await db.execute({
         sql: "DELETE FROM admin_users WHERE username = ?",
         args: [username],

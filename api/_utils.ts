@@ -98,6 +98,7 @@ export const verifyPassword = async (password: string, storedHash: string) => {
 type AdminUserRow = {
   id?: string;
   password_hash?: string;
+  display_name?: string;
 };
 
 export const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => {
@@ -115,15 +116,15 @@ export const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => 
 };
 
 const resolveAdminCredentials = () => {
+  const username = String(process.env.ADMIN_USERNAME || "admin").trim();
   const plainPassword = String(process.env.ADMIN_PASSWORD || "").trim();
   const passwordHash = String(process.env.ADMIN_PASSWORD_HASH || "").trim();
-  return { plainPassword, passwordHash };
+  return { username, plainPassword, passwordHash };
 };
 
 export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
   await ensureAdminSchema(db);
-  const username = String(process.env.ADMIN_USERNAME || "admin").trim();
-  const { plainPassword, passwordHash: configuredHash } = resolveAdminCredentials();
+  const { username, plainPassword, passwordHash: configuredHash } = resolveAdminCredentials();
 
   if (!username || (!plainPassword && !configuredHash)) {
     return { created: false, updated: false, skipped: true };
@@ -169,4 +170,51 @@ export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
   }
 
   return { created: false, updated: false, skipped: false };
+};
+
+export const verifyConfiguredAdminLogin = async (username: string, password: string) => {
+  const { username: configuredUsername, plainPassword, passwordHash } = resolveAdminCredentials();
+  if (!configuredUsername || username !== configuredUsername) return false;
+
+  if (plainPassword) {
+    return safeCompare(password, plainPassword);
+  }
+
+  if (passwordHash) {
+    const verification = await verifyPassword(password, passwordHash);
+    return verification.valid;
+  }
+
+  return false;
+};
+
+export const upsertConfiguredAdminUser = async (db: ReturnType<typeof createClient>) => {
+  await ensureAdminSchema(db);
+  const { username, plainPassword, passwordHash: configuredHash } = resolveAdminCredentials();
+  if (!username || (!plainPassword && !configuredHash)) {
+    throw new Error("Configured admin credentials are missing.");
+  }
+
+  const nextHash = plainPassword ? await hashPassword(plainPassword) : configuredHash;
+  const existingUser = await db.execute({
+    sql: "SELECT id, display_name FROM admin_users WHERE username = ? LIMIT 1",
+    args: [username],
+  });
+
+  if (existingUser.rows.length === 0) {
+    const id = `admin-${crypto.randomUUID()}`;
+    await db.execute({
+      sql: "INSERT INTO admin_users (id, username, password_hash, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [id, username, nextHash, "Administrator", "admin", "active", new Date().toISOString()],
+    });
+    return { id, display_name: "Administrator" };
+  }
+
+  const currentUser = existingUser.rows[0] as AdminUserRow;
+  const id = String(currentUser.id || "");
+  await db.execute({
+    sql: "UPDATE admin_users SET password_hash = ?, status = 'active' WHERE id = ?",
+    args: [nextHash, id],
+  });
+  return { id, display_name: currentUser.display_name || "Administrator" };
 };

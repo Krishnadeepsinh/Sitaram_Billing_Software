@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { getDb, verifyPassword, hashPassword, createSession, sessionTtlMs, ensureAdminUser } from "./_utils";
+import { getDb, verifyPassword, hashPassword, createSession, sessionTtlMs, ensureAdminUser, verifyConfiguredAdminLogin, upsertConfiguredAdminUser } from "./_utils";
 
 type LoginUserRow = {
   id?: string;
@@ -25,6 +25,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (result.rows.length === 0) {
+      if (await verifyConfiguredAdminLogin(userTrimmed, passString)) {
+        const adminUser = await upsertConfiguredAdminUser(db);
+        const session = createSession(String(adminUser.id));
+        const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+        res.setHeader("Set-Cookie", `sitaram_session=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${isProduction ? "; Secure" : ""}`);
+        return res.status(200).json({ authenticated: true, displayName: adminUser.display_name || "Administrator" });
+      }
       console.log("Login failed: User not found in database.");
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -34,6 +41,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const verification = await verifyPassword(passString, String(user.password_hash || ""));
     
     if (!verification.valid) {
+      if (await verifyConfiguredAdminLogin(userTrimmed, passString)) {
+        const adminUser = await upsertConfiguredAdminUser(db);
+        const session = createSession(String(adminUser.id));
+        const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+        res.setHeader("Set-Cookie", `sitaram_session=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${isProduction ? "; Secure" : ""}`);
+        return res.status(200).json({ authenticated: true, displayName: adminUser.display_name || "Administrator" });
+      }
       console.log("Login failed: Password mismatch.");
       return res.status(401).json({ error: "Invalid credentials" });
     }

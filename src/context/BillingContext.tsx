@@ -168,118 +168,123 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const fetchFromDB = async () => {
     if (!db) return false;
     try {
-      // Initialize tables if they don't exist
-      await db.batch([
-        'CREATE TABLE IF NOT EXISTS subscribers (id TEXT PRIMARY KEY, code TEXT, name TEXT, phone TEXT, area TEXT, customer_id TEXT, customer_username TEXT, customer_password TEXT, email TEXT, plan_id TEXT, status TEXT, expiry_date TEXT, balance REAL, auto_billing INTEGER, unpaid_months TEXT, house_no TEXT, landmark TEXT, installation_date TEXT, opening_balance REAL, customer_no INTEGER)',
-        'CREATE TABLE IF NOT EXISTS plans (id TEXT PRIMARY KEY, name TEXT, price REAL, validity_days INTEGER, speed_mbps INTEGER, price_without_gst REAL, provider_plan_id TEXT, category TEXT)',
-        'CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, subscriber_id TEXT, amount REAL, method TEXT, agent TEXT, date TEXT, discount REAL, invoice_id TEXT, balance_at_payment REAL, created_at TEXT)',
-        'CREATE TABLE IF NOT EXISTS invoices (id TEXT PRIMARY KEY, number TEXT, subscriber_id TEXT, amount REAL, gst_amount REAL, date TEXT, due_date TEXT, status TEXT, type TEXT, billing_period TEXT, discount REAL)',
-        'CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, category TEXT, description TEXT, amount REAL, date TEXT)',
-        'CREATE TABLE IF NOT EXISTS reminders (id TEXT PRIMARY KEY, subscriber_id TEXT, type TEXT, channel TEXT, status TEXT, scheduled_at TEXT, sent_at TEXT)',
-        'CREATE TABLE IF NOT EXISTS agents (id TEXT PRIMARY KEY, name TEXT, phone TEXT, areas TEXT, status TEXT, join_date TEXT)',
-        'CREATE TABLE IF NOT EXISTS company_settings (id INTEGER PRIMARY KEY, name TEXT, address TEXT, phone TEXT, email TEXT, gstin TEXT, upi_id TEXT)',
-      ]);
-
-      // Ensure invoice_id exists in payments if table was already created
-      try {
-        await db.execute("ALTER TABLE payments ADD COLUMN invoice_id TEXT");
-      } catch (e) { /* ignore if already exists */ }
-
-      // Handle migration for existing subscribers table
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN house_no TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN landmark TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN installation_date TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN opening_balance REAL'); } catch(e) {}
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_no INTEGER'); } catch(e) {}
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_id TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_username TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_password TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE subscribers ADD COLUMN email TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE plans ADD COLUMN speed_mbps INTEGER'); } catch(e) {}
-      try { await db.execute('ALTER TABLE plans ADD COLUMN price_without_gst REAL'); } catch(e) {}
-      try { await db.execute('ALTER TABLE plans ADD COLUMN provider_plan_id TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE plans ADD COLUMN category TEXT'); } catch(e) {}
-      
-      // Backfill customer_no for existing subscribers
-      const missingNoCheck = await db.execute('SELECT id FROM subscribers WHERE customer_no IS NULL OR customer_no = 0 ORDER BY installation_date ASC, name ASC');
-      if (missingNoCheck.rows.length > 0) {
-        const maxNoRes = await db.execute('SELECT MAX(customer_no) as maxNo FROM subscribers');
-        // Handle both array and object row formats from libSQL
-        let currentMax = Number(maxNoRes.rows[0][0] || maxNoRes.rows[0].maxNo || 0);
+      const schemaMigrated = LS.get(`schema_migrated_v2_${businessMode}`, false);
+      if (!schemaMigrated) {
+        // Initialize tables if they don't exist
+        await db.batch([
+          'CREATE TABLE IF NOT EXISTS subscribers (id TEXT PRIMARY KEY, code TEXT, name TEXT, phone TEXT, area TEXT, customer_id TEXT, customer_username TEXT, customer_password TEXT, email TEXT, plan_id TEXT, status TEXT, expiry_date TEXT, balance REAL, auto_billing INTEGER, unpaid_months TEXT, house_no TEXT, landmark TEXT, installation_date TEXT, opening_balance REAL, customer_no INTEGER)',
+          'CREATE TABLE IF NOT EXISTS plans (id TEXT PRIMARY KEY, name TEXT, price REAL, validity_days INTEGER, speed_mbps INTEGER, price_without_gst REAL, provider_plan_id TEXT, category TEXT)',
+          'CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, subscriber_id TEXT, amount REAL, method TEXT, agent TEXT, date TEXT, discount REAL, invoice_id TEXT, balance_at_payment REAL, created_at TEXT)',
+          'CREATE TABLE IF NOT EXISTS invoices (id TEXT PRIMARY KEY, number TEXT, subscriber_id TEXT, amount REAL, gst_amount REAL, date TEXT, due_date TEXT, status TEXT, type TEXT, billing_period TEXT, discount REAL)',
+          'CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, category TEXT, description TEXT, amount REAL, date TEXT)',
+          'CREATE TABLE IF NOT EXISTS reminders (id TEXT PRIMARY KEY, subscriber_id TEXT, type TEXT, channel TEXT, status TEXT, scheduled_at TEXT, sent_at TEXT)',
+          'CREATE TABLE IF NOT EXISTS agents (id TEXT PRIMARY KEY, name TEXT, phone TEXT, areas TEXT, status TEXT, join_date TEXT)',
+          'CREATE TABLE IF NOT EXISTS company_settings (id INTEGER PRIMARY KEY, name TEXT, address TEXT, phone TEXT, email TEXT, gstin TEXT, upi_id TEXT)',
+        ]);
+  
+        // Ensure invoice_id exists in payments if table was already created
+        try {
+          await db.execute("ALTER TABLE payments ADD COLUMN invoice_id TEXT");
+        } catch (e) { /* ignore if already exists */ }
+  
+        // Handle migration for existing subscribers table
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN house_no TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN landmark TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN installation_date TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN opening_balance REAL'); } catch(e) {}
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_no INTEGER'); } catch(e) {}
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_id TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_username TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_password TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE subscribers ADD COLUMN email TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE plans ADD COLUMN speed_mbps INTEGER'); } catch(e) {}
+        try { await db.execute('ALTER TABLE plans ADD COLUMN price_without_gst REAL'); } catch(e) {}
+        try { await db.execute('ALTER TABLE plans ADD COLUMN provider_plan_id TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE plans ADD COLUMN category TEXT'); } catch(e) {}
         
-        const updates = missingNoCheck.rows.map(row => {
-          currentMax++;
-          const id = row[0] || row.id;
-          return { sql: 'UPDATE subscribers SET customer_no = ? WHERE id = ?', args: [currentMax, String(id)] };
-        });
-        if (updates.length > 0) await db.batch(updates);
-      }
-      
-      try { await db.execute('ALTER TABLE invoices ADD COLUMN type TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE invoices ADD COLUMN billing_period TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE invoices ADD COLUMN discount REAL'); } catch(e) {}
-      try { await db.execute('ALTER TABLE payments ADD COLUMN discount REAL'); } catch(e) {}
-      try { await db.execute('ALTER TABLE payments ADD COLUMN invoice_id TEXT'); } catch(e) {}
-      try { await db.execute('ALTER TABLE payments ADD COLUMN balance_at_payment REAL'); } catch(e) {}
-      try { await db.execute('ALTER TABLE payments ADD COLUMN created_at TEXT'); } catch(e) {}
-
-      // Default company settings
-      const companyCheck = await db.execute('SELECT COUNT(*) as count FROM company_settings');
-      if (Number(companyCheck.rows[0].count) === 0) {
-        await db.execute({
-          sql: 'INSERT INTO company_settings (id, name, address, phone, email, gstin, upi_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          args: [1, BRAND_NAME, BRAND_ADDRESS, BRAND_PHONE, BRAND_EMAIL, '', BRAND_UPI]
-        });
-      } else {
-        const existingSettings = await db.execute('SELECT * FROM company_settings WHERE id = 1');
-        const current = existingSettings.rows[0] ? mapRow(existingSettings.columns, existingSettings.rows[0]) : null;
-        const shouldMigrateLegacyDefaults =
-          current &&
-          (
-            cleanBrandValue(current.address, '') === 'Ahmedabad, Gujarat' ||
-            cleanBrandValue(current.phone, '') === '98260 33825' ||
-            cleanBrandValue(current.email, '') === 'info@sitaramcablebroadband.com' ||
-            cleanBrandValue(current.upi_id, '') === 'pay@upi' ||
-            cleanBrandValue(current.gstin, '') === 'GST-CR-998877'
+        // Backfill customer_no for existing subscribers
+        const missingNoCheck = await db.execute('SELECT id FROM subscribers WHERE customer_no IS NULL OR customer_no = 0 ORDER BY installation_date ASC, name ASC');
+        if (missingNoCheck.rows.length > 0) {
+          const maxNoRes = await db.execute('SELECT MAX(customer_no) as maxNo FROM subscribers');
+          // Handle both array and object row formats from libSQL
+          let currentMax = Number(maxNoRes.rows[0][0] || maxNoRes.rows[0].maxNo || 0);
+          
+          const updates = missingNoCheck.rows.map(row => {
+            currentMax++;
+            const id = row[0] || row.id;
+            return { sql: 'UPDATE subscribers SET customer_no = ? WHERE id = ?', args: [currentMax, String(id)] };
+          });
+          if (updates.length > 0) await db.batch(updates);
+        }
+        
+        try { await db.execute('ALTER TABLE invoices ADD COLUMN type TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE invoices ADD COLUMN billing_period TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE invoices ADD COLUMN discount REAL'); } catch(e) {}
+        try { await db.execute('ALTER TABLE payments ADD COLUMN discount REAL'); } catch(e) {}
+        try { await db.execute('ALTER TABLE payments ADD COLUMN invoice_id TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE payments ADD COLUMN balance_at_payment REAL'); } catch(e) {}
+        try { await db.execute('ALTER TABLE payments ADD COLUMN created_at TEXT'); } catch(e) {}
+  
+        // Default company settings
+        const companyCheck = await db.execute('SELECT COUNT(*) as count FROM company_settings');
+        if (Number(companyCheck.rows[0].count) === 0) {
+          await db.execute({
+            sql: 'INSERT INTO company_settings (id, name, address, phone, email, gstin, upi_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            args: [1, BRAND_NAME, BRAND_ADDRESS, BRAND_PHONE, BRAND_EMAIL, '', BRAND_UPI]
+          });
+        } else {
+          const existingSettings = await db.execute('SELECT * FROM company_settings WHERE id = 1');
+          const current = existingSettings.rows[0] ? mapRow(existingSettings.columns, existingSettings.rows[0]) : null;
+          const shouldMigrateLegacyDefaults =
+            current &&
+            (
+              cleanBrandValue(current.address, '') === 'Ahmedabad, Gujarat' ||
+              cleanBrandValue(current.phone, '') === '98260 33825' ||
+              cleanBrandValue(current.email, '') === 'info@sitaramcablebroadband.com' ||
+              cleanBrandValue(current.upi_id, '') === 'pay@upi' ||
+              cleanBrandValue(current.gstin, '') === 'GST-CR-998877'
+            );
+  
+          if (shouldMigrateLegacyDefaults) {
+            await db.execute({
+              sql: 'UPDATE company_settings SET name = ?, address = ?, phone = ?, email = ?, gstin = ?, upi_id = ? WHERE id = 1',
+              args: [BRAND_NAME, BRAND_ADDRESS, BRAND_PHONE, BRAND_EMAIL, '', BRAND_UPI],
+            });
+          }
+        }
+  
+        // Seed plans ONLY once if empty
+        const planCheck = await db.execute('SELECT COUNT(*) as count FROM plans');
+        const plansSeeded = LS.get(`plans_seeded_${businessMode}`, false);
+        
+        if (Number(planCheck.rows[0].count) === 0 && !plansSeeded) {
+          for (const p of getDefaultPlans(businessMode)) {
+            await db.execute({
+              sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+              args: [p.id, p.name, p.price, p.validityDays, p.speedMbps, p.priceWithoutGst || p.price, p.providerPlanId || '', p.category || 'welcome']
+            });
+          }
+          LS.set(`plans_seeded_${businessMode}`, true);
+        } else if (businessMode === "broadband") {
+          const existingPlansRes = await db.execute('SELECT provider_plan_id FROM plans');
+          const existingPlanIds = new Set(
+            existingPlansRes.rows
+              .map((row: any) => String(row.provider_plan_id || row.providerPlanId || row[0] || "").trim())
+              .filter(Boolean)
           );
-
-        if (shouldMigrateLegacyDefaults) {
-          await db.execute({
-            sql: 'UPDATE company_settings SET name = ?, address = ?, phone = ?, email = ?, gstin = ?, upi_id = ? WHERE id = 1',
-            args: [BRAND_NAME, BRAND_ADDRESS, BRAND_PHONE, BRAND_EMAIL, '', BRAND_UPI],
-          });
+          const missingBroadbandPlans = getDefaultPlans("broadband").filter(
+            (plan) => plan.providerPlanId && !existingPlanIds.has(plan.providerPlanId)
+          );
+  
+          for (const p of missingBroadbandPlans) {
+            await db.execute({
+              sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+              args: [p.id, p.name, p.price, p.validityDays, p.speedMbps, p.priceWithoutGst || p.price, p.providerPlanId || '', p.category || 'welcome']
+            });
+          }
         }
-      }
-
-      // Seed plans ONLY once if empty
-      const planCheck = await db.execute('SELECT COUNT(*) as count FROM plans');
-      const plansSeeded = LS.get(`plans_seeded_${businessMode}`, false);
-      
-      if (Number(planCheck.rows[0].count) === 0 && !plansSeeded) {
-        for (const p of getDefaultPlans(businessMode)) {
-          await db.execute({
-            sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            args: [p.id, p.name, p.price, p.validityDays, p.speedMbps, p.priceWithoutGst || p.price, p.providerPlanId || '', p.category || 'welcome']
-          });
-        }
-        LS.set(`plans_seeded_${businessMode}`, true);
-      } else if (businessMode === "broadband") {
-        const existingPlansRes = await db.execute('SELECT provider_plan_id FROM plans');
-        const existingPlanIds = new Set(
-          existingPlansRes.rows
-            .map((row: any) => String(row.provider_plan_id || row.providerPlanId || row[0] || "").trim())
-            .filter(Boolean)
-        );
-        const missingBroadbandPlans = getDefaultPlans("broadband").filter(
-          (plan) => plan.providerPlanId && !existingPlanIds.has(plan.providerPlanId)
-        );
-
-        for (const p of missingBroadbandPlans) {
-          await db.execute({
-            sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            args: [p.id, p.name, p.price, p.validityDays, p.speedMbps, p.priceWithoutGst || p.price, p.providerPlanId || '', p.category || 'welcome']
-          });
-        }
+  
+        LS.set(`schema_migrated_v2_${businessMode}`, true);
       }
 
             const results = await db.batch([

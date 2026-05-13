@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { getDb, verifyPassword, hashPassword, createSession, sessionTtlMs, ensureAdminUser, verifyConfiguredAdminLogin, upsertConfiguredAdminUser } from "./_utils";
+import { getDb, verifyPassword, hashPassword, createSession, sessionTtlMs, ensureAdminUser, verifyConfiguredAdminLogin, upsertConfiguredAdminUser, readJsonBody } from "./_utils";
 
 type LoginUserRow = {
   id?: string;
@@ -9,12 +9,11 @@ type LoginUserRow = {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-  
-  const { username, password } = req.body;
-  const userTrimmed = String(username || "").trim();
-  const passString = String(password || "");
 
   try {
+    const body = await readJsonBody<{ username?: string; password?: string }>(req);
+    const userTrimmed = String(body.username || "").trim();
+    const passString = String(body.password || "");
     const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 
     if (await verifyConfiguredAdminLogin(userTrimmed, passString)) {

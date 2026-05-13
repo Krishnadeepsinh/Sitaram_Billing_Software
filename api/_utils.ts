@@ -43,6 +43,23 @@ export const parseCookies = (cookieHeader: string = "") => {
   return cookies;
 };
 
+export const readJsonBody = async <T = Record<string, unknown>>(req: VercelRequest): Promise<T> => {
+  if (req.body && typeof req.body === "object") {
+    return req.body as T;
+  }
+
+  if (typeof req.body === "string") {
+    return (req.body ? JSON.parse(req.body) : {}) as T;
+  }
+
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  const text = Buffer.concat(chunks).toString("utf8");
+  return (text ? JSON.parse(text) : {}) as T;
+};
+
 export const verifySession = (req: VercelRequest) => {
   const token = parseCookies(req.headers.cookie).sitaram_session;
   if (!token) return null;

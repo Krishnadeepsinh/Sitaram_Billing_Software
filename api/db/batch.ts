@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { getDb, verifySession } from "../_utils";
+import { getDb, verifySession, readJsonBody } from "../_utils";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -7,7 +7,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const session = verifySession(req);
   if (!session) return res.status(401).json({ error: "Unauthorized" });
 
-  const { mode, queries, txMode } = req.body;
+  const { mode, queries, txMode } = await readJsonBody<{ mode?: string; queries?: Array<string | { sql: string; args?: unknown[] }>; txMode?: "read" | "write" }>(req);
   const db = getDb(mode === "cable" ? "cable" : "broadband");
 
   try {

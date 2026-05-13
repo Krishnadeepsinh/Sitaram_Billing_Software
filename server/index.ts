@@ -123,24 +123,9 @@ const safeCompare = (left: string, right: string) => {
   return crypto.timingSafeEqual(a, b);
 };
 
-const verifyPassword = async (password: string, storedHash: string) => {
-  if (!storedHash) return { valid: false, needsUpgrade: false };
-
-  if (storedHash.startsWith("scrypt$")) {
-    const [, salt, expected] = storedHash.split("$");
-    if (!salt || !expected) return { valid: false, needsUpgrade: false };
-    const derived = await scryptAsync(password, salt, 64) as Buffer;
-    return { valid: safeCompare(derived.toString("hex"), expected), needsUpgrade: false };
-  }
-
-  const legacyHash = storedHash.startsWith("sha256$") ? storedHash.slice("sha256$".length) : storedHash;
-  const valid = safeCompare(sha256(password), legacyHash);
-  return { valid, needsUpgrade: valid };
-};
-
 type AdminUserRow = {
   id?: string;
-  password_hash?: string;
+  password_text?: string;
   display_name?: string;
 };
 
@@ -149,112 +134,50 @@ const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => {
     CREATE TABLE IF NOT EXISTS admin_users (
       id TEXT PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
+      password_text TEXT NOT NULL,
       display_name TEXT,
       role TEXT DEFAULT 'admin',
       status TEXT DEFAULT 'active',
       created_at TEXT
     )
   `);
+
+  try {
+    await db.execute("ALTER TABLE admin_users ADD COLUMN password_text TEXT");
+  } catch {
+    // Column already exists.
+  }
 };
 
 const resolveAdminCredentials = () => {
-  const username = String(process.env.ADMIN_USERNAME || "admin").trim();
-  const plainPassword = String(process.env.ADMIN_PASSWORD || "").trim();
-  const passwordHash = String(process.env.ADMIN_PASSWORD_HASH || "").trim();
-  return { username, plainPassword, passwordHash };
+  return {
+    username: String(process.env.ADMIN_USERNAME || "adminshakti").trim(),
+    password: String(process.env.ADMIN_PASSWORD || "Shaktisinh@22").trim(),
+  };
 };
 
 const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
   await ensureAdminSchema(db);
-  const { username, plainPassword, passwordHash: configuredHash } = resolveAdminCredentials();
+  const { username, password } = resolveAdminCredentials();
 
-  if (!username || (!plainPassword && !configuredHash)) return;
+  if (!username || !password) return;
 
-  const existingUser = await db.execute({
-    sql: "SELECT id, password_hash FROM admin_users WHERE username = ? LIMIT 1",
-    args: [username],
-  });
-
-  if (existingUser.rows.length === 0) {
-    const passwordHash = plainPassword ? await hashPassword(plainPassword) : configuredHash;
+  if (String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true") {
+    await db.execute("DELETE FROM admin_users");
     await db.execute({
-      sql: "INSERT INTO admin_users (id, username, password_hash, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      args: [
-        `admin-${crypto.randomUUID()}`,
-        username,
-        passwordHash,
-        "Administrator",
-        "admin",
-        "active",
-        new Date().toISOString(),
-      ],
+      sql: "INSERT INTO admin_users (id, username, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [`admin-${crypto.randomUUID()}`, username, password, "Administrator", "admin", "active", new Date().toISOString()],
     });
     return;
   }
 
-  if (String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true") {
-    const currentUser = existingUser.rows[0] as AdminUserRow;
-    const currentHash = String(currentUser.password_hash || "");
-    const verification = plainPassword
-      ? await verifyPassword(plainPassword, currentHash)
-      : { valid: currentHash === configuredHash, needsUpgrade: false };
-
-    if (!verification.valid || verification.needsUpgrade) {
-      const nextHash = plainPassword ? await hashPassword(plainPassword) : configuredHash;
-      await db.execute({
-        sql: "UPDATE admin_users SET password_hash = ?, status = 'active' WHERE id = ?",
-        args: [nextHash, String(currentUser.id || "")],
-      });
-    }
-  }
-};
-
-const verifyConfiguredAdminLogin = async (username: string, password: string) => {
-  const { username: configuredUsername, plainPassword, passwordHash } = resolveAdminCredentials();
-  if (!configuredUsername || username !== configuredUsername) return false;
-
-  if (plainPassword) {
-    return safeCompare(password, plainPassword);
-  }
-
-  if (passwordHash) {
-    const verification = await verifyPassword(password, passwordHash);
-    return verification.valid;
-  }
-
-  return false;
-};
-
-const upsertConfiguredAdminUser = async (db: ReturnType<typeof createClient>) => {
-  await ensureAdminSchema(db);
-  const { username, plainPassword, passwordHash: configuredHash } = resolveAdminCredentials();
-  if (!username || (!plainPassword && !configuredHash)) {
-    throw new Error("Configured admin credentials are missing.");
-  }
-
-  const nextHash = plainPassword ? await hashPassword(plainPassword) : configuredHash;
-  const existingUser = await db.execute({
-    sql: "SELECT id, display_name FROM admin_users WHERE username = ? LIMIT 1",
-    args: [username],
-  });
-
-  if (existingUser.rows.length === 0) {
-    const id = `admin-${crypto.randomUUID()}`;
+  const existingUser = await db.execute("SELECT COUNT(*) AS count FROM admin_users");
+  if (Number((existingUser.rows[0] as { count?: number | string })?.count || 0) === 0) {
     await db.execute({
-      sql: "INSERT INTO admin_users (id, username, password_hash, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      args: [id, username, nextHash, "Administrator", "admin", "active", new Date().toISOString()],
+      sql: "INSERT INTO admin_users (id, username, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [`admin-${crypto.randomUUID()}`, username, password, "Administrator", "admin", "active", new Date().toISOString()],
     });
-    return { id, display_name: "Administrator" };
   }
-
-  const currentUser = existingUser.rows[0] as AdminUserRow;
-  const id = String(currentUser.id || "");
-  await db.execute({
-    sql: "UPDATE admin_users SET password_hash = ?, status = 'active' WHERE id = ?",
-    args: [nextHash, id],
-  });
-  return { id, display_name: currentUser.display_name || "Administrator" };
 };
 
 const getRequestIp = (req: http.IncomingMessage) =>
@@ -342,28 +265,6 @@ const server = http.createServer(async (req, res) => {
       const userKey = `user:${username.toLowerCase()}`;
       const secureCookieSuffix = process.env.NODE_ENV === "production" ? "; Secure" : "";
 
-      if (await verifyConfiguredAdminLogin(username, password)) {
-        try {
-          const db = getDb("broadband");
-          await ensureAdminUser(db);
-          const adminUser = await upsertConfiguredAdminUser(db);
-          clearFailedLogins(ipKey);
-          clearFailedLogins(userKey);
-          send(res, 200, { authenticated: true, displayName: adminUser.display_name || "Administrator" }, {
-            "Set-Cookie": `sitaram_session=${createSession(String(adminUser.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
-          });
-          return;
-        } catch (error) {
-          console.warn("Configured admin login succeeded, but DB sync failed:", error);
-          clearFailedLogins(ipKey);
-          clearFailedLogins(userKey);
-          send(res, 200, { authenticated: true, displayName: "Administrator" }, {
-            "Set-Cookie": `sitaram_session=${createSession(`env-admin:${username}`)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
-          });
-          return;
-        }
-      }
-
       if (isBlocked(ipKey) || isBlocked(userKey)) {
         send(res, 429, { error: "Too many login attempts. Please try again later." });
         return;
@@ -372,20 +273,11 @@ const server = http.createServer(async (req, res) => {
       const db = getDb("broadband");
       await ensureAdminUser(db);
       const result = await db.execute({
-        sql: "SELECT id, display_name, password_hash FROM admin_users WHERE username = ? AND status = 'active' LIMIT 1",
+        sql: "SELECT id, display_name, password_text FROM admin_users WHERE username = ? AND status = 'active' LIMIT 1",
         args: [username],
       });
 
       if (result.rows.length === 0) {
-        if (await verifyConfiguredAdminLogin(username, password)) {
-          const adminUser = await upsertConfiguredAdminUser(db);
-          clearFailedLogins(ipKey);
-          clearFailedLogins(userKey);
-          send(res, 200, { authenticated: true, displayName: adminUser.display_name || "Administrator" }, {
-            "Set-Cookie": `sitaram_session=${createSession(String(adminUser.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
-          });
-          return;
-        }
         recordFailedLogin(ipKey);
         recordFailedLogin(userKey);
         send(res, 401, { error: "Invalid credentials" });
@@ -393,17 +285,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       const user = result.rows[0] as AdminUserRow & { display_name?: string };
-      const verification = await verifyPassword(password, String(user.password_hash || ""));
-      if (!verification.valid) {
-        if (await verifyConfiguredAdminLogin(username, password)) {
-          const adminUser = await upsertConfiguredAdminUser(db);
-          clearFailedLogins(ipKey);
-          clearFailedLogins(userKey);
-          send(res, 200, { authenticated: true, displayName: adminUser.display_name || "Administrator" }, {
-            "Set-Cookie": `sitaram_session=${createSession(String(adminUser.id))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,
-          });
-          return;
-        }
+      if (!safeCompare(password, String(user.password_text || ""))) {
         recordFailedLogin(ipKey);
         recordFailedLogin(userKey);
         send(res, 401, { error: "Invalid credentials" });
@@ -412,13 +294,6 @@ const server = http.createServer(async (req, res) => {
 
       clearFailedLogins(ipKey);
       clearFailedLogins(userKey);
-
-      if (verification.needsUpgrade) {
-        await db.execute({
-          sql: "UPDATE admin_users SET password_hash = ? WHERE id = ?",
-          args: [await hashPassword(password), String(user.id)],
-        });
-      }
 
       send(res, 200, { authenticated: true, displayName: user.display_name || "Administrator" }, {
         "Set-Cookie": `sitaram_session=${createSession(String(user.id || ""))}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${secureCookieSuffix}`,

@@ -1,6 +1,5 @@
 import { createClient } from "@libsql/client";
 import fs from "node:fs";
-import crypto from "node:crypto";
 
 const loadEnv = () => {
   if (!fs.existsSync(".env")) return;
@@ -16,19 +15,6 @@ const loadEnv = () => {
 };
 
 loadEnv();
-
-const scryptAsync = (password: string, salt: string): Promise<Buffer> =>
-  new Promise((resolve, reject) => {
-    crypto.scrypt(password, salt, 64, (err, derivedKey) => {
-      if (err) reject(err);
-      else resolve(derivedKey as Buffer);
-    });
-  });
-
-const hashPassword = async (password: string, salt = crypto.randomBytes(16).toString("hex")) => {
-  const derived = await scryptAsync(password, salt);
-  return `scrypt$${salt}$${derived.toString("hex")}`;
-};
 
 const configs = [
   {
@@ -156,7 +142,7 @@ async function init(config: typeof configs[number]) {
     `CREATE TABLE IF NOT EXISTS admin_users (
       id TEXT PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
+      password_text TEXT NOT NULL,
       display_name TEXT,
       role TEXT DEFAULT 'admin',
       status TEXT DEFAULT 'active',
@@ -218,19 +204,17 @@ async function init(config: typeof configs[number]) {
 
   const users = await db.execute("SELECT COUNT(*) AS count FROM admin_users");
   if (Number(users.rows[0]?.count || 0) === 0) {
-    const username = process.env.ADMIN_USERNAME || "admin";
-    const passwordHash = process.env.ADMIN_PASSWORD_HASH || (
-      process.env.ADMIN_PASSWORD ? await hashPassword(process.env.ADMIN_PASSWORD) : ""
-    );
-    if (!passwordHash) {
-      throw new Error("Set ADMIN_PASSWORD or ADMIN_PASSWORD_HASH in .env to seed the admin user.");
+    const username = process.env.ADMIN_USERNAME || "adminshakti";
+    const passwordText = process.env.ADMIN_PASSWORD || "Shaktisinh@22";
+    if (!passwordText) {
+      throw new Error("Set ADMIN_PASSWORD in .env to seed the admin user.");
     }
     await db.execute({
-      sql: "INSERT INTO admin_users (id, username, password_hash, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      sql: "INSERT INTO admin_users (id, username, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
       args: [
         "admin-1",
         username,
-        passwordHash,
+        passwordText,
         "Administrator",
         "admin",
         "active",

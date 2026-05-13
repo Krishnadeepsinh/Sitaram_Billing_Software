@@ -14,24 +14,10 @@ const loadEnv = () => {
   }
 };
 
-const scryptAsync = (password: string, salt: string): Promise<Buffer> =>
-  new Promise((resolve, reject) => {
-    crypto.scrypt(password, salt, 64, (err, derivedKey) => {
-      if (err) reject(err);
-      else resolve(derivedKey as Buffer);
-    });
-  });
-
-const hashPassword = async (password: string, salt = crypto.randomBytes(16).toString("hex")) => {
-  const derived = await scryptAsync(password, salt);
-  return `scrypt$${salt}$${derived.toString("hex")}`;
-};
-
 loadEnv();
 
-const username = String(process.env.ADMIN_USERNAME || "admin").trim();
-const plainPassword = String(process.env.ADMIN_PASSWORD || "").trim();
-const passwordHashFromEnv = String(process.env.ADMIN_PASSWORD_HASH || "").trim();
+const username = String(process.env.ADMIN_USERNAME || "adminshakti").trim();
+const plainPassword = String(process.env.ADMIN_PASSWORD || "Shaktisinh@22").trim();
 const mode = process.argv.includes("--cable") ? "cable" : "broadband";
 
 const url = mode === "cable"
@@ -43,20 +29,16 @@ const authToken = mode === "cable"
 
 if (!url || !authToken) throw new Error(`Missing ${mode} Turso credentials in .env.`);
 if (!username) throw new Error("Missing ADMIN_USERNAME in .env.");
-if (!plainPassword && !passwordHashFromEnv) {
-  throw new Error("Set ADMIN_PASSWORD or ADMIN_PASSWORD_HASH in .env.");
-}
+if (!plainPassword) throw new Error("Set ADMIN_PASSWORD in .env.");
 
 const db = createClient({ url, authToken });
 
 async function run() {
-  const passwordHash = plainPassword ? await hashPassword(plainPassword) : passwordHashFromEnv;
-
   await db.execute(`
     CREATE TABLE IF NOT EXISTS admin_users (
       id TEXT PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
+      password_text TEXT NOT NULL,
       display_name TEXT,
       role TEXT DEFAULT 'admin',
       status TEXT DEFAULT 'active',
@@ -64,25 +46,18 @@ async function run() {
     )
   `);
 
-  const existing = await db.execute({
-    sql: "SELECT id FROM admin_users WHERE username = ? LIMIT 1",
-    args: [username],
-  });
-
-  if (existing.rows.length === 0) {
-    await db.execute({
-      sql: "INSERT INTO admin_users (id, username, password_hash, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      args: [`admin-${crypto.randomUUID()}`, username, passwordHash, "Administrator", "admin", "active", new Date().toISOString()],
-    });
-    console.log(`Created admin user '${username}' in ${mode} database.`);
-  } else {
-    const row = existing.rows[0] as { id?: string };
-    await db.execute({
-      sql: "UPDATE admin_users SET password_hash = ?, status = 'active' WHERE id = ?",
-      args: [passwordHash, String(row.id || "")],
-    });
-    console.log(`Reset password for admin user '${username}' in ${mode} database.`);
+  try {
+    await db.execute("ALTER TABLE admin_users ADD COLUMN password_text TEXT");
+  } catch {
+    // Column already exists.
   }
+
+  await db.execute("DELETE FROM admin_users");
+  await db.execute({
+    sql: "INSERT INTO admin_users (id, username, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    args: [`admin-${crypto.randomUUID()}`, username, plainPassword, "Administrator", "admin", "active", new Date().toISOString()],
+  });
+  console.log(`Recreated admin user '${username}' in ${mode} database.`);
 }
 
 run().catch((error) => {

@@ -18,8 +18,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 
     const db = getDb("broadband");
-    await ensureAdminUser(db);
-    console.log("DB connected. Searching for user:", userTrimmed);
+    const syncResult = await ensureAdminUser(db);
+    if (syncResult && "error" in syncResult) {
+      console.warn("Database sync encountered an issue, but attempting login anyway...");
+    }
+    
+    console.log("Database connected. Searching for user:", userTrimmed);
     
     const result = await db.execute({
       sql: "SELECT id, display_name, password_text, password_hash FROM admin_users WHERE username = ? AND status = 'active' LIMIT 1",
@@ -27,18 +31,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (result.rows.length === 0) {
-      console.log("Login failed: User not found in database.");
-      return res.status(401).json({ error: "Invalid credentials" });
+      console.log(`Login attempt failed: User '${userTrimmed}' not found or inactive.`);
+      return res.status(401).json({ error: "Invalid username or account inactive." });
     }
 
     const user = result.rows[0] as LoginUserRow;
-    console.log("User found. Verifying password from database...");
     const dbPassword = String(user.password_text || user.password_hash || "");
-    const valid = dbPassword === passString;
+    
+    // Use simple comparison for now to avoid any timingSafeEqual issues in serverless
+    const valid = dbPassword.trim() === passString.trim();
     
     if (!valid) {
-      console.log("Login failed: Password mismatch.");
-      return res.status(401).json({ error: "Invalid credentials" });
+      console.log(`Login attempt failed: Password mismatch for user '${userTrimmed}'.`);
+      return res.status(401).json({ error: "Invalid password. Please try again." });
     }
 
     console.log("Login successful for:", userTrimmed);

@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import crypto from "node:crypto";
+import crypto from "crypto";
 import { VercelRequest, VercelResponse } from "@vercel/node";
 
 export type BusinessMode = "cable" | "broadband";
@@ -117,31 +117,41 @@ const resolveAdminCredentials = () => {
 };
 
 export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
-  await ensureAdminSchema(db);
-  const { username, password } = resolveAdminCredentials();
+  try {
+    await ensureAdminSchema(db);
+    const { username, password } = resolveAdminCredentials();
 
-  if (!username || !password) {
-    return { created: false, updated: false, skipped: true };
-  }
+    if (!username || !password) {
+      console.log("Admin credentials not configured, skipping sync.");
+      return { created: false, updated: false, skipped: true };
+    }
 
-  if (String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true") {
-    await db.execute("DELETE FROM admin_users");
-    await db.execute({
-      sql: "INSERT INTO admin_users (id, username, password_hash, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      args: [`admin-${crypto.randomUUID()}`, username, password, password, "Administrator", "admin", "active", new Date().toISOString()],
+    const existingUser = await db.execute({
+      sql: "SELECT id, password_text FROM admin_users WHERE username = ? LIMIT 1",
+      args: [username],
     });
-    return { created: true, updated: true, skipped: false };
-  }
 
-  const existingUser = await db.execute("SELECT COUNT(*) AS count FROM admin_users");
-  if (Number((existingUser.rows[0] as { count?: number | string })?.count || 0) === 0) {
-    await db.execute({
-      sql: "INSERT INTO admin_users (id, username, password_hash, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      args: [`admin-${crypto.randomUUID()}`, username, password, password, "Administrator", "admin", "active", new Date().toISOString()],
-    });
-    return { created: true, updated: false, skipped: false };
+    const userExists = existingUser.rows.length > 0;
+    const shouldSync = !userExists || String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true";
+
+    if (shouldSync) {
+      console.log(`Syncing credentials for user: ${username}`);
+      await db.execute({
+        sql: "DELETE FROM admin_users WHERE username = ?",
+        args: [username],
+      });
+      await db.execute({
+        sql: "INSERT INTO admin_users (id, username, password_hash, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        args: [`admin-${crypto.randomUUID()}`, username, password, password, "Administrator", "admin", "active", new Date().toISOString()],
+      });
+      return { created: !userExists, updated: userExists, skipped: false };
+    }
+    
+    return { created: false, updated: false, skipped: false };
+  } catch (error) {
+    console.error("Critical error in ensureAdminUser sync:", error);
+    return { error, skipped: false };
   }
-  return { created: false, updated: false, skipped: false };
 };
 
 export const upsertConfiguredAdminUser = async (db: ReturnType<typeof createClient>) => {

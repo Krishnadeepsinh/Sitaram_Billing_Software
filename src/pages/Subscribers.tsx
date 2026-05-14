@@ -172,14 +172,15 @@ export default function Subscribers() {
   const handleSave = async () => {
     if (isSaving) return;
 
-    const trimmedPhone = formData.phone.trim();
-    if (!/^\d{10}$/.test(trimmedPhone)) {
-      toast.error("Customer mobile must be exactly 10 digits.");
+    // Mobile is now optional
+    if (formData.phone && !/^\d{10}$/.test(formData.phone)) {
+      toast.error("Please enter a valid 10-digit mobile number or leave blank");
       return;
     }
-
-    if (!formData.planId) {
-      toast.error("Please select a plan.");
+    
+    // Service ID is now optional
+    if (!formData.name.trim()) {
+      toast.error("Subscriber name is required");
       return;
     }
 
@@ -492,33 +493,44 @@ export default function Subscribers() {
                   </div>
                 </div>
                 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-secondary transition-all">
-                      <MoreVertical className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-52 rounded-2xl border-border/60 shadow-2xl p-1.5 backdrop-blur-xl">
-                    <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-3 py-2">Quick Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => handleOpenHistory(s)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer">
-                      <History className="h-4 w-4 text-primary" />
-                      <span className="font-semibold text-sm">Payment History</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleOpenInvoice(s)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer">
-                      <FileText className="h-4 w-4 text-emerald-500" />
-                      <span className="font-semibold text-sm">Generate Invoice</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-border/40 mx-1 my-1" />
-                    <DropdownMenuItem onClick={() => handleOpenEdit(s)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer">
-                      <Edit2 className="h-4 w-4 text-slate-500" />
-                      <span className="font-semibold text-sm">Edit Details</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDelete(s.id)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer text-rose-500 focus:text-rose-500 focus:bg-rose-500/10">
-                      <Trash2 className="h-4 w-4" />
-                      <span className="font-semibold text-sm">Delete Account</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-9 w-9 rounded-xl hover:bg-primary/10 text-primary transition-all"
+                    onClick={() => handleOpenHistory(s)}
+                    title="History"
+                  >
+                    <History className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-9 w-9 rounded-xl hover:bg-emerald-500/10 text-emerald-500 transition-all"
+                    onClick={() => handleOpenInvoice(s)}
+                    title="Invoice"
+                  >
+                    <FileText className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-9 w-9 rounded-xl hover:bg-slate-500/10 text-slate-500 transition-all"
+                    onClick={() => handleOpenEdit(s)}
+                    title="Edit"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-9 w-9 rounded-xl hover:bg-rose-500/10 text-rose-500 transition-all"
+                    onClick={() => handleDelete(s.id)}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -697,33 +709,44 @@ export default function Subscribers() {
                       />
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-secondary/80 transition-all">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-52 rounded-2xl border-border/60 shadow-2xl p-1.5 backdrop-blur-xl">
-                          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-3 py-2">Management</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleOpenHistory(s)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer">
-                            <History className="h-4 w-4 text-primary" />
-                            <span className="font-semibold text-sm">Payment History</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenInvoice(s)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer">
-                            <FileText className="h-4 w-4 text-emerald-500" />
-                            <span className="font-semibold text-sm">Generate Invoice</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator className="bg-border/40 mx-1 my-1" />
-                          <DropdownMenuItem onClick={() => handleOpenEdit(s)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer">
-                            <Edit2 className="h-4 w-4 text-slate-500" />
-                            <span className="font-semibold text-sm">Edit Account</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(s.id)} className="rounded-xl px-3 py-2.5 gap-3 cursor-pointer text-rose-500 focus:text-rose-500 focus:bg-rose-500/10">
-                            <Trash2 className="h-4 w-4" />
-                            <span className="font-semibold text-sm">Delete Account</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 rounded-xl hover:bg-primary/10 text-primary transition-all"
+                          onClick={() => handleOpenHistory(s)}
+                          title="Payment History"
+                        >
+                          <History className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 rounded-xl hover:bg-emerald-500/10 text-emerald-500 transition-all"
+                          onClick={() => handleOpenInvoice(s)}
+                          title="Generate Invoice"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 rounded-xl hover:bg-slate-500/10 text-slate-500 transition-all"
+                          onClick={() => handleOpenEdit(s)}
+                          title="Edit Account"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 rounded-xl hover:bg-rose-500/10 text-rose-500 transition-all"
+                          onClick={() => handleDelete(s.id)}
+                          title="Delete Account"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -842,27 +865,32 @@ export default function Subscribers() {
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Months</Label>
-                      <Input
-                        type="text"
-                        value={String(planMonths).padStart(2, '0')}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, '');
-                          const num = Number(val);
-                          if (!isNaN(num)) {
-                            setPlanMonths(Math.max(1, num));
-                          }
-                        }}
-                        className="h-12 rounded-2xl border-border/40 bg-secondary/30 font-bold text-center w-20"
-                      />
+                      <select
+                        value={planMonths}
+                        onChange={(e) => setPlanMonths(Number(e.target.value))}
+                        className="h-12 w-full rounded-2xl border border-border/40 bg-secondary/30 font-black px-4 appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      >
+                        {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => (
+                          <option key={m} value={m}>{m} {m === 1 ? 'Month' : 'Months'}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
-                  <div className="p-5 rounded-[1.5rem] bg-secondary/20 border border-border/40 space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                  <div className="p-5 rounded-[1.5rem] bg-secondary/20 border border-border/40 space-y-3">
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      <span>Selected Plan</span>
+                      <span className="text-foreground">{dbPlans.find(p => p.id === invoiceSub.planId)?.name.toUpperCase()}</span>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      <span>Start Date</span>
+                      <span className="text-foreground">{formatDate(rechargeDate)}</span>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                       <span>Expiry After</span>
                       <span className="text-foreground">{formatDate(projectedExpiryDate || "")}</span>
                     </div>
-                    <div className="flex justify-between text-lg font-black text-foreground pt-2 border-t border-border/10">
-                      <span>Amount</span>
+                    <div className="flex justify-between text-lg font-black text-foreground pt-3 border-t border-border/10">
+                      <span>Total Amount</span>
                       <span className="text-primary">{formatCurrency((dbPlans.find(p => p.id === invoiceSub.planId)?.price || 0) * planMonths)}</span>
                     </div>
                   </div>
@@ -930,7 +958,7 @@ export default function Subscribers() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Mobile</Label>
+                  <Label htmlFor="phone" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Mobile (Optional)</Label>
                   <Input 
                     id="phone"
                     placeholder="10-digit mobile" 
@@ -954,7 +982,7 @@ export default function Subscribers() {
               <div className="space-y-6">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-2">Service Plan</h3>
                 <div className="space-y-2">
-                  <Label htmlFor="customerId" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Service ID / MAC</Label>
+                  <Label htmlFor="customerId" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Service ID / MAC (Optional)</Label>
                   <Input 
                     id="customerId"
                     placeholder="Unique ID" 

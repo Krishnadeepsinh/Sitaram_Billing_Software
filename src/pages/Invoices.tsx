@@ -558,7 +558,7 @@ ${brand.name}`;
             </div>
 
             <div className="pt-4 border-t space-y-4">
-                {selectedSub ? (
+                {selectedSub && (
                   <>
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       <button
@@ -588,23 +588,36 @@ ${brand.name}`;
                       </button>
                     </div>
 
-                    {billingType === "legacy" && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-                        <div className="flex items-center gap-2 text-amber-900 font-bold text-xs mb-1">
-                          <AlertCircle className="h-4 w-4" />
-                          Legacy Due Selected
+                    {billingType === "plan" ? (
+                      <div className="bg-secondary/20 border border-border/40 rounded-[1.5rem] p-5 space-y-3">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          <span>Selected Subscriber</span>
+                          <span className="text-foreground">{subscribers.find(s => s.id === selectedSub)?.name}</span>
                         </div>
-                        <p className="text-[10px] text-amber-700">
-                          This will generate a separate invoice for the opening balance of 
-                          ₹{subscribers.find(s => s.id === selectedSub)?.openingBalance || 0}.
-                        </p>
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          <span>Plan</span>
+                          <span className="text-foreground">{plansList.find(p => p.id === subscribers.find(s => s.id === selectedSub)?.planId)?.name.toUpperCase()}</span>
+                        </div>
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          <span>Service Period</span>
+                          <span className="text-foreground">{formatDate(rechargeDate)} to {formatDate(new Date(new Date(rechargeDate).setMonth(new Date(rechargeDate).getMonth() + planMonths)).toISOString())}</span>
+                        </div>
+                        <div className="pt-3 border-t border-border/10 flex justify-between items-center">
+                          <span className="text-sm font-black uppercase tracking-widest">Total Payable</span>
+                          <span className="text-xl font-black text-primary">
+                            {formatCurrency((plansList.find(p => p.id === subscribers.find(s => s.id === selectedSub)?.planId)?.price || 0) * planMonths)}
+                          </span>
+                        </div>
                       </div>
-                    )}
-
-                    <div className="bg-secondary/30 p-4 rounded-xl border border-border/50 mb-6">
-                      {billingType === "plan" ? (
-                        <>
-                          <div className="flex justify-between text-sm mb-1">
+                    ) : (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <div className="flex items-center gap-2 text-amber-900 font-bold text-xs mb-2">
+                          <AlertCircle className="h-4 w-4" />
+                          Legacy Due Billing
+                        </div>
+                        <p className="text-[10px] text-amber-700 leading-relaxed mb-3">
+                          This will generate a separate invoice for the opening balance debt of this subscriber.
+                        </p>
                             <span className="text-muted-foreground font-medium">Recharge Date</span>
                             <span className="font-mono-num font-bold">{isValidRechargeDate ? formatDate(`${rechargeDate}T12:00:00`) : "-"}</span>
                           </div>

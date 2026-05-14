@@ -352,9 +352,9 @@ export default function Subscribers() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-4 custom-scrollbar">
-              <div className="space-y-5 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
-                <div className="sm:col-span-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Customer Name</label>
+              <div className="flex flex-col gap-5 sm:grid sm:grid-cols-2 sm:gap-4">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Customer Name</label>
                   <Input 
                     className="h-11 sm:h-10 text-base sm:text-sm"
                     value={formData.name} 
@@ -362,8 +362,8 @@ export default function Subscribers() {
                     placeholder="Full name of customer" 
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Customer Mobile</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Customer Mobile <span className="lowercase normal-case font-normal text-slate-400 ml-1">(optional)</span></label>
                   <Input 
                     className="h-11 sm:h-10 text-base sm:text-sm"
                     value={formData.phone} 
@@ -371,8 +371,8 @@ export default function Subscribers() {
                     placeholder="10-digit mobile number" 
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">{customerIdLabel}</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{customerIdLabel} <span className="lowercase normal-case font-normal text-slate-400 ml-1">(optional)</span></label>
                   <Input 
                     className="h-11 sm:h-10 text-base sm:text-sm"
                     value={formData.customerId} 
@@ -380,8 +380,8 @@ export default function Subscribers() {
                     placeholder={customerIdLabel} 
                   />
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">{addressLabel}</label>
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{addressLabel}</label>
                   <Input 
                     className="h-11 sm:h-10 text-base sm:text-sm"
                     value={formData.area} 
@@ -437,8 +437,8 @@ export default function Subscribers() {
                     </div>
                   </>
                 )}
-                <div>
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Installation Date</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Installation Date</label>
                   <Input 
                     className="h-11 sm:h-10 text-base sm:text-sm"
                     type="date" 
@@ -446,10 +446,10 @@ export default function Subscribers() {
                     onChange={e => setFormData({...formData, installationDate: e.target.value})} 
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Select Plan</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Select Plan</label>
                   <select 
-                    className="w-full bg-secondary/50 border border-border rounded-lg p-2 outline-none text-sm h-10"
+                    className="w-full bg-secondary/50 border border-border rounded-lg p-2 outline-none text-sm h-11 sm:h-10"
                     value={formData.planId}
                     onChange={e => setFormData({...formData, planId: e.target.value})}
                   >
@@ -463,8 +463,8 @@ export default function Subscribers() {
                 <div className="sm:col-span-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-[11px] text-muted-foreground leading-relaxed italic">
                   Note: Expiry date is automatically calculated during bill generation based on the plan's validity days.
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Opening Balance</label>
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Opening Balance</label>
                   <div className="flex gap-2">
                     <Input 
                       type="number" 
@@ -483,20 +483,20 @@ export default function Subscribers() {
                     </select>
                   </div>
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Account Status</label>
+                <div className="sm:col-span-2 space-y-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Account Status</label>
                   <div className="flex gap-2">
                     <button 
                       type="button"
                       onClick={() => setFormData({...formData, status: 'active'})}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${formData.status === 'active' ? 'bg-emerald-500 border-emerald-600 text-white shadow-md shadow-emerald-200' : 'bg-secondary border-border/40 text-muted-foreground'}`}
+                      className={`flex-1 py-3 sm:py-2 rounded-xl text-xs font-bold transition-all border ${String(formData.status).toLowerCase() === 'active' ? 'bg-emerald-500 border-emerald-600 text-white shadow-md shadow-emerald-200' : 'bg-secondary border-border/40 text-muted-foreground'}`}
                     >
                       Active
                     </button>
                     <button 
                       type="button"
                       onClick={() => setFormData({...formData, status: 'expired'})}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${formData.status === 'expired' ? 'bg-rose-500 border-rose-600 text-white shadow-md shadow-rose-200' : 'bg-secondary border-border/40 text-muted-foreground'}`}
+                      className={`flex-1 py-3 sm:py-2 rounded-xl text-xs font-bold transition-all border ${String(formData.status).toLowerCase() === 'expired' ? 'bg-rose-500 border-rose-600 text-white shadow-md shadow-rose-200' : 'bg-secondary border-border/40 text-muted-foreground'}`}
                     >
                       Inactive
                     </button>

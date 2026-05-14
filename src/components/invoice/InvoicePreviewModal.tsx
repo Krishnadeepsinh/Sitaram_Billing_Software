@@ -38,6 +38,8 @@ export default function InvoicePreviewModal({
   plans,
   subscribers,
 }: InvoicePreviewModalProps) {
+  if (!invoice) return null;
+  
   const [isProcessing, setIsProcessing] = useState(false);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);

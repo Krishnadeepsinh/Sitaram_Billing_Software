@@ -18,8 +18,8 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
     .filter((item) => item.subscriberId === invoice.subscriberId && item.id !== invoice.id && item.status !== "paid")
     .reduce((sum, item) => sum + Number(item.amount || 0), 0);
   
-  const totalPayable = Number(invoice.amount || 0);
-  const discount = Number(invoice.discount || 0);
+  const totalPayable = Number(invoice?.amount || 0);
+  const discount = Number(invoice?.discount || 0);
   const grossTotal = totalPayable + discount;
   const grandTotal = totalPayable + previousDues;
   

@@ -104,7 +104,21 @@ export default function InvoicePreviewModal({
         margin: 0,
         filename: fileName,
         image: { type: "jpeg", quality: 1.0 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          logging: false,
+          letterRendering: true,
+          onclone: (doc: Document) => {
+            const clonedElement = doc.getElementById("invoice-content");
+            if (clonedElement) {
+              clonedElement.style.transform = "none";
+              clonedElement.style.margin = "0";
+              clonedElement.style.width = "794px";
+              clonedElement.style.height = "auto";
+            }
+          }
+        },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
 
@@ -146,6 +160,15 @@ export default function InvoicePreviewModal({
           useCORS: true,
           logging: false,
           letterRendering: true,
+          onclone: (doc: Document) => {
+            const clonedElement = doc.getElementById("invoice-content");
+            if (clonedElement) {
+              clonedElement.style.transform = "none";
+              clonedElement.style.margin = "0";
+              clonedElement.style.width = "794px";
+              clonedElement.style.height = "auto";
+            }
+          }
         },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };

@@ -23,11 +23,11 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
   const grossTotal = totalPayable + discount;
   const grandTotal = totalPayable + previousDues;
   
-  // Inclusive GST Calculation (18% total: 9% CGST + 9% SGST)
-  const taxableValue = grossTotal / 1.18;
-  const totalGst = grossTotal - taxableValue;
-  const cgstAmount = totalGst / 2;
-  const sgstAmount = totalGst / 2;
+  // No GST calculation needed as per user request (inclusive price)
+  const taxableValue = grossTotal;
+  const totalGst = 0;
+  const cgstAmount = 0;
+  const sgstAmount = 0;
 
   const linkedPayments = (payments || [])
     .filter((payment) => payment.invoiceId === invoice.id)
@@ -64,23 +64,8 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
         {/* Right Side: Simple Financial Summary */}
         <div className="flex-1 pt-2">
           <div className="space-y-3">
-            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[10px] px-1">
-              <span>Taxable Value</span>
-              <span className="text-slate-700">₹{taxableValue.toFixed(2)}</span>
-            </div>
-
-            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[10px] px-1">
-              <span>CGST (9%)</span>
-              <span className="text-slate-700">₹{cgstAmount.toFixed(2)}</span>
-            </div>
-
-            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[10px] px-1">
-              <span>SGST (9%)</span>
-              <span className="text-slate-700">₹{sgstAmount.toFixed(2)}</span>
-            </div>
-
-            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[11px] px-1 pt-1 border-t border-slate-100">
-              <span>Invoice Total (Incl. Taxes)</span>
+            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[11px] px-1 pt-1">
+              <span>Invoice Total (Incl. All)</span>
               <span className="text-slate-900">₹{totalPayable.toFixed(2)}</span>
             </div>
 

@@ -26,14 +26,11 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
           </div>
         </div>
         <div className="text-right text-xs space-y-1 max-w-[250px] shrink-0">
-          <p className="font-black uppercase tracking-[0.14em] text-orange-200">Official Tax Invoice</p>
+          <p className="font-black uppercase tracking-[0.14em] text-orange-200">Payment Summary</p>
           <p className="text-lg font-black tracking-tight text-white leading-none mb-2">{invoiceLabel}</p>
           <p className="whitespace-pre-line leading-tight text-blue-50 opacity-90">{brand.address}</p>
           <div className="flex flex-col gap-0.5 mt-1">
-            <p className="font-bold">Phone: {brand.phone}</p>
-            {brand.gstin && (
-              <p className="text-[9px] font-black tracking-widest text-orange-200">GSTIN: {brand.gstin}</p>
-            )}
+            <p className="font-bold text-sm tracking-tight text-orange-50">Support: {brand.phone}</p>
           </div>
         </div>
       </div>

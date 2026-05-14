@@ -510,25 +510,6 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     if (db) {
       console.log('Updating subscriber (DB):', id, updates);
-      // Optimistic update
-      setSubscribers(prev => {
-        console.log('Searching for ID:', id, 'in', prev.length, 'subscribers');
-        const next = prev.map(s => {
-          const sId = String(s.id || "").trim();
-          const targetId = String(id || "").trim();
-          if (sId === targetId && targetId !== "") {
-            console.log('MATCH FOUND for ID:', id, 'Old Status:', s.status, 'New Status:', updates.status);
-            return { ...s, ...updates };
-          }
-          return s;
-        });
-        const found = next.some(s => String(s.id) === String(id));
-        if (!found) {
-          console.error('CRITICAL: Subscriber ID not found in state:', id);
-          alert('Error: Subscriber not found in list. Please refresh.');
-        }
-        return [...next];
-      });
       
       try {
         const mapped: any = {};
@@ -554,25 +535,39 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (Object.keys(mapped).length === 0) return;
 
         const fields = Object.keys(mapped).map(k => `${k} = ?`).join(', ');
+        const targetId = String(id || "").trim().toLowerCase();
+        
         await db.execute({ 
-          sql: `UPDATE subscribers SET ${fields} WHERE id = ?`, 
-          args: [...Object.values(mapped), id] 
+          sql: `UPDATE subscribers SET ${fields} WHERE LOWER(TRIM(id)) = ?`, 
+          args: [...Object.values(mapped), targetId] 
         });
-        console.log('DB update successful, refreshing data...');
-        // Refresh to ensure absolute consistency
-        await fetchData(); 
-        console.log('Data refreshed after status toggle');
+        
+        console.log('Updating subscriber (Local):', id, updates);
+        
+        // Update local state AFTER DB success as requested
+        setSubscribers(prev => prev.map(s => {
+          const sId = String(s.id || "").trim().toLowerCase();
+          return sId === targetId ? { ...s, ...updates } : s;
+        }));
+
+        // Optimization: For simple status toggles, skip the full refresh to prevent flickering
+        if (Object.keys(updates).length === 1 && updates.status) {
+          console.log('Status update only, skipping full refresh');
+        } else {
+          console.log('Refreshing all data for consistency...');
+          await fetchData(); 
+        }
       } catch (err) { 
         console.error('updateSubscriber DB error:', err);
-        // Don't revert immediately, just log it. 
-        // If the user refreshes, they will see the real DB state.
-        toast.error("Database update failed, but UI state updated locally.");
+        toast.error("Database update failed. Please try again.");
       }
-      // Optional: Refresh data to ensure consistency
-      // await fetchData(); 
     } else {
       console.log('Updating subscriber (Local):', id, updates);
-      const updated = subscribers.map(s => s.id === id ? { ...s, ...updates } : s);
+      const updated = subscribers.map(s => {
+        const sId = String(s.id || "").trim().toLowerCase();
+        const targetId = String(id || "").trim().toLowerCase();
+        return sId === targetId ? { ...s, ...updates } : s;
+      });
       setSubscribers(updated);
       LS.set('subscribers', updated);
     }

@@ -455,7 +455,20 @@ Thank you for choosing ${brand.name}!`;
         margin: 0,
         filename: fileName,
         image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          logging: false,
+          onclone: (doc: Document) => {
+            const clonedElement = doc.getElementById("receipt-content");
+            if (clonedElement) {
+              clonedElement.style.transform = "none";
+              clonedElement.style.margin = "0";
+              clonedElement.style.width = "794px";
+              clonedElement.style.height = "auto";
+            }
+          }
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
@@ -571,6 +584,7 @@ Thank you!`;
           onclone: (doc: Document) => {
             const clonedElement = doc.getElementById("receipt-content");
             if (clonedElement) {
+              clonedElement.style.transform = "none";
               clonedElement.style.height = "auto";
               clonedElement.style.overflow = "visible";
               clonedElement.style.margin = "0";

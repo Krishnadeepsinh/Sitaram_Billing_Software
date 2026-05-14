@@ -151,151 +151,154 @@ export default function Dashboard() {
 
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
+    <div className="space-y-6 animate-fade-in pb-8">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-black mb-2 flex items-center gap-2">
-            <Activity className="h-3 w-3 animate-pulse" />
-            {companySettings?.name || 'SITARAM CABLE & BROADBAND'} · Control Center
+          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-1.5 flex items-center gap-2">
+            <Activity className="h-3 w-3 text-primary" />
+            {companySettings?.name || 'SITARAM CABLE & BROADBAND'} · HUB
           </p>
-          <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tighter uppercase leading-none">
-            Operations <span className="gradient-text italic">Intelligence</span>
+          <h1 className="font-display text-4xl font-black tracking-tighter uppercase leading-none text-slate-900">
+            Operational <span className="text-primary italic">Overview</span>
           </h1>
-          <div className="flex items-center gap-3 mt-4 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 w-fit">
-            <Calendar className="h-3.5 w-3.5 text-primary" />
-            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.15em]">
-              Cycle: <span className="text-foreground">{months[dashboardDate.getMonth()]} {dashboardDate.getFullYear()}</span>
+          <div className="flex items-center gap-2.5 mt-4 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 w-fit shadow-sm">
+            <Calendar className="h-3.5 w-3.5 text-slate-400" />
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+              Cycle: <span className="text-slate-900">{months[dashboardDate.getMonth()]} {dashboardDate.getFullYear()}</span>
             </p>
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2 glass-panel p-1.5 rounded-2xl border-white/10">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
             <Select value={months[dashboardDate.getMonth()]} onValueChange={handleMonthChange}>
-              <SelectTrigger className="w-[130px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-black uppercase tracking-widest">
+              <SelectTrigger className="w-[115px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-bold uppercase tracking-wider text-slate-600">
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent className="bg-card border-border rounded-xl">
-                {months.map(m => <SelectItem key={m} value={m} className="text-[10px] font-black uppercase tracking-widest">{m}</SelectItem>)}
+              <SelectContent className="bg-white border-slate-200 rounded-xl">
+                {months.map(m => <SelectItem key={m} value={m} className="text-[10px] font-bold uppercase tracking-wider">{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="w-px h-4 bg-white/10" />
+            <div className="w-px h-4 bg-slate-100" />
             <Select value={dashboardDate.getFullYear().toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="w-[90px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-black uppercase tracking-widest">
+              <SelectTrigger className="w-[85px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-bold uppercase tracking-wider text-slate-600">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent className="bg-card border-border rounded-xl">
-                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-[10px] font-black uppercase tracking-widest">{y}</SelectItem>)}
+              <SelectContent className="bg-white border-slate-200 rounded-xl">
+                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-[10px] font-bold uppercase tracking-wider">{y}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
-          <Button size="lg" asChild className="bg-gradient-primary text-primary-foreground hover:opacity-90 glow-primary rounded-2xl px-6 h-12 font-black uppercase tracking-widest text-[10px] transition-all active:scale-95">
+          <Button size="sm" asChild className="bg-slate-900 text-white hover:bg-slate-800 rounded-xl px-5 h-12 font-bold uppercase tracking-widest text-[10px] transition-all active:scale-95 shadow-lg shadow-slate-200">
             <Link to="/invoices">
-              <Wallet className="mr-2 h-4 w-4" /> Collect Payment
+              <Wallet className="mr-2 h-4 w-4" /> Payments Console
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard label="Today's Collection" value={formatCurrency(s.collectedToday)} delta="+12.5% vs yesterday" icon={Activity} variant="primary" />
         <StatCard label="Month Revenue" value={formatCurrency(s.monthRevenue)} delta={`${payments.length} transactions`} icon={Activity} variant="accent" />
         <StatCard label="Pending Dues" value={formatCurrency(s.pendingDues)} delta={`${s.expired} total expired`} icon={AlertCircle} variant="warning" />
         <StatCard label="Expenses" value={formatCurrency(s.monthExpenses)} delta={`${expenses.length} records`} icon={FileText} variant="destructive" />
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-1">Quick Access Tools</h2>
-          <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent ml-6" />
+          <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 px-1">Control Panel</h2>
+          <div className="h-px flex-1 bg-slate-100 ml-6" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <Link to="/subscribers" className="group glass-card p-6 rounded-[2rem] border-primary/20 hover:border-primary/50 hover:glow-primary transition-all duration-500 flex flex-col items-center justify-center gap-4 bg-primary/5">
-             <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 shadow-inner border border-primary/20">
-               <Users className="h-8 w-8" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <Link to="/subscribers" className="group bg-white p-6 rounded-[2rem] border border-slate-200 hover:border-primary/50 hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center gap-4">
+             <div className="h-14 w-14 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100 group-hover:border-primary/20">
+               <Users className="h-7 w-7" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-primary transition-colors">Subscribers</span>
+             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">Registry</span>
           </Link>
 
-          <Link to="/invoices" className="group glass-card p-6 rounded-[2rem] border-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)] transition-all duration-500 flex flex-col items-center justify-center gap-4 bg-emerald-500/5">
-             <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-inner border border-emerald-500/20">
-               <Wallet className="h-8 w-8" />
+          <Link to="/invoices" className="group bg-white p-6 rounded-[2rem] border border-slate-200 hover:border-emerald-500/50 hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center gap-4">
+             <div className="h-14 w-14 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:scale-105 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100 group-hover:border-emerald-500/20">
+               <Wallet className="h-7 w-7" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-emerald-400 transition-colors">Billing</span>
+             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">Invoicing</span>
           </Link>
 
-          <Link to="/reports" className="group glass-card p-6 rounded-[2rem] border-accent/20 hover:border-accent/50 hover:glow-accent transition-all duration-500 flex flex-col items-center justify-center gap-4 bg-accent/5">
-             <div className="h-16 w-16 rounded-2xl bg-accent/10 text-accent flex items-center justify-center group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all duration-500 shadow-inner border border-accent/20">
-               <BarChart3 className="h-8 w-8" />
+          <Link to="/reports" className="group bg-white p-6 rounded-[2rem] border border-slate-200 hover:border-indigo-500/50 hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center gap-4">
+             <div className="h-14 w-14 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:scale-105 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100 group-hover:border-indigo-500/20">
+               <BarChart3 className="h-7 w-7" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-accent transition-colors">Analytics</span>
+             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">Intelligence</span>
           </Link>
 
           <Button 
             variant="ghost" 
             onClick={handleDownloadReport}
-            className="group glass-card p-6 h-auto rounded-[2rem] border-amber-500/20 hover:border-amber-500/50 hover:bg-amber-500/5 hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)] transition-all duration-500 flex flex-col items-center justify-center gap-4"
+            className="group bg-white p-6 h-auto rounded-[2rem] border border-slate-200 hover:border-amber-500/50 hover:bg-white hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center gap-4"
           >
-             <div className="h-16 w-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-500 shadow-inner border border-amber-500/20">
-               {isGenerating ? <Loader2 className="h-8 w-8 animate-spin" /> : <Download className="h-8 w-8" />}
+             <div className="h-14 w-14 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:scale-105 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm border border-slate-100 group-hover:border-amber-500/20">
+               {isGenerating ? <Loader2 className="h-7 w-7 animate-spin" /> : <Download className="h-7 w-7" />}
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-amber-400 transition-colors">Export</span>
+             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">Export PDF</span>
           </Button>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <div className="glass-card rounded-2xl p-6 lg:col-span-2 border-border/40 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-[2.5rem] p-8 lg:col-span-2 border border-slate-200 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="font-display text-lg font-bold">Recent Collections</h2>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Latest 5 Transactions</p>
+              <h2 className="font-display text-xl font-black uppercase tracking-tight text-slate-900">Recent Collections</h2>
+              <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mt-1">Cashflow Monitoring</p>
             </div>
-            <Button variant="ghost" size="sm" asChild className="rounded-lg hover:bg-primary/10 hover:text-primary"><Link to="/payments">View All <ArrowUpRight className="ml-1 h-3 w-3" /></Link></Button>
+            <Button variant="outline" size="sm" asChild className="h-10 rounded-xl hover:bg-slate-50 text-[10px] uppercase font-bold tracking-widest border-slate-200"><Link to="/payments">Registry <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" /></Link></Button>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-3">
             {recent.map((p) => {
               const sub = subscribers.find(s => s.id === p.subscriberId);
               return (
-                <div key={p.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/40 transition-all group">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                      <Wallet className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+                <div key={p.id} className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 hover:border-slate-100 hover:bg-slate-50/50 transition-all group">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="h-11 w-11 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all text-slate-400 group-hover:text-slate-900">
+                      <Wallet className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold truncate">{sub?.name || 'Unknown'}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-tight">{p.method} · {formatDate(p.date)}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">#{sub?.customerNo || '—'}</span>
+                        <p className="text-sm font-black text-slate-900 truncate tracking-tight">{sub?.name || 'Unknown User'}</p>
+                      </div>
+                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-1">{p.method} · {formatDate(p.date)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono-num font-bold text-success">+{formatCurrency(p.amount)}</p>
+                    <p className="font-mono-num font-black text-emerald-600 text-base">+{formatCurrency(p.amount)}</p>
                   </div>
                 </div>
               );
             })}
             {recent.length === 0 && (
-              <div className="py-10 text-center flex flex-col items-center gap-2">
-                <Activity className="h-8 w-8 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground italic">No collections recorded yet.</p>
+              <div className="py-20 text-center flex flex-col items-center gap-4 opacity-30">
+                <Activity className="h-12 w-12 text-slate-400" />
+                <p className="text-sm font-black uppercase tracking-widest text-slate-500">No transactions recorded</p>
               </div>
             )}
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="glass-card rounded-2xl p-6 border-border/40 shadow-sm">
-            <h2 className="font-display text-lg font-bold mb-4">Address Breakdown</h2>
-            <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm">
+            <h2 className="font-display text-xl font-black uppercase tracking-tight text-slate-900 mb-6">Sector View</h2>
+            <div className="space-y-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {areaBreakdown.map(([area, count]) => (
-                <div key={area} className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-bold flex items-center gap-1"><MapPin className="h-3 w-3 text-primary" /> {area}</span>
-                    <span className="text-muted-foreground font-medium">{count} subs</span>
+                <div key={area} className="space-y-3">
+                  <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
+                    <span className="flex items-center gap-2 text-slate-600"><MapPin className="h-3.5 w-3.5 text-slate-300" /> {area}</span>
+                    <span className="text-slate-400">{count} subs</span>
                   </div>
-                  <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                     <div 
-                      className="h-full bg-primary rounded-full transition-all duration-1000" 
+                      className="h-full bg-slate-900 rounded-full transition-all duration-1000" 
                       style={{ width: `${(count / Math.max(1, subscribers.length)) * 100}%` }}
                     />
                   </div>
@@ -304,21 +307,21 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="glass-card rounded-2xl p-6 border-border/40 shadow-sm bg-destructive/5">
-            <h2 className="font-display text-lg font-bold text-destructive flex items-center gap-2 mb-4">
-              <AlertCircle className="h-5 w-5" /> Expiring
+          <div className="bg-rose-50/50 rounded-[2.5rem] p-8 border border-rose-100 shadow-sm">
+            <h2 className="font-display text-xl font-black uppercase tracking-tight text-rose-600 flex items-center gap-3 mb-6">
+              <AlertCircle className="h-6 w-6" /> Terminating
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {expiring.map((sub) => {
                 const days = Math.ceil((+new Date(sub.expiryDate) - Date.now()) / 86400000);
                 return (
-                  <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-destructive/10 transition-colors">
+                  <div key={sub.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-rose-100/50 hover:border-rose-200 transition-all shadow-sm">
                     <div className="min-w-0">
-                      <p className="text-xs font-bold truncate">{sub.name}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{sub.area}</p>
+                      <p className="text-xs font-black text-slate-900 truncate tracking-tight">{sub.name}</p>
+                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest truncate mt-0.5">{sub.area}</p>
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${days <= 3 ? 'bg-destructive text-white' : 'bg-warning/20 text-warning'}`}>
-                      {days}d left
+                    <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl ${days <= 3 ? 'bg-rose-500 text-white shadow-lg shadow-rose-100' : 'bg-rose-100 text-rose-600'}`}>
+                      {days}d
                     </span>
                   </div>
                 );

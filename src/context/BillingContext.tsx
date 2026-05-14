@@ -277,10 +277,6 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             (plan) => plan.providerPlanId && !existingPlanIds.has(plan.providerPlanId)
           );
   
-          const missingBroadbandPlans = getDefaultPlans("broadband").filter(
-            (plan) => plan.providerPlanId && !existingPlanIds.has(plan.providerPlanId)
-          );
-  
           if (missingBroadbandPlans.length > 0) {
             const planInserts = missingBroadbandPlans.map(p => ({
               sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',

@@ -770,9 +770,12 @@ export default function Subscribers() {
                       <StatusBadge 
                         status={s.status} 
                         onClick={() => {
-                          const newStatus = String(s.status).toLowerCase() === 'active' ? 'expired' : 'active';
+                          const currentStatus = String(s.status || "").toLowerCase();
+                          const newStatus = (currentStatus === 'active') ? 'expired' : 'active';
+                          
+                          console.log('Toggling status for', s.name, ':', currentStatus, '=>', newStatus);
                           updateSubscriber(s.id, { status: newStatus });
-                          toast.success(`Subscriber marked as ${newStatus === 'active' ? 'Active' : 'Inactive'}`);
+                          toast.success(`Marked ${s.name} as ${newStatus === 'active' ? 'Active' : 'Inactive'}`);
                         }}
                         className="shadow-sm"
                       />

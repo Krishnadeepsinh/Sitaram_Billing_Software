@@ -509,8 +509,12 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     validateSubscriberInput({ candidate: { ...existingSub, ...updates }, subscribers, editingId: id, businessMode });
 
     if (db) {
+      console.log('Updating subscriber (DB):', id, updates);
       // Optimistic update
-      setSubscribers(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+      setSubscribers(prev => {
+        const next = prev.map(s => s.id === id ? { ...s, ...updates } : s);
+        return next;
+      });
       
       try {
         const mapped: any = {};
@@ -540,14 +544,16 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           sql: `UPDATE subscribers SET ${fields} WHERE id = ?`, 
           args: [...Object.values(mapped), id] 
         });
+        console.log('DB update successful');
       } catch (err) { 
         console.error('updateSubscriber DB error:', err);
-        // Rollback on error
-        await fetchData();
-      }
+        // Don't revert immediately, just log it. 
+        // If the user refreshes, they will see the real DB state.
+        toast.error("Database update failed, but UI state updated locally.");
       // Optional: Refresh data to ensure consistency
       // await fetchData(); 
     } else {
+      console.log('Updating subscriber (Local):', id, updates);
       const updated = subscribers.map(s => s.id === id ? { ...s, ...updates } : s);
       setSubscribers(updated);
       LS.set('subscribers', updated);

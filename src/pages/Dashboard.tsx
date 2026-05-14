@@ -1,5 +1,11 @@
 import { StatCard } from "@/components/StatCard";
-import { Wallet, Users, AlertCircle, Activity, ArrowUpRight, FileText, Download, MapPin, Loader2, Calendar, BarChart3 } from "lucide-react";
+import { 
+  Wallet, Users, AlertCircle, Activity, ArrowUpRight, 
+  FileText, Download, MapPin, Loader2, Calendar, 
+  BarChart3, LayoutGrid, Terminal, ShieldCheck,
+  TrendingUp, DatabaseZap, Zap, Globe, Shield,
+  Cpu, Network, Signal, ArrowDownLeft
+} from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/mockData";
 import { useBilling } from "@/context/BillingContext";
 import { Button } from "@/components/ui/button";
@@ -13,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
   const { 
@@ -51,7 +58,7 @@ export default function Dashboard() {
   const expiring = subscribers
     .filter((x) => x.status === "active")
     .sort((a, b) => +new Date(a.expiryDate) - +new Date(b.expiryDate))
-    .slice(0, 4);
+    .slice(0, 8);
 
   const areaBreakdown = Object.entries(
     subscribers.reduce((acc, sub) => {
@@ -73,7 +80,7 @@ export default function Dashboard() {
       };
 
       doc.setFontSize(22);
-      doc.text(companySettings?.name || 'SITARAM CABLE & BROADBAND operations', 20, 20);
+      doc.text(companySettings?.name || 'SITARAM CABLE & BROADBAND', 20, 20);
       doc.setFontSize(10);
       doc.text(`Operational Intelligence Report - ${formatDate(now.toISOString())}`, 20, 30);
       
@@ -96,205 +103,174 @@ export default function Dashboard() {
         y += 10;
       });
 
-      // Detailed Transaction History
-      y += 10;
-      if (y > 250) { doc.addPage(); y = 20; }
-      doc.setFontSize(16);
-      doc.text('Recent Transaction History', 20, y);
-      y += 15;
-      doc.setFontSize(9);
-      doc.setFont(undefined, 'bold');
-      doc.text('Date', 20, y);
-      doc.text('Subscriber', 50, y);
-      doc.text('Method', 100, y);
-      doc.text('Period', 130, y);
-      doc.text('Amount', 180, y, { align: 'right' });
-      doc.setFont(undefined, 'normal');
-      y += 5;
-      doc.line(20, y, 190, y);
-      y += 10;
-
-      const reportPayments = [...payments].sort((a,b) => +new Date(b.date) - +new Date(a.date)).slice(0, 50);
-      reportPayments.forEach(p => {
-        if (y > 275) { doc.addPage(); y = 20; }
-        const sub = subscribers.find(s => s.id === p.subscriberId);
-        const plan = plansList.find(pl => pl.id === sub?.planId) || { price: 200 };
-        const numMonths = Math.max(1, Math.round(p.amount / plan.price));
-        
-        doc.text(formatDate(p.date), 20, y);
-        doc.text(sub?.name?.slice(0, 20) || 'Unknown', 50, y);
-        doc.text(p.method, 100, y);
-        doc.text(`${numMonths}M`, 130, y);
-        doc.text(formatCurrencyPDF(p.amount), 180, y, { align: 'right' });
-        y += 8;
-      });
-
-      const fileName = `Operations_Report_${now.toISOString().split('T')[0]}.pdf`;
+      const fileName = `Ops_Report_${now.toISOString().split('T')[0]}.pdf`;
       const blob = doc.output('blob');
-
       const saveAs = (await import('file-saver')).saveAs;
-      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        toast.success("Report opened in new tab");
-      } else {
-        saveAs(blob, fileName);
-        toast.success("Report exported as PDF!");
-      }
+      saveAs(blob, fileName);
+      toast.success("Operational Report Exported");
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to generate PDF report.");
+      toast.error("Export Failed");
     } finally {
       setIsGenerating(false);
     }
   };
 
-
   return (
-    <div className="space-y-4 animate-fade-in pb-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <p className="app-eyebrow mb-1 flex items-center gap-2">
-            <Activity className="h-3.5 w-3.5 text-blue-500" />
-            {companySettings?.name || "Sitaram Cable & Broadband"}
-          </p>
-          <h1 className="app-page-title">
-            Dashboard <span className="text-blue-400">overview</span>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20 relative">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 -z-10 opacity-10 pointer-events-none">
+        <Network className="h-[400px] w-[400px] text-blue-500 blur-3xl" />
+      </div>
+
+      {/* Industrial Header */}
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 border-b border-white/5 pb-8 relative z-10">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-blue-600/10 border border-blue-500/20 w-fit backdrop-blur-3xl shadow-xl shadow-blue-600/5">
+            <Activity className="h-4 w-4 text-blue-500 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Hub Command: Active</span>
+          </div>
+          <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic leading-none">
+            Network <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-600 to-blue-800">Intelligence</span>
           </h1>
+          <p className="text-sm font-black text-slate-500 tracking-[0.2em] uppercase flex items-center gap-3">
+            <Globe className="h-4 w-4" /> Operational Matrix & Global Yield Analytics
+          </p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-slate-800/90 bg-slate-900/50 p-1 shadow-inner">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-slate-950/80 p-2 backdrop-blur-3xl shadow-2xl">
             <Select value={months[dashboardDate.getMonth()]} onValueChange={handleMonthChange}>
-              <SelectTrigger className="h-8 w-[100px] border-none bg-transparent text-xs font-medium text-slate-200 focus:ring-0">
+              <SelectTrigger className="h-10 w-[130px] border-none bg-transparent text-[11px] font-black uppercase tracking-widest text-white focus:ring-0">
+                <Calendar className="mr-2 h-3.5 w-3.5 text-blue-500" />
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent className="rounded-lg border border-slate-800 bg-slate-900">
-                {months.map(m => <SelectItem key={m} value={m} className="text-sm text-slate-100">{m}</SelectItem>)}
+              <SelectContent className="rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-3xl">
+                {months.map(m => <SelectItem key={m} value={m} className="text-[11px] font-black uppercase tracking-widest text-slate-100">{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="h-4 w-px bg-slate-800" />
+            <div className="h-6 w-px bg-white/10" />
             <Select value={dashboardDate.getFullYear().toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="h-8 w-[72px] border-none bg-transparent text-xs font-medium text-slate-200 focus:ring-0">
+              <SelectTrigger className="h-10 w-[90px] border-none bg-transparent text-[11px] font-black uppercase tracking-widest text-white focus:ring-0">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent className="rounded-lg border border-slate-800 bg-slate-900">
-                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-sm text-slate-100">{y}</SelectItem>)}
+              <SelectContent className="rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-3xl">
+                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-[11px] font-black uppercase tracking-widest text-slate-100">{y}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
-          <Button size="sm" asChild className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
-            <Link to="/invoices">
-              <Wallet className="mr-2 h-4 w-4" /> Open invoices
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-        <StatCard label="Today's Collection" value={formatCurrency(s.collectedToday)} delta="+12.5% vs yesterday" icon={Activity} variant="primary" />
-        <StatCard label="Month Revenue" value={formatCurrency(s.monthRevenue)} delta={`${payments.length} txn`} icon={Activity} variant="primary" />
-        <StatCard label="Pending Dues" value={formatCurrency(s.pendingDues)} delta={`${s.expired} expired`} icon={AlertCircle} variant="warning" />
-        <StatCard label="Expenses" value={formatCurrency(s.monthExpenses)} delta={`${expenses.length} logs`} icon={FileText} variant="destructive" />
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-0.5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Shortcuts</h2>
-          <div className="ml-4 h-px flex-1 bg-slate-800/60" />
-        </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <Link to="/subscribers" className="app-panel group flex flex-col items-center justify-center gap-2.5 p-4 transition-colors hover:border-blue-500/30">
-             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/80 text-slate-400 shadow-inner transition-all group-hover:scale-105 group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
-               <Users className="h-5 w-5" />
-             </div>
-             <span className="text-xs font-medium text-slate-400 transition-colors group-hover:text-white">Subscribers</span>
-          </Link>
-
-          <Link to="/invoices" className="app-panel group flex flex-col items-center justify-center gap-2.5 p-4 transition-colors hover:border-blue-500/30">
-             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/80 text-slate-400 shadow-inner transition-all group-hover:scale-105 group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
-               <Wallet className="h-5 w-5" />
-             </div>
-             <span className="text-xs font-medium text-slate-400 transition-colors group-hover:text-white">Invoices</span>
-          </Link>
-
-          <Link to="/reports" className="app-panel group flex flex-col items-center justify-center gap-2.5 p-4 transition-colors hover:border-blue-500/30">
-             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/80 text-slate-400 shadow-inner transition-all group-hover:scale-105 group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
-               <BarChart3 className="h-5 w-5" />
-             </div>
-             <span className="text-xs font-medium text-slate-400 transition-colors group-hover:text-white">Reports</span>
-          </Link>
-
           <Button 
-            variant="ghost" 
             onClick={handleDownloadReport}
-            className="app-panel group flex h-auto flex-col items-center justify-center gap-2.5 p-4 transition-colors hover:border-blue-500/30"
+            disabled={isGenerating}
+            className="h-14 rounded-2xl bg-blue-600 text-white font-black uppercase tracking-widest text-[11px] px-8 hover:bg-blue-500 transition-all shadow-2xl shadow-blue-600/30 active:scale-95 border border-blue-400/20"
           >
-             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/80 text-slate-400 shadow-inner transition-all group-hover:scale-105 group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
-               {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-             </div>
-             <span className="text-xs font-medium text-slate-400 transition-colors group-hover:text-white">Export PDF</span>
+            {isGenerating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+            Export Intelligence
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="app-panel overflow-hidden p-5 lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-base font-semibold text-white">Recent collections</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Latest payments</p>
-            </div>
-            <Button variant="outline" size="sm" asChild className="h-8 border-slate-700 bg-slate-900/60 text-xs font-medium text-slate-300 hover:bg-slate-800">
-              <Link to="/payments">All payments <ArrowUpRight className="ml-1.5 h-3.5 w-3.5 text-blue-400" /></Link>
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {recent.map((p) => {
-              const sub = subscribers.find(s => s.id === p.subscriberId);
-              return (
-                <div key={p.id} className="group flex items-center justify-between gap-3 rounded-lg border border-slate-800/50 bg-slate-950/30 p-2.5 transition-colors hover:border-slate-700 hover:bg-slate-900/40">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-slate-500 transition-colors group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
-                      <Wallet className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded border border-blue-500/25 bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">#{sub?.customerNo || "—"}</span>
-                        <p className="truncate text-sm font-medium text-white">{sub?.name || "Unknown"}</p>
-                      </div>
-                      <p className="mt-0.5 text-xs text-slate-500">{p.method} · {formatDate(p.date)}</p>
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="font-mono text-sm font-semibold text-blue-400">+{formatCurrency(p.amount)}</p>
-                  </div>
-                </div>
-              );
-            })}
-            {recent.length === 0 && (
-              <div className="flex flex-col items-center gap-2 py-12 text-center text-slate-500">
-                <Activity className="h-8 w-8 opacity-40" />
-                <p className="text-sm font-medium">No payments yet</p>
+      {/* Massive KPI Grid */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
+        {[
+          { label: "Intake_Today", value: formatCurrency(s.collectedToday), icon: TrendingUp, delta: "+18.2%", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+          { label: "Gross_Matrix", value: formatCurrency(s.monthRevenue), icon: DatabaseZap, delta: "Stable", color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+          { label: "Pending_Yield", value: formatCurrency(s.pendingDues), icon: AlertCircle, delta: "Action Required", color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
+          { label: "System_Burn", value: formatCurrency(s.monthExpenses), icon: FileText, delta: "Standard", color: "text-slate-400", bg: "bg-slate-500/10", border: "border-slate-500/20" }
+        ].map((kpi, i) => (
+          <div key={i} className="relative group overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/30 backdrop-blur-3xl p-8 hover:border-white/10 transition-all duration-500 shadow-2xl">
+            <div className={cn("absolute -top-12 -right-12 h-32 w-32 rounded-full blur-3xl opacity-20", kpi.bg)} />
+            <div className="flex justify-between items-start mb-6">
+              <div className={cn("p-4 rounded-2xl bg-slate-950 border shadow-inner", kpi.border, kpi.color)}>
+                <kpi.icon className="h-6 w-6" />
               </div>
-            )}
+              <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-xl bg-white/5 border border-white/5", kpi.color)}>
+                {kpi.delta}
+              </span>
+            </div>
+            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 italic">{kpi.label}</p>
+            <h3 className="text-3xl font-black text-white tracking-tighter italic tabular-nums">{kpi.value}</h3>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
+        {/* Live Transaction Feed */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="app-panel border border-white/5 bg-slate-900/40 backdrop-blur-3xl shadow-2xl relative overflow-hidden group rounded-[3rem]">
+            <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none group-hover:scale-110 transition-transform duration-[3000ms]">
+              <Cpu className="h-64 w-64 text-blue-500" />
+            </div>
+            
+            <div className="flex items-center justify-between p-10 border-b border-white/5 bg-slate-950/30">
+              <div className="flex items-center gap-6">
+                <div className="h-14 w-2 bg-blue-600 rounded-full shadow-[0_0_20px_rgba(37,99,235,0.6)]" />
+                <div>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter text-white italic">Live Billing Feed</h2>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-2">Real-time Node Ledger Updates</p>
+                </div>
+              </div>
+              <Button variant="ghost" asChild className="h-12 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-white hover:bg-blue-600/10 border border-blue-500/10 transition-all">
+                <Link to="/payments">Enter Audit Mode <ArrowUpRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+            </div>
+
+            <div className="p-8 space-y-4">
+              {recent.map((p) => {
+                const sub = subscribers.find(s => s.id === p.subscriberId);
+                return (
+                  <div key={p.id} className="group relative overflow-hidden rounded-3xl border border-white/5 bg-slate-950/40 p-6 hover:border-blue-500/40 hover:bg-slate-950 transition-all duration-500 shadow-inner">
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="flex items-center gap-6">
+                        <div className="h-14 w-14 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center shadow-inner group-hover:bg-blue-600 group-hover:border-blue-400 group-hover:text-white transition-all duration-500">
+                          <Wallet className="h-7 w-7 text-slate-600 group-hover:text-white" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-3 mb-1.5">
+                            <span className="text-[10px] font-black uppercase bg-blue-600/10 text-blue-500 px-2 py-0.5 rounded-lg border border-blue-600/20 italic tracking-widest">NODE_{sub?.customerNo || "X"}</span>
+                            <h4 className="text-lg font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight italic">{sub?.name || "RECOVERY_DATA"}</h4>
+                          </div>
+                          <div className="flex items-center gap-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] italic">
+                            <span className="flex items-center gap-1.5 text-slate-400"><Signal className="h-3 w-3 text-blue-500" /> {p.method}</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/5" />
+                            <span className="flex items-center gap-1.5"><Calendar className="h-3 w-3" /> {formatDate(p.date)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-blue-400 tracking-tighter italic tabular-nums">+{formatCurrency(p.amount)}</p>
+                        <div className="flex items-center justify-end gap-2 mt-2">
+                          <ShieldCheck className="h-4 w-4 text-blue-500/40" />
+                          <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">SECURE_TX</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="app-panel p-5">
-            <h2 className="font-display mb-4 text-base font-semibold text-white">By area</h2>
-            <div className="custom-scrollbar max-h-[250px] space-y-4 overflow-y-auto pr-1">
-              {areaBreakdown.map(([area, count]) => (
-                <div key={area} className="space-y-2">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span className="flex items-center gap-1.5 text-slate-400"><MapPin className="h-3.5 w-3.5 text-slate-600" /> {area}</span>
-                    <span className="text-slate-500">{count} subscribers</span>
+        {/* Global Widgets */}
+        <div className="lg:col-span-4 space-y-8">
+          <div className="app-panel p-8 border border-white/5 bg-slate-900/40 backdrop-blur-3xl rounded-[3rem] shadow-2xl relative overflow-hidden group">
+            <div className="absolute -bottom-10 -right-10 opacity-[0.03]">
+              <Globe className="h-40 w-40 text-blue-500" />
+            </div>
+            <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-600 mb-8 italic flex items-center gap-3">
+              <MapPin className="h-4 w-4 text-blue-500" /> Regional Penetration
+            </h3>
+            <div className="space-y-6">
+              {areaBreakdown.slice(0, 5).map(([area, count]) => (
+                <div key={area} className="space-y-3 group/item">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
+                    <span className="text-slate-400 group-hover/item:text-blue-400 transition-colors">{area}</span>
+                    <span className="text-white italic tracking-widest">{count} NODES</span>
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full border border-slate-800/60 bg-slate-950">
+                  <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5 shadow-inner">
                     <div 
-                      className="h-full rounded-full bg-blue-600 transition-all duration-1000" 
+                      className="h-full bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)] transition-all duration-1000 group-hover/item:scale-x-105 origin-left" 
                       style={{ width: `${(count / Math.max(1, subscribers.length)) * 100}%` }}
                     />
                   </div>
@@ -303,32 +279,41 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.06] p-5 shadow-lg shadow-black/20 backdrop-blur-xl">
-            <h2 className="font-display mb-4 flex items-center gap-2 text-base font-semibold text-blue-300">
-              <AlertCircle className="h-4 w-4" /> Expiring soon
-            </h2>
-            <div className="space-y-2">
-              {expiring.map((sub) => {
-                const days = Math.ceil((+new Date(sub.expiryDate) - Date.now()) / 86400000);
-                return (
-                  <div key={sub.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-800/60 bg-slate-950/40 p-2.5 transition-colors hover:border-blue-500/25">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-white">{sub.name}</p>
-                      <p className="mt-0.5 truncate text-xs text-slate-500">{sub.area}</p>
+          <div className="relative group">
+            <div className="absolute -inset-px bg-gradient-to-b from-blue-600/20 to-transparent rounded-[3.5rem] blur-xl opacity-30 group-hover:opacity-60 transition-opacity" />
+            <div className="app-panel p-8 border border-blue-500/10 bg-blue-600/[0.03] backdrop-blur-3xl relative overflow-hidden rounded-[3rem] shadow-2xl">
+              <div className="absolute -top-6 -right-6 p-8 opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-1000">
+                <AlertCircle className="h-20 w-20 text-blue-400" />
+              </div>
+              <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-blue-400 mb-8 flex items-center gap-3 italic">
+                <Activity className="h-5 w-5 animate-pulse" /> Lifecycle Alerts
+              </h3>
+              <div className="space-y-4">
+                {expiring.map((sub) => {
+                  const days = Math.ceil((+new Date(sub.expiryDate) - Date.now()) / 86400000);
+                  return (
+                    <div key={sub.id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-white/5 hover:border-blue-500/30 hover:bg-slate-950 transition-all duration-300 group/item shadow-inner">
+                      <div className="min-w-0 pr-4">
+                        <p className="text-sm font-black text-white uppercase tracking-tight truncate italic group-hover/item:text-blue-400 transition-colors">{sub.name}</p>
+                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] mt-1">{sub.area}</p>
+                      </div>
+                      <div className={cn(
+                        "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border italic tabular-nums shadow-2xl transition-all",
+                        days <= 3 ? "bg-blue-600 text-white border-blue-400 shadow-blue-600/40" : "bg-slate-900 text-slate-500 border-white/5"
+                      )}>
+                        {days}D_REM
+                      </div>
                     </div>
-                    <span className={`shrink-0 rounded-md border px-2 py-1 text-xs font-medium ${days <= 3 ? "border-blue-500/30 bg-blue-500/15 text-blue-300" : "border-slate-800 bg-slate-900 text-slate-400"}`}>
-                      {days}d
-                    </span>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <Button variant="ghost" asChild className="w-full mt-8 h-12 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 hover:bg-blue-600/10 hover:text-white border border-blue-500/10 transition-all italic">
+                <Link to="/subscribers">All Node Lifecycles <ArrowUpRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 }
-
-

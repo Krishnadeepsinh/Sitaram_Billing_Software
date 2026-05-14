@@ -64,7 +64,22 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
         {/* Right Side: Simple Financial Summary */}
         <div className="flex-1 pt-2">
           <div className="space-y-3">
-            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[11px] px-1">
+            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[10px] px-1">
+              <span>Taxable Value</span>
+              <span className="text-slate-700">₹{taxableValue.toFixed(2)}</span>
+            </div>
+
+            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[10px] px-1">
+              <span>CGST (9%)</span>
+              <span className="text-slate-700">₹{cgstAmount.toFixed(2)}</span>
+            </div>
+
+            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[10px] px-1">
+              <span>SGST (9%)</span>
+              <span className="text-slate-700">₹{sgstAmount.toFixed(2)}</span>
+            </div>
+
+            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[11px] px-1 pt-1 border-t border-slate-100">
               <span>Invoice Total (Incl. Taxes)</span>
               <span className="text-slate-900">₹{totalPayable.toFixed(2)}</span>
             </div>

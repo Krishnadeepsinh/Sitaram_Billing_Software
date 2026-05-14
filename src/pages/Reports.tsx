@@ -223,20 +223,31 @@ export default function Reports() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState(1122);
 
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current) {
+      if (containerRef.current && contentRef.current) {
         const containerWidth = containerRef.current.offsetWidth - 64; 
         const newScale = Math.min(1, containerWidth / 794);
         setScale(newScale);
+        setContentHeight(contentRef.current.offsetHeight);
       }
     };
+    
     if (isPreviewOpen) {
       handleResize();
+      const resizeObserver = new ResizeObserver(handleResize);
+      if (contentRef.current) resizeObserver.observe(contentRef.current);
+      if (containerRef.current) resizeObserver.observe(containerRef.current);
       window.addEventListener("resize", handleResize);
+      
+      return () => {
+        window.removeEventListener("resize", handleResize);
+        resizeObserver.disconnect();
+      };
     }
-    return () => window.removeEventListener("resize", handleResize);
   }, [isPreviewOpen]);
   
   // Filter validation
@@ -692,8 +703,13 @@ export default function Reports() {
           </DialogHeader>
           <div ref={containerRef} className="p-4 sm:p-8 flex justify-center overflow-x-hidden">
             <div 
+              ref={contentRef}
               className="shadow-2xl ring-1 ring-black/5 rounded-sm overflow-hidden origin-top transition-transform duration-300"
-              style={{ transform: `scale(${scale})`, marginBottom: `${(scale - 1) * 1122}px` }}
+              style={{ 
+                transform: `scale(${scale})`, 
+                marginBottom: `${(scale - 1) * contentHeight}px`,
+                marginRight: `${(scale - 1) * 794}px`
+              }}
             >
               <AuditReportTemplate 
                 monthName={monthNameLong}

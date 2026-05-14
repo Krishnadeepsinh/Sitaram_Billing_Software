@@ -41,19 +41,31 @@ export default function InvoicePreviewModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState(1122);
 
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current) {
+      if (containerRef.current && contentRef.current) {
         const containerWidth = containerRef.current.offsetWidth - 32; // padding
         const newScale = Math.min(1, containerWidth / 794);
         setScale(newScale);
+        setContentHeight(contentRef.current.offsetHeight);
       }
     };
 
     handleResize();
+    
+    // Also observe the content height changes
+    const resizeObserver = new ResizeObserver(handleResize);
+    if (contentRef.current) resizeObserver.observe(contentRef.current);
+    if (containerRef.current) resizeObserver.observe(containerRef.current);
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
+    };
   }, []);
 
   const subscriber = useMemo(
@@ -208,8 +220,13 @@ Due Date: ${formatDate(invoice.dueDate)}`;
         <div ref={containerRef} className="flex-1 overflow-auto bg-slate-100 flex justify-center p-4">
           <div 
             id="invoice-content" 
-            className="bg-white relative font-sans text-slate-800 flex flex-col h-[1122px] w-[794px] shrink-0 sm:shadow-2xl overflow-hidden origin-top transition-transform duration-300"
-            style={{ transform: `scale(${scale})`, marginBottom: `${(scale - 1) * 1122}px` }}
+            ref={contentRef}
+            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 sm:shadow-2xl origin-top transition-transform duration-300"
+            style={{ 
+              transform: `scale(${scale})`, 
+              marginBottom: `${(scale - 1) * contentHeight}px`,
+              marginRight: `${(scale - 1) * 794}px` 
+            }}
           >
             <InvoiceHeader brand={brand} invoiceLabel={invoiceLabel} />
 

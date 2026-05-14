@@ -107,8 +107,8 @@ export default function Expenses() {
       {/* Header Section */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 shadow-sm">
-            <Receipt className="h-5 w-5 text-blue-400" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 shadow-sm">
+            <Receipt className="h-5 w-5 text-indigo-400" />
           </div>
           <div>
             <h1 className="font-display text-xl font-semibold tracking-tight text-white">Expenses</h1>
@@ -123,20 +123,20 @@ export default function Expenses() {
           </Button>
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
-              <Button className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
+              <Button className="h-9 rounded-lg bg-indigo-600 px-4 text-xs font-medium text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-500">
                 <Plus className="mr-2 h-3.5 w-3.5" />
                 Add expense
               </Button>
             </DialogTrigger>
             <DialogContent className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-0 shadow-2xl sm:max-w-[400px]">
-              <div className="bg-blue-600 p-5 text-white">
+              <div className="bg-indigo-600 p-5 text-white">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2 text-base font-semibold">
                     <Receipt className="h-4 w-4" />
                     New expense
                   </DialogTitle>
                 </DialogHeader>
-                <p className="mt-1 text-sm text-blue-100/90">Record a one-off or recurring cost.</p>
+                <p className="mt-1 text-sm text-indigo-100/90">Record a one-off or recurring cost.</p>
               </div>
               <form onSubmit={handleAddExpense} className="space-y-4 p-5">
                 <div className="space-y-1.5">
@@ -146,7 +146,7 @@ export default function Expenses() {
                     value={formData.description}
                     onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="e.g. Rent, fuel, maintenance" 
-                    className="h-10 rounded-lg border-slate-800 bg-slate-900 text-sm text-white focus-visible:ring-blue-500/25"
+                    className="h-10 rounded-lg border-slate-800 bg-slate-900 text-sm text-white focus-visible:ring-indigo-500/25"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -158,7 +158,7 @@ export default function Expenses() {
                       value={formData.amount}
                       onChange={e => setFormData(prev => ({ ...prev, amount: e.target.value }))}
                       placeholder="0.00" 
-                      className="h-10 rounded-lg border-slate-800 bg-slate-900 font-mono text-sm text-white focus-visible:ring-blue-500/25"
+                      className="h-10 rounded-lg border-slate-800 bg-slate-900 font-mono text-sm text-white focus-visible:ring-indigo-500/25"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -168,7 +168,7 @@ export default function Expenses() {
                       type="date"
                       value={formData.date}
                       onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                      className="h-10 rounded-lg border-slate-800 bg-slate-900 text-sm text-white focus-visible:ring-blue-500/25"
+                      className="h-10 rounded-lg border-slate-800 bg-slate-900 text-sm text-white focus-visible:ring-indigo-500/25"
                     />
                   </div>
                 </div>
@@ -182,7 +182,7 @@ export default function Expenses() {
                         onClick={() => setFormData(prev => ({ ...prev, category: cat }))}
                         className={`flex flex-col items-center justify-center rounded-lg border p-2 transition-colors ${
                           formData.category === cat 
-                            ? 'border-blue-600 bg-blue-600/10 text-blue-400' 
+                            ? 'border-indigo-600 bg-indigo-600/10 text-indigo-400' 
                             : 'border-slate-800 bg-slate-900 text-slate-500 hover:bg-slate-800 hover:text-slate-300'
                         }`}
                       >
@@ -197,7 +197,7 @@ export default function Expenses() {
                 </div>
                 <div className="flex gap-2 pt-2">
                   <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="h-10 flex-1 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white">Cancel</Button>
-                  <Button type="submit" disabled={isSubmitting} className="h-10 flex-1 rounded-lg bg-blue-600 text-sm font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
+                  <Button type="submit" disabled={isSubmitting} className="h-10 flex-1 rounded-lg bg-indigo-600 text-sm font-medium text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-500">
                     {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save expense"}
                   </Button>
                 </div>
@@ -209,15 +209,15 @@ export default function Expenses() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="app-panel border-l-2 border-l-blue-500 p-5 transition-colors hover:border-slate-700">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-            <Receipt className="h-3.5 w-3.5 text-blue-400" /> This month
+          <div className="bg-slate-900 rounded-xl border border-white/10 border-l-4 border-l-indigo-500 p-5 transition-colors hover:border-white/20">
+            <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <Receipt className="h-3.5 w-3.5 text-indigo-400" /> This month
           </p>
           <p className="font-display text-2xl font-semibold tabular-nums tracking-tight text-white">{formatCurrency(s.monthExpenses)}</p>
           <p className="mt-1 text-xs text-slate-500">Total spend</p>
         </div>
 
-        <div className="app-panel p-5 transition-colors hover:border-slate-700">
+        <div className="bg-slate-900 rounded-xl border border-white/10 p-5 transition-colors hover:border-white/20">
           <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
             <Users className="h-3.5 w-3.5 text-slate-400" /> Entries
           </p>
@@ -225,11 +225,11 @@ export default function Expenses() {
           <p className="mt-1 text-xs text-slate-500">Logged expenses</p>
         </div>
 
-        <div className="app-panel p-5 transition-colors hover:border-slate-700">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-            <Globe className="h-3.5 w-3.5 text-blue-400" /> Margin
-          </p>
-          <p className="font-display text-2xl font-semibold tabular-nums tracking-tight text-blue-400">
+        <div className="bg-slate-900 rounded-xl border border-white/10 p-5 transition-colors hover:border-white/20">
+            <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+              <Globe className="h-3.5 w-3.5 text-indigo-400" /> Margin
+            </p>
+            <p className="font-display text-2xl font-semibold tabular-nums tracking-tight text-indigo-400">
             {s.monthRevenue > 0 ? ((1 - (s.monthExpenses / s.monthRevenue)) * 100).toFixed(1) : '0'}%
           </p>
           <p className="mt-1 text-xs text-slate-500">Approx. net of expenses</p>
@@ -237,33 +237,33 @@ export default function Expenses() {
       </div>
 
       {/* Ledger Table */}
-      <div className="app-panel overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/30 px-5 py-3">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
-            <Receipt className="h-4 w-4 text-blue-400" />
-            Expense ledger
-          </h3>
+      <div className="bg-slate-900 rounded-xl border border-white/10 overflow-hidden">
+        <div className="flex items-center justify-between border-b border-white/10 bg-slate-900/50 px-5 py-3">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+              <Receipt className="h-4 w-4 text-indigo-400" />
+              Expense ledger
+            </h3>
           <span className="rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs font-medium text-slate-500">{sortedExpenses.length} rows</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/50">
-                <th className="app-table-th px-5 py-2.5">Description</th>
-                <th className="app-table-th px-5 py-2.5">Category</th>
-                <th className="app-table-th px-5 py-2.5">Date</th>
-                <th className="app-table-th px-5 py-2.5 text-right">Amount</th>
-                <th className="app-table-th w-12 px-5 py-2.5 text-right"></th>
+              <tr className="border-b border-white/10 bg-slate-900/50">
+                <th className="text-xs font-medium text-slate-400 px-5 py-2.5 uppercase tracking-wider">Description</th>
+                <th className="text-xs font-medium text-slate-400 px-5 py-2.5 uppercase tracking-wider">Category</th>
+                <th className="text-xs font-medium text-slate-400 px-5 py-2.5 uppercase tracking-wider">Date</th>
+                <th className="text-xs font-medium text-slate-400 px-5 py-2.5 text-right uppercase tracking-wider">Amount</th>
+                <th className="text-xs font-medium text-slate-400 w-12 px-5 py-2.5 text-right uppercase tracking-wider"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/30">
+            <tbody className="divide-y divide-white/5">
               {sortedExpenses.map((expense) => {
                 const Icon = categoryIcon[expense.category];
                 return (
-                  <tr key={expense.id} className="hover:bg-blue-600/[0.02] transition-colors group">
-                    <td className="px-5 py-2.5">
-                      <div className="flex items-center gap-3">
-                        <div className="h-7 w-7 rounded-md bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 group-hover:border-blue-600/30 transition-all text-slate-500 group-hover:text-blue-500">
+                    <tr key={expense.id} className="hover:bg-indigo-600/[0.02] transition-colors group">
+                      <td className="px-5 py-2.5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-7 w-7 rounded-md bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 group-hover:border-indigo-600/30 transition-all text-slate-500 group-hover:text-indigo-500">
                           <Icon className="h-3 w-3" />
                         </div>
                         <div className="min-w-0">

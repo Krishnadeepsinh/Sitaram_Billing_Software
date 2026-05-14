@@ -1,59 +1,115 @@
-# Sitaram Broadband - Broadband Billing Software
+<p align="center">
+  <img src="public/favicon.ico" alt="Sitaram Cable & Broadband" width="120" />
+</p>
 
-A professional, high-performance billing and management system designed for Broadband operators. Built with modern web technologies for speed, reliability, and ease of use.
+<h1 align="center">Sitaram Cable & Broadband Billing System</h1>
 
-## 🚀 Key Features
+<p align="center">
+  <strong>A modern, high-performance billing and subscriber management platform designed specifically for ISP and Cable network operators.</strong>
+</p>
 
-- **Automated Billing**: Generate and manage monthly invoices with a single click.
-- **Robust PDF Exports**: Industrial-strength PDF generation for invoices and reports, optimized for all browsers.
-- **Subscriber Management**: Track balances, areas, and plan history for all customers.
-- **Payment Tracking**: Record Cash and UPI payments with instant receipt generation.
-- **Business Insights**: Dashboard with area-wise breakdowns and financial performance metrics.
-- **Native Print Support**: Professional print engine for high-quality physical documentation.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
+</p>
 
-## 🛠 Technology Stack
+---
 
-- **Frontend**: React + TypeScript + Vite
-- **Styling**: Tailwind CSS + Lucide Icons
-- **Database**: LibSQL (Turso) for cloud-native persistence
-- **PDF Engine**: html2pdf.js + jsPDF + html2canvas
-- **State Management**: React Context API with async database syncing
+## 🚀 Overview
 
-## 📦 Getting Started
+The **Sitaram Cable & Broadband Billing System** is an end-to-end, full-stack web application tailored for managing internet service provider (ISP) and cable television operations. With a sleek dark-mode UI, it simplifies complex billing cycles, tracks active subscriber nodes, manages multi-tier service schemas, and provides real-time financial reporting.
 
-1. **Install Dependencies**:
+Designed to eliminate administrative overhead, the software supports bulk invoicing, automated GST calculations, expense tracking, and offline-capable data synchronization.
+
+## ✨ Key Features
+
+- **Dual-Mode Operations**: Seamlessly toggle between "Cable" and "Broadband" business contexts, keeping service domains distinct yet easily accessible.
+- **Subscriber Management**: Track subscriber statuses, metadata, hardware assignments (MAC addresses/STB numbers), and installation locations.
+- **Dynamic Billing Cycles**: Support for flexible lifecycle management (e.g., 30-day renewals, fixed-term iptv bundles) with automated invoice generation.
+- **Financial Dashboard & Analytics**: High-level KPIs, revenue metrics, expense tracking, and quick actions directly on a responsive dashboard grid.
+- **Modern Design System**: Built with a unified `slate-900` / `indigo-600` dark mode aesthetic using Tailwind CSS and Radix UI components (shadcn/ui).
+- **PDF Invoicing & Reports**: Generate professional, print-ready PDF invoices, receipts, and administrative reports locally in the browser.
+- **Secure Architecture**: Robust context-driven state management integrated with Turso for secure, low-latency database syncing.
+
+## 🛠️ Technology Stack
+
+- **Frontend Framework**: React 18
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui, Lucide Icons
+- **Build Tool**: Vite
+- **Routing**: React Router DOM
+- **Database / Sync**: Turso DB (SQLite on the edge)
+- **PDF Generation**: jsPDF, html2pdf.js
+
+## 📦 Project Structure
+
+```text
+src/
+├── components/         # Reusable UI components (Sidebar, Nav, Layout)
+├── components/ui/      # Shadcn/ui atomic components (Buttons, Inputs, Cards)
+├── context/            # React Context providers (BillingContext, Turso sync)
+├── lib/                # Utility functions, mock data, formatting helpers
+├── pages/              # Application views (Dashboard, Subscribers, Invoices, etc.)
+└── App.tsx             # Main routing and application wrapper
+```
+
+## 💻 Local Development
+
+Follow these steps to run the project locally on your machine.
+
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Krishnadeepsinh/Sitaram_Billing_Software.git
+   cd Sitaram_Billing_Software
+   ```
+
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. **Setup Environment**:
-   Create a `.env` file with your Turso database credentials and admin login values (refer to `.env.example`).
+3. **Environment Variables:**
+   Create a `.env` file in the root directory and configure any required database or authentication tokens (e.g., Turso DB URLs).
 
-3. **Run Locally**:
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-## Vercel Deployment
+5. **Build for production:**
+   ```bash
+   npm run build
+   ```
 
-Set these environment variables in Vercel Project Settings before deploying:
+## 🎨 Design System
 
-- `BROADBAND_TURSO_DATABASE_URL`
-- `BROADBAND_TURSO_AUTH_TOKEN`
-- `ADMIN_USERNAME`
-- `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH`
-- `SESSION_SECRET`
-- `SYNC_ADMIN_PASSWORD_ON_BOOT=true` if you want the deployment to force-reset the DB admin password from env
+The application employs a consistent, premium dark mode aesthetic designed for maximum legibility in operational environments.
+- **Backgrounds**: Deep `slate-950` with `slate-900` application panels.
+- **Borders & Dividers**: Subtle `white/10` or `white/5` delineations.
+- **Accents**: Primary interactive elements use `indigo-600` (`blue-600` for branding accents), combined with color-coded semantic utilities (Emerald for success/payments, Rose for destructive actions, Amber for warnings).
 
-Notes:
+## 🔒 Security & Data
 
-- The login API reads the server-side `BROADBAND_*` variables first.
-- On first login, the app can auto-create the admin user in `admin_users` from `ADMIN_USERNAME` plus `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH`.
-- If you want deployment env vars to reset the admin password in the database automatically, set `SYNC_ADMIN_PASSWORD_ON_BOOT=true`.
-- You can reset the database admin user locally with `npm run reset:admin`.
+All financial and user data logic is heavily isolated. The `BillingContext` safely manages state across the application while the Turso layer handles secure SQLite edge synchronization. Operations such as schema purging and database migrations require administrative confirmation dialogues to prevent accidental data loss.
 
-## 📄 License
+## 🤝 Contributing
 
-Proprietary Software - All Rights Reserved.
+We welcome contributions to improve the Sitaram Billing Software! 
 
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
+---
+
+*For support or inquiries, please contact the repository administrators.*

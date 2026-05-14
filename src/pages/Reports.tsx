@@ -333,17 +333,17 @@ export default function Reports() {
       {/* INDUSTRIAL HEADER */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="app-eyebrow mb-1 flex items-center gap-2">
-            <Shield className="h-3.5 w-3.5 text-blue-500" />
+          <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-indigo-400">
+            <Shield className="h-3.5 w-3.5" />
             Financial performance
           </p>
-          <h1 className="app-page-title">Reports & audit</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Reports & audit</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-9 rounded-lg border-slate-700 bg-slate-900/60 px-3 text-xs font-medium text-slate-300 hover:bg-slate-800">
             <Eye className="mr-2 h-3.5 w-3.5" /> Preview
           </Button>
-          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
+          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-9 rounded-lg bg-indigo-600 px-4 text-xs font-medium text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-700">
             {isGenerating ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}
             Download PDF
           </Button>
@@ -353,30 +353,30 @@ export default function Reports() {
       {/* Filters */}
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
         <div className="relative group">
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
-          <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="h-9 w-full appearance-none rounded-lg border border-slate-800 bg-slate-900/70 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-blue-500/40 focus:outline-none focus:ring-0">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
+          <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="h-9 w-full appearance-none rounded-lg border border-white/10 bg-slate-900 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             {Array.from({ length: 12 }).map((_, i) => (
               <option key={i} value={i} className="bg-slate-900">{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
             ))}
           </select>
         </div>
         <div className="relative group">
-          <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
-          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="h-9 w-full appearance-none rounded-lg border border-slate-800 bg-slate-900/70 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-blue-500/40 focus:outline-none focus:ring-0">
+          <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
+          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="h-9 w-full appearance-none rounded-lg border border-white/10 bg-slate-900 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             {[2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
           </select>
         </div>
         <div className="relative group">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
-          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-slate-800 bg-slate-900/70 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-blue-500/40 focus:outline-none focus:ring-0">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
+          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-white/10 bg-slate-900 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             {areas.map(area => (
               <option key={area} value={area} className="bg-slate-900">{area}</option>
             ))}
           </select>
         </div>
         <div className="relative group">
-          <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
-          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-slate-800 bg-slate-900/70 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-blue-500/40 focus:outline-none focus:ring-0">
+          <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
+          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-white/10 bg-slate-900 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             <option value="All Methods" className="bg-slate-900">All Methods</option>
             <option value="Cash" className="bg-slate-900">Cash</option>
             <option value="UPI" className="bg-slate-900">UPI / Digital</option>
@@ -392,12 +392,12 @@ export default function Reports() {
           { label: "Outstanding dues", value: formatCurrency(stats.pendingDues), icon: AlertCircle, color: "rose" },
           { label: "Active subscribers", value: stats.active, icon: Users, color: "indigo" }
         ].map((item, idx) => (
-          <div key={idx} className="app-panel group p-5 transition-colors hover:border-blue-500/25">
+          <div key={idx} className="bg-slate-900 rounded-xl border border-white/10 group p-5 transition-colors hover:border-indigo-500/25">
             <div className="mb-3 flex items-center justify-between">
               <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg border", 
-                item.color === "blue" ? "bg-blue-600/10 text-blue-400 border-blue-600/20" : 
+                item.color === "blue" ? "bg-indigo-600/10 text-indigo-400 border-indigo-600/20" : 
                 item.color === "rose" ? "bg-rose-600/10 text-rose-400 border-rose-600/20" : 
-                "bg-indigo-600/10 text-indigo-300 border-indigo-600/20"
+                "bg-emerald-600/10 text-emerald-300 border-emerald-600/20"
               )}>
                 <item.icon className="h-4 w-4" />
               </div>
@@ -414,35 +414,35 @@ export default function Reports() {
           { title: "Collection Ledger", icon: Receipt, data: filteredPayments, type: "collection" },
           { title: "Expenditure Ledger", icon: BarChart3, data: filteredExpenses, type: "expense" }
         ].map((ledger, idx) => (
-          <div key={idx} className="app-panel flex h-[500px] flex-col overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/40 px-5 py-3">
+          <div key={idx} className="bg-slate-900 rounded-xl border border-white/10 flex h-[500px] flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-white/10 bg-slate-900/40 px-5 py-3">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
-                <ledger.icon className="h-4 w-4 text-blue-400" />
+                <ledger.icon className="h-4 w-4 text-indigo-400" />
                 {ledger.title}
               </h3>
-              <span className="rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs font-medium text-slate-500">{ledger.data.length} rows</span>
+              <span className="rounded-md border border-white/10 bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-400">{ledger.data.length} rows</span>
             </div>
             <div className="custom-scrollbar flex-1 overflow-auto">
               <table className="w-full border-collapse text-left">
-                <thead className="sticky top-0 z-10 border-b border-slate-800 bg-slate-900/95 backdrop-blur-sm">
+                <thead className="sticky top-0 z-10 border-b border-white/10 bg-slate-900/95 backdrop-blur-sm">
                   <tr>
-                    <th className="app-table-th px-5 py-2.5">{ledger.type === "collection" ? "Subscriber" : "Category"}</th>
-                    <th className="app-table-th px-5 py-2.5">Date</th>
-                    <th className="app-table-th px-5 py-2.5 text-right">Amount</th>
+                    <th className="px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">{ledger.type === "collection" ? "Subscriber" : "Category"}</th>
+                    <th className="px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">Date</th>
+                    <th className="px-5 py-2.5 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/50">
+                <tbody className="divide-y divide-white/5">
                   {ledger.data.map((item: any) => (
-                    <tr key={item.id} className="hover:bg-blue-600/[0.03] transition-colors group">
+                    <tr key={item.id} className="hover:bg-indigo-600/[0.03] transition-colors group">
                       <td className="px-5 py-2.5">
                         {ledger.type === "collection" ? (
                           <>
-                            <p className="text-sm font-medium text-white transition-colors group-hover:text-blue-300">{subscribers.find(s => s.id === item.subscriberId)?.name || "Unknown"}</p>
+                            <p className="text-sm font-medium text-white transition-colors group-hover:text-indigo-300">{subscribers.find(s => s.id === item.subscriberId)?.name || "Unknown"}</p>
                             <p className="mt-0.5 text-xs text-slate-500">{subscribers.find(s => s.id === item.subscriberId)?.area || "—"}</p>
                           </>
                         ) : (
                           <>
-                            <span className="rounded border border-slate-800 bg-slate-950 px-1.5 py-0.5 text-xs font-medium text-blue-400">{item.category}</span>
+                            <span className="rounded border border-slate-800 bg-slate-950 px-1.5 py-0.5 text-xs font-medium text-indigo-400">{item.category}</span>
                             <p className="mt-1 max-w-[140px] truncate text-xs text-slate-500">{item.description}</p>
                           </>
                         )}
@@ -486,19 +486,19 @@ export default function Reports() {
            <div className="max-w-5xl mx-auto w-full flex flex-col h-full">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
               <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-blue-600/10 flex items-center justify-center border border-blue-600/20 shadow-lg shadow-blue-600/10">
-                  <Eye className="h-5 w-5 text-blue-500" />
+                <div className="h-10 w-10 rounded-xl bg-indigo-600/10 flex items-center justify-center border border-indigo-600/20 shadow-lg shadow-indigo-600/10">
+                  <Eye className="h-5 w-5 text-indigo-500" />
                 </div>
                 <div>
                   <h2 className="font-display text-lg font-semibold text-white">Report preview</h2>
-                  <p className="text-sm font-medium text-blue-400">{monthNameLong}</p>
+                  <p className="text-sm font-medium text-indigo-400">{monthNameLong}</p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button variant="ghost" className="h-10 rounded-lg px-5 text-sm font-medium text-slate-400 hover:text-white" onClick={() => setIsPreviewOpen(false)}>
                   Close
                 </Button>
-                <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-10 rounded-lg bg-blue-600 px-6 text-sm font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
+                <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-10 rounded-lg bg-indigo-600 px-6 text-sm font-medium text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-700">
                   {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                   Download PDF
                 </Button>

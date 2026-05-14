@@ -50,12 +50,12 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r border-[#2A2A3A] bg-[#111118] text-[#F1F1F5] w-64 hidden md:flex flex-col">
-      <SidebarHeader className="border-b border-[#2A2A3A] bg-[#111118] p-0 shrink-0">
+    <Sidebar className="border-r border-white/10 bg-slate-950 text-white w-64 hidden md:flex flex-col">
+      <SidebarHeader className="border-b border-white/10 bg-slate-950 p-0 shrink-0">
         <div className="flex flex-col gap-4 p-5">
           <Logo showText={true} size="sm" variant="white" />
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-[#1A1A24] border border-[#2A2A3A] w-fit">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#9090A8]">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900 border border-white/10 w-fit">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               {activeBusinessMode === "cable" ? "CABLE MODE" : "BROADBAND MODE"}
             </span>
           </div>
@@ -64,7 +64,7 @@ export function AppSidebar() {
 
       <SidebarContent className="bg-transparent space-y-6 pt-5 overflow-y-auto overflow-x-hidden no-scrollbar flex-1">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-5 mb-2 text-xs font-medium uppercase tracking-wider text-[#5A5A72]">
+          <SidebarGroupLabel className="px-5 mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
             OPERATIONS
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -74,8 +74,8 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={isActive(item.url)} className={cn(
                     "rounded-lg h-10 px-3 transition-colors group",
                     isActive(item.url) 
-                      ? "bg-[#6C63FF]/15 border-l-2 border-[#6C63FF] text-[#6C63FF] font-medium" 
-                      : "hover:bg-[#1A1A24] text-[#9090A8]"
+                      ? "bg-indigo-500/15 border-l-2 border-indigo-500 text-indigo-400 font-medium" 
+                      : "hover:bg-slate-900 text-slate-400 hover:text-white"
                   )}>
                     <NavLink to={item.url} end={item.url === "/"} onClick={handleLinkClick} className="flex items-center gap-3 w-full">
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -89,7 +89,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-5 mb-2 text-xs font-medium uppercase tracking-wider text-[#5A5A72]">
+          <SidebarGroupLabel className="px-5 mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
             ANALYTICS & ADMIN
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -99,8 +99,8 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={isActive(item.url)} className={cn(
                     "rounded-lg h-10 px-3 transition-colors group",
                     isActive(item.url) 
-                      ? "bg-[#6C63FF]/15 border-l-2 border-[#6C63FF] text-[#6C63FF] font-medium" 
-                      : "hover:bg-[#1A1A24] text-[#9090A8]"
+                      ? "bg-indigo-500/15 border-l-2 border-indigo-500 text-indigo-400 font-medium" 
+                      : "hover:bg-slate-900 text-slate-400 hover:text-white"
                   )}>
                     <NavLink to={item.url} onClick={handleLinkClick} className="flex items-center gap-3 w-full">
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -114,15 +114,15 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <div className="mt-auto p-4 border-t border-[#2A2A3A] bg-[#111118] shrink-0">
+      <div className="mt-auto p-4 border-t border-white/10 bg-slate-950 shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-[#F1F1F5]">
+            <span className="text-sm font-medium text-white">
               {activeBusinessMode === "cable" ? "CABLE DB" : "BROADBAND DB"}
             </span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <div className={cn("w-2 h-2 rounded-full", hasTursoDB ? "bg-[#22C55E]" : "bg-[#F59E0B]")} />
-              <span className="text-xs text-[#9090A8]">
+              <div className={cn("w-2 h-2 rounded-full", hasTursoDB ? "bg-emerald-500" : "bg-amber-500")} />
+              <span className="text-xs text-slate-400">
                 {hasTursoDB ? 'Securely Synced' : 'Local Storage'}
               </span>
             </div>

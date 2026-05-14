@@ -207,183 +207,219 @@ export default function Payments() {
   const upiTotal = filtered.filter(p => p.method !== 'Cash').reduce((s, p) => s + Number(p.amount), 0);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-16">
-      {/* Premium Header */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/5 border border-emerald-500/10 w-fit">
-            <Wallet className="h-3 w-3 text-emerald-500" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500/80">Asset Settlement Terminal</span>
-          </div>
-          <h1 className="text-4xl font-black tracking-tight text-white uppercase italic leading-none">
-            Payment <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">Protocol</span>
-          </h1>
-          <p className="text-sm font-medium text-slate-500 tracking-wide uppercase">Revenue Collection & Voucher Registry</p>
+    <div className="space-y-6 pb-20">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-white/10 pb-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-white">Payments</h1>
+          <p className="text-sm text-slate-400">Revenue collection and voucher registry.</p>
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-6 px-6 py-2 rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-xl lg:flex">
+          <div className="hidden lg:flex items-center gap-4 px-4 py-2 rounded-lg bg-slate-900 border border-white/10">
             <div className="flex flex-col">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Liquid (Cash)</span>
-              <span className="text-base font-black text-white italic tracking-tighter tabular-nums">₹{cashTotal.toLocaleString()}</span>
+              <span className="text-xs text-slate-400">Cash</span>
+              <span className="text-sm font-medium text-white">₹{cashTotal.toLocaleString()}</span>
             </div>
-            <div className="w-px h-8 bg-white/5" />
+            <div className="w-px h-6 bg-white/10" />
             <div className="flex flex-col">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Digital (UPI)</span>
-              <span className="text-base font-black text-white italic tracking-tighter tabular-nums">₹{upiTotal.toLocaleString()}</span>
+              <span className="text-xs text-slate-400">UPI</span>
+              <span className="text-sm font-medium text-white">₹{upiTotal.toLocaleString()}</span>
             </div>
           </div>
           <Button 
             variant="outline" 
             onClick={() => { setIsGlobalRefreshing(true); refreshData().finally(() => setIsGlobalRefreshing(false)); }}
             disabled={isGlobalRefreshing}
-            className="h-12 rounded-xl border-white/5 bg-slate-900/40 px-6 text-[10px] font-black uppercase tracking-widest text-slate-300 hover:bg-slate-800 transition-all backdrop-blur-xl"
+            className="h-10 rounded-lg border-white/10 bg-slate-900 px-4 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
           >
             <Activity className={cn("mr-2 h-4 w-4", isGlobalRefreshing && "animate-spin")} />
             Sync Ledger
           </Button>
           <Button 
             onClick={() => setIsAddOpen(true)}
-            className="h-12 rounded-xl bg-emerald-600 px-8 text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-600/20 hover:bg-emerald-500 transition-all active:scale-95"
+            className="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
           >
-            <Plus className="mr-2 h-4 w-4" /> Record Settlement
+            <Plus className="mr-2 h-4 w-4" /> Record Payment
           </Button>
         </div>
       </div>
 
-      {/* Industrial Filters */}
+      {/* Filters */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-5 app-panel p-4 border border-white/5 bg-slate-900/40 backdrop-blur-3xl shadow-2xl space-y-4">
-          <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 group-focus-within:text-emerald-500 transition-all" />
+        <div className="lg:col-span-6 flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
             <Input
-              placeholder="SEARCH BY HASH, ENTITY OR REGION..."
-              className="h-11 rounded-xl border-white/5 bg-slate-950/50 pl-11 text-[10px] font-bold tracking-widest text-white placeholder:text-slate-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/10 transition-all uppercase"
+              placeholder="Search by ID, name or area..."
+              className="h-10 rounded-lg border-white/10 bg-slate-900 pl-9 text-sm text-white placeholder:text-slate-500 focus-visible:border-indigo-500"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-             <select 
-              value={areaF} 
-              onChange={(e) => setAreaF(e.target.value)} 
-              className="w-full h-10 bg-slate-950 border border-white/5 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest text-slate-400 outline-none focus:border-emerald-500/40 appearance-none shadow-inner"
-            >
-              <option value="all">ALL NETWORK SECTORS</option>
-              {areas.map(a => <option key={a} value={a} className="bg-slate-900">{a.toUpperCase()}</option>)}
-            </select>
-            <select 
-              value={methodF} 
-              onChange={(e) => setMethodF(e.target.value)} 
-              className="w-full h-10 bg-slate-950 border border-white/5 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest text-slate-400 outline-none focus:border-emerald-500/40 appearance-none shadow-inner"
-            >
-              <option value="all">ALL MODES</option>
-              <option value="Cash" className="bg-slate-900">LIQUID CASH</option>
-              <option value="UPI" className="bg-slate-900">DIGITAL UPI</option>
-            </select>
-          </div>
+          <select 
+            value={areaF} 
+            onChange={(e) => setAreaF(e.target.value)} 
+            className="h-10 bg-slate-900 border border-white/10 rounded-lg px-3 text-sm text-slate-300 outline-none focus:border-indigo-500 sm:w-40"
+          >
+            <option value="all">All Areas</option>
+            {areas.map(a => <option key={a} value={a}>{a}</option>)}
+          </select>
+          <select 
+            value={methodF} 
+            onChange={(e) => setMethodF(e.target.value)} 
+            className="h-10 bg-slate-900 border border-white/10 rounded-lg px-3 text-sm text-slate-300 outline-none focus:border-indigo-500 sm:w-36"
+          >
+            <option value="all">All Modes</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+          </select>
         </div>
 
-        <div className="lg:col-span-4 app-panel p-4 border border-white/5 bg-slate-900/40 backdrop-blur-3xl shadow-2xl flex flex-col justify-center gap-4">
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Temporal Filter Scope</span>
-          <div className="flex gap-1.5 p-1 bg-slate-950 border border-white/5 rounded-xl">
-            <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value === "all" ? "all" : Number(e.target.value))} className="flex-1 h-10 bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-white outline-none appearance-none px-4">
-              {months.map((m, i) => <option key={m} value={i} className="bg-slate-900">{m.toUpperCase()}</option>)}
+        <div className="lg:col-span-4 flex items-center gap-2">
+          <div className="flex h-10 w-full items-center gap-2 rounded-lg border border-white/10 bg-slate-900 px-3">
+            <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value === "all" ? "all" : Number(e.target.value))} className="flex-1 bg-transparent text-sm text-slate-300 outline-none appearance-none cursor-pointer">
+              {months.map((m, i) => <option key={m} value={i} className="bg-slate-900">{m}</option>)}
             </select>
-            <div className="w-px h-6 my-auto bg-white/5" />
-            <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} className="w-24 h-10 bg-transparent border-none text-[10px] font-black uppercase text-white outline-none appearance-none px-4 text-center">
+            <div className="h-4 w-px bg-white/10" />
+            <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} className="w-20 bg-transparent text-sm text-slate-300 outline-none appearance-none cursor-pointer text-center">
               {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
             </select>
           </div>
         </div>
 
-        <div className="lg:col-span-3 app-panel p-4 border border-white/5 bg-slate-900/40 backdrop-blur-3xl shadow-2xl flex flex-col justify-center items-center gap-2">
-           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Registry Health</span>
-           <div className="flex items-center gap-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-white italic">{sorted.length}</span>
-                <span className="text-[7px] font-black uppercase text-slate-600 tracking-tighter">TRANS_X</span>
-              </div>
-              <div className="w-px h-6 bg-white/5" />
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-emerald-500 italic">₹{(cashTotal + upiTotal).toLocaleString()}</span>
-                <span className="text-[7px] font-black uppercase text-slate-600 tracking-tighter">LEDGER_BAL</span>
-              </div>
+        <div className="lg:col-span-2 flex items-center justify-center gap-4 rounded-lg border border-white/10 bg-slate-900 px-4 h-10">
+           <div className="flex flex-col items-center justify-center">
+             <span className="text-sm font-medium text-white leading-none">{sorted.length}</span>
+             <span className="text-[10px] text-slate-500 uppercase">Records</span>
+           </div>
+           <div className="h-6 w-px bg-white/10" />
+           <div className="flex flex-col items-center justify-center">
+             <span className="text-sm font-medium text-emerald-400 leading-none">₹{(cashTotal + upiTotal).toLocaleString()}</span>
+             <span className="text-[10px] text-slate-500 uppercase">Total</span>
            </div>
         </div>
       </div>
 
-      {/* Payment Ledger Table */}
-      <div className="app-panel overflow-hidden border border-white/5 bg-slate-900/30 backdrop-blur-3xl shadow-2xl">
+      {/* Mobile view - Cards */}
+      <div className="md:hidden space-y-4">
+        {isLoading ? (
+           <div className="py-12 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-indigo-500" /></div>
+        ) : sorted.length === 0 ? (
+           <div className="py-12 text-center text-slate-500 border border-white/10 rounded-lg bg-slate-900">
+             No payments found.
+           </div>
+        ) : (
+           sorted.map(p => {
+              const sub = subscribers.find(s => s.id === p.subscriberId);
+              const items = getPaymentItems(p);
+              return (
+                <div key={p.id} className="bg-slate-900 border border-white/10 rounded-lg p-4 space-y-4 relative">
+                   <div className="flex justify-between items-start">
+                      <div>
+                         <div className="font-medium text-white flex items-center gap-2">
+                           {sub?.name || 'Unknown'} 
+                           <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">#{sub?.customerNo}</span>
+                         </div>
+                         <div className="text-xs text-slate-400 mt-1 flex items-center gap-1"><MapPin className="h-3 w-3" /> {sub?.area || "N/A"}</div>
+                      </div>
+                      <div className="text-right">
+                         <div className="font-medium text-white">₹{Number(p.amount).toLocaleString()}</div>
+                         <div className={cn("text-[10px] font-medium mt-1 px-1.5 py-0.5 rounded w-fit ml-auto", p.method === 'Cash' ? "bg-amber-500/10 text-amber-500" : "bg-blue-500/10 text-blue-500")}>
+                           {p.method}
+                         </div>
+                      </div>
+                   </div>
+                   <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-950 p-2 rounded">
+                      <Calendar className="h-3 w-3" /> {formatDate(p.date)}
+                      <span className="text-slate-600">|</span>
+                      <span>#{p.id.slice(-6).toUpperCase()}</span>
+                   </div>
+                   {items.length > 0 && (
+                     <div className="flex flex-wrap gap-1 mt-2">
+                        {items.slice(0, 2).map((it, idx) => (
+                           <span key={idx} className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">{it.desc}</span>
+                        ))}
+                        {items.length > 2 && <span className="text-[10px] text-slate-500">+{items.length - 2} more</span>}
+                     </div>
+                   )}
+                   <div className="flex gap-2 pt-2 border-t border-white/5">
+                      <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs bg-slate-950 hover:bg-slate-800" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-3 w-3 mr-1" /> View</Button>
+                      <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20" onClick={() => handleWhatsApp(p)}><Share2 className="h-3 w-3 mr-1" /> Share</Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20" onClick={() => setConfirmModal(p)}><Trash2 className="h-3 w-3" /></Button>
+                   </div>
+                </div>
+              );
+           })
+        )}
+      </div>
+
+      {/* Desktop view - Table */}
+      <div className="hidden md:block rounded-lg border border-white/10 bg-slate-900 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-white/5 bg-slate-950/50">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Voucher / Ref</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Entity Metadata</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Allocated Assets</th>
-                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Settled Value (₹)</th>
-                <th className="px-6 py-4 w-40"></th>
+          <table className="w-full text-sm text-left">
+            <thead className="bg-slate-950 text-slate-400 border-b border-white/10 text-xs">
+              <tr>
+                <th className="px-4 py-3 font-medium">Receipt Info</th>
+                <th className="px-4 py-3 font-medium">Customer Details</th>
+                <th className="px-4 py-3 font-medium">Items Covered</th>
+                <th className="px-4 py-3 font-medium text-right">Amount</th>
+                <th className="px-4 py-3 w-28"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {isLoading ? (
-                <tr><td colSpan={5} className="py-32 text-center"><Loader2 className="w-10 h-10 animate-spin text-emerald-500 mx-auto" /></td></tr>
+                <tr><td colSpan={5} className="py-12 text-center"><Loader2 className="w-6 h-6 animate-spin text-indigo-500 mx-auto" /></td></tr>
               ) : sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-32 text-center">
-                    <div className="flex flex-col items-center gap-6 opacity-20">
-                      <Activity className="h-16 w-16 text-slate-400" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">NO TRANSACTION RECORDS IN SCOPE</span>
-                    </div>
+                  <td colSpan={5} className="py-12 text-center text-slate-500">
+                    No payment records found.
                   </td>
                 </tr>
               ) : sorted.map((p) => {
                 const sub = subscribers.find(s => s.id === p.subscriberId);
                 const items = getPaymentItems(p);
                 return (
-                  <tr key={p.id} className="hover:bg-emerald-600/[0.03] transition-all duration-300 group border-l-2 border-transparent hover:border-emerald-600">
-                    <td className="px-6 py-5">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-black text-white tracking-widest tabular-nums group-hover:text-emerald-400 transition-colors uppercase italic">#TRN-{p.id.slice(-8).toUpperCase()}</span>
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600 mt-1.5 flex items-center gap-2">
+                  <tr key={p.id} className="hover:bg-slate-800/50 transition-colors group">
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-white font-medium">#{p.id.slice(-8).toUpperCase()}</span>
+                        <span className="text-xs text-slate-500 flex items-center gap-1">
                           <Calendar className="h-3 w-3" /> {formatDate(p.date)}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-sm font-black text-white uppercase italic tracking-tight">{sub?.name || 'Unknown_Entity'}</span>
-                          <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/10">#{sub?.customerNo}</span>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-medium">{sub?.name || 'Unknown'}</span>
+                          <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">#{sub?.customerNo}</span>
                         </div>
-                        <div className="flex items-center gap-3 mt-2">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 flex items-center gap-1.5"><MapPin className="h-3 w-3 opacity-50" /> {sub?.area || "STATIC_REGION"}</span>
-                        </div>
+                        <span className="text-xs text-slate-500 flex items-center gap-1"><MapPin className="h-3 w-3" /> {sub?.area || "N/A"}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="flex flex-wrap gap-2">
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
                         {items.slice(0, 2).map((it, idx) => (
-                          <span key={idx} className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-emerald-500/5 text-emerald-500/80 border border-emerald-500/10 italic">{it.desc}</span>
+                          <span key={idx} className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">{it.desc}</span>
                         ))}
-                        {items.length > 2 && <span className="text-[8px] font-black uppercase text-slate-600 flex items-center gap-1"><Plus className="h-2 w-2" /> {items.length - 2} ADDTL</span>}
+                        {items.length > 2 && <span className="text-[10px] text-slate-500">+{items.length - 2} more</span>}
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-right">
-                      <div className="flex flex-col items-end">
-                        <span className="text-base font-black text-white tracking-tighter tabular-nums italic">₹{Number(p.amount).toLocaleString()}</span>
-                        <span className={cn("text-[9px] font-black uppercase mt-1.5 tracking-widest px-2 rounded-md py-0.5 border italic", 
-                          p.method === 'Cash' ? "text-amber-500/80 bg-amber-500/5 border-amber-500/10" : "text-blue-500/80 bg-blue-500/5 border-blue-500/10")}>
-                          {p.method.toUpperCase()}_MODE
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-white font-medium">₹{Number(p.amount).toLocaleString()}</span>
+                        <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium", 
+                          p.method === 'Cash' ? "text-amber-500 bg-amber-500/10" : "text-blue-500 bg-blue-500/10")}>
+                          {p.method}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-slate-950 border border-white/5 text-slate-500 hover:text-white shadow-inner" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-emerald-600/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-600 hover:text-white transition-all shadow-xl shadow-emerald-600/10" onClick={() => handleWhatsApp(p)}><Share2 className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-600 hover:text-white transition-all shadow-xl shadow-rose-600/10" onClick={() => setConfirmModal(p)}><Trash2 className="h-4 w-4" /></Button>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20" onClick={() => handleWhatsApp(p)}><Share2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20" onClick={() => setConfirmModal(p)}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </td>
                   </tr>
@@ -396,62 +432,58 @@ export default function Payments() {
 
       {/* Creation Modal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-3xl animate-in fade-in duration-300">
-          <div className="w-full max-w-lg bg-slate-900 border border-white/5 rounded-[4rem] p-10 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-              <Banknote className="h-32 w-32 text-emerald-500" />
-            </div>
-            
-            <div className="flex items-center justify-between mb-10 relative z-10">
-              <div className="flex items-center gap-5">
-                <div className="h-14 w-14 rounded-2xl bg-emerald-600/10 flex items-center justify-center text-emerald-500 border border-emerald-600/20 shadow-inner">
-                  <Plus className="h-7 w-7" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-xl shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                  <Wallet className="h-4 w-4" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-none">Initialize Settle</h2>
-                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] mt-2">New Transaction Record</p>
+                  <h2 className="text-base font-semibold text-white">Record Payment</h2>
+                  <p className="text-xs text-slate-400">Add a new payment record</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsAddOpen(false)} className="h-12 w-12 rounded-2xl text-slate-500 hover:bg-slate-800"><X className="h-6 w-6" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setIsAddOpen(false)} className="h-8 w-8 text-slate-400 hover:text-white"><X className="h-4 w-4" /></Button>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-600 tracking-widest ml-1">Entity Account Selector</label>
+                <label className="text-sm font-medium text-slate-300">Customer</label>
                 <select 
                   value={formData.subscriberId} 
                   onChange={(e) => setFormData({...formData, subscriberId: e.target.value})} 
-                  className="w-full h-12 bg-slate-950 border border-white/5 rounded-2xl px-4 text-[11px] font-black uppercase tracking-widest text-white outline-none focus:border-emerald-500/50 shadow-inner appearance-none transition-all"
+                  className="w-full h-10 bg-slate-950 border border-white/10 rounded-lg px-3 text-sm text-white outline-none focus:border-indigo-500"
                 >
-                  <option value="">SELECT TARGET NODE...</option>
+                  <option value="">Select customer...</option>
                   {subscribers.sort((a,b) => a.name.localeCompare(b.name)).map(s => (
-                    <option key={s.id} value={s.id} className="bg-slate-900">#{s.customerNo} {s.name.toUpperCase()}</option>
+                    <option key={s.id} value={s.id}>#{s.customerNo} {s.name}</option>
                   ))}
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-600 tracking-widest ml-1">Asset Value (₹)</label>
+                  <label className="text-sm font-medium text-slate-300">Amount (₹)</label>
                   <Input 
                     type="number" 
                     value={formData.amount || ""} 
                     onChange={(e) => setFormData({...formData, amount: Number(e.target.value)})} 
-                    className="h-12 bg-slate-950 border-white/5 rounded-2xl px-4 text-center text-lg font-black text-white focus-visible:border-emerald-500/50 shadow-inner" 
+                    className="h-10 bg-slate-950 border-white/10 rounded-lg px-3 text-sm text-white focus-visible:border-indigo-500" 
                     placeholder="0.00" 
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-600 tracking-widest ml-1">Transfer Mode</label>
-                  <div className="flex gap-2 p-1.5 bg-slate-950 rounded-2xl border border-white/5 shadow-inner">
+                  <label className="text-sm font-medium text-slate-300">Payment Method</label>
+                  <div className="flex gap-2 p-1 bg-slate-950 rounded-lg border border-white/10">
                     {['Cash', 'UPI'].map(m => (
                       <button 
                         key={m} 
                         type="button" 
                         onClick={() => setFormData({...formData, method: m as any})} 
                         className={cn(
-                          "flex-1 h-10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all",
-                          formData.method === m ? "bg-emerald-600 text-white shadow-xl shadow-emerald-600/20" : "text-slate-600 hover:text-slate-300"
+                          "flex-1 h-8 rounded-md text-sm font-medium transition-colors",
+                          formData.method === m ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"
                         )}
                       >
                         {m}
@@ -461,15 +493,15 @@ export default function Payments() {
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-6">
-                <Button variant="ghost" className="flex-1 h-14 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] text-slate-600 hover:text-white transition-all" onClick={() => setIsAddOpen(false)}>Abort Command</Button>
+              <div className="flex gap-3 pt-4">
+                <Button type="button" variant="ghost" className="flex-1 h-10 bg-slate-800 hover:bg-slate-700 text-white" onClick={() => setIsAddOpen(false)}>Cancel</Button>
                 <Button 
                   type="submit" 
                   disabled={isSubmitting || !formData.subscriberId} 
-                  className="flex-1 h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-2xl shadow-emerald-600/30 font-black uppercase tracking-[0.2em] text-[10px] active:scale-95 transition-all"
+                  className="flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white"
                 >
-                  {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5 mr-2" />}
-                  Auth Transaction
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                  Save Payment
                 </Button>
               </div>
             </form>
@@ -477,154 +509,127 @@ export default function Payments() {
         </div>
       )}
 
-      {/* Voucher Terminal Modal */}
+      {/* Voucher Modal */}
       {isReceiptOpen && selectedPayment && (
-        <div className="fixed inset-0 z-[110] bg-slate-950/95 backdrop-blur-3xl flex flex-col overflow-hidden animate-in fade-in duration-300">
-          <div className="flex items-center justify-between p-6 border-b border-white/5 relative z-10">
-            <div className="flex items-center gap-5">
-              <div className="h-12 w-12 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-2xl shadow-emerald-600/30">
-                <Receipt className="h-6 w-6 text-white" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-3xl bg-slate-900 border border-white/10 rounded-xl shadow-xl flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                  <Receipt className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-white">Payment Receipt</h2>
+                  <p className="text-xs text-slate-400">Receipt details</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-black text-white uppercase italic tracking-tighter leading-none">Settlement Voucher</h2>
-                <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1.5">Official Registry Extract</p>
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={handleDownloadReceipt} className="h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs">
+                  <Download className="h-3 w-3 mr-1.5" /> Download
+                </Button>
+                <Button size="sm" onClick={() => handleWhatsApp(selectedPayment)} className="h-8 rounded-lg bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600/20 text-xs border border-emerald-500/20">
+                  <Share2 className="h-3 w-3 mr-1.5" /> Share
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setIsReceiptOpen(false)} className="h-8 w-8 p-0 text-slate-400 hover:text-white"><X className="h-4 w-4" /></Button>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button size="sm" onClick={handleDownloadReceipt} className="h-10 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest px-6 border border-white/10 transition-all">
-                <Download className="h-4 w-4 mr-2 text-emerald-400" /> Save_Archive
-              </Button>
-              <Button size="sm" onClick={() => handleWhatsApp(selectedPayment)} className="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-6 shadow-xl shadow-emerald-600/20 transition-all">
-                <Share2 className="h-4 w-4 mr-2" /> Push_WA
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setIsReceiptOpen(false)} className="h-10 w-10 rounded-xl text-white hover:bg-white/5 transition-all"><X className="h-5 w-5" /></Button>
-            </div>
-          </div>
 
-          <div className="flex-1 overflow-auto p-12 flex justify-center bg-[#09090b]">
-            <div ref={containerRef} className="w-full max-w-[800px] h-fit">
-               <div id="receipt-content" ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }} className="bg-white text-slate-950 p-16 shadow-2xl rounded-sm w-[794px] mx-auto relative">
-                  {/* Watermark */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
-                     <ShieldCheck className="w-[500px] h-[500px]" />
-                  </div>
-
-                  <div className="flex justify-between items-start mb-16 border-b-[6px] border-slate-950 pb-12 relative z-10">
-                    <div>
-                      <h2 className="text-5xl font-black text-slate-950 uppercase tracking-tighter italic mb-2 leading-none">{brand.name.toUpperCase()}</h2>
-                      <p className="text-[11px] text-slate-500 uppercase font-black tracking-[0.5em] italic">Official Asset Settlement Acknowledgement</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-[0.2em]">Voucher Index</p>
-                      <p className="text-3xl font-mono font-black text-slate-950 tracking-tighter">#VS-{selectedPayment.id.slice(-10).toUpperCase()}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-20 mb-16 relative z-10">
-                    <div>
-                      <p className="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-[0.2em]">Target Account Meta</p>
-                      <div className="text-lg font-black text-slate-950 uppercase italic tracking-tight">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.name.toUpperCase()}</div>
-                      <div className="grid grid-cols-2 gap-4 mt-4">
-                         <div>
-                            <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Network Node</p>
-                            <p className="text-[11px] font-black text-slate-950 uppercase">CID_{subscribers.find(s => s.id === selectedPayment.subscriberId)?.id.slice(0, 8)}</p>
-                         </div>
-                         <div>
-                            <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Region Hub</p>
-                            <p className="text-[11px] font-black text-slate-950 uppercase">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.area}</p>
-                         </div>
+            <div className="flex-1 overflow-auto p-4 md:p-8 bg-slate-950 flex justify-center">
+              <div ref={containerRef} className="w-full max-w-[800px] h-fit">
+                 <div id="receipt-content" ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }} className="bg-white text-slate-900 p-12 shadow-sm rounded-sm w-[794px] mx-auto relative border border-slate-200">
+                    
+                    <div className="flex justify-between items-start mb-12 border-b border-slate-200 pb-8">
+                      <div>
+                        <h2 className="text-3xl font-bold text-slate-900 mb-1">{brand.name}</h2>
+                        <p className="text-sm text-slate-500">Payment Receipt</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-slate-500 mb-1">Receipt No.</p>
+                        <p className="text-xl font-mono font-medium text-slate-900">#{selectedPayment.id.slice(-8).toUpperCase()}</p>
                       </div>
                     </div>
-                    <div className="text-right flex flex-col items-end">
-                      <p className="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-[0.2em]">Transaction Meta</p>
-                      <div className="space-y-3">
-                         <div className="flex flex-col items-end">
-                            <p className="text-[9px] font-black uppercase text-slate-400">Transfer Mode</p>
-                            <p className="text-[13px] font-black text-slate-950 uppercase italic">{selectedPayment.method}_LIQUIDITY</p>
-                         </div>
-                         <div className="flex flex-col items-end">
-                            <p className="text-[9px] font-black uppercase text-slate-400">Registry Timestamp</p>
-                            <p className="text-[13px] font-black text-slate-950 uppercase italic tabular-nums">{formatDate(selectedPayment.date)}</p>
-                         </div>
+
+                    <div className="grid grid-cols-2 gap-12 mb-12">
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-slate-500 mb-2">Billed To</p>
+                        <div className="text-base font-semibold text-slate-900 mb-1">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.name}</div>
+                        <div className="text-sm text-slate-600 mb-1">Customer ID: {subscribers.find(s => s.id === selectedPayment.subscriberId)?.customerNo}</div>
+                        <div className="text-sm text-slate-600">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.area}</div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-semibold uppercase text-slate-500 mb-2">Payment Details</p>
+                        <div className="text-sm text-slate-600 mb-1">Date: <span className="text-slate-900 font-medium">{formatDate(selectedPayment.date)}</span></div>
+                        <div className="text-sm text-slate-600">Method: <span className="text-slate-900 font-medium">{selectedPayment.method}</span></div>
                       </div>
                     </div>
-                  </div>
 
-                  <table className="w-full text-left mb-16 relative z-10">
-                    <thead className="border-b-[3px] border-slate-900">
-                      <tr className="text-[11px] font-black uppercase text-slate-950 tracking-[0.2em]">
-                        <th className="py-4">Allocation Description</th>
-                        <th className="py-4 text-center">Lifecycle period</th>
-                        <th className="py-4 text-right">Settled Assets</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y-2 divide-slate-100">
-                      {selectedPaymentItems.map((item, i) => (
-                        <tr key={i}>
-                          <td className="py-6">
-                            <div className="text-[13px] font-black text-slate-950 uppercase italic tracking-tight">{item.desc}</div>
-                            <div className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-2">{item.subDesc}</div>
-                          </td>
-                          <td className="py-6 text-[11px] text-slate-950 font-black text-center uppercase font-mono tracking-widest">{item.date}</td>
-                          <td className="py-6 text-[14px] font-black text-slate-950 text-right font-mono tracking-tighter italic">₹{Number(item.total).toLocaleString()}</td>
+                    <table className="w-full text-left mb-12">
+                      <thead className="border-y border-slate-200 bg-slate-50">
+                        <tr>
+                          <th className="py-3 px-4 text-xs font-semibold text-slate-600 uppercase">Description</th>
+                          <th className="py-3 px-4 text-xs font-semibold text-slate-600 uppercase text-center">Date</th>
+                          <th className="py-3 px-4 text-xs font-semibold text-slate-600 uppercase text-right">Amount</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {selectedPaymentItems.map((item, i) => (
+                          <tr key={i}>
+                            <td className="py-4 px-4">
+                              <div className="font-medium text-slate-900">{item.desc}</div>
+                              <div className="text-xs text-slate-500 mt-0.5">{item.subDesc}</div>
+                            </td>
+                            <td className="py-4 px-4 text-sm text-slate-600 text-center">{item.date}</td>
+                            <td className="py-4 px-4 text-sm font-medium text-slate-900 text-right">₹{Number(item.total).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
 
-                  <div className="flex justify-end pt-12 border-t-[5px] border-slate-950 relative z-10">
-                    <div className="w-96 space-y-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[13px] font-black uppercase text-slate-400 tracking-[0.2em] italic">Net Asset Settlement</span>
-                        <span className="text-5xl font-mono font-black text-slate-950 tracking-tighter italic">₹{Number(selectedPayment.amount).toLocaleString()}</span>
-                      </div>
-                      <div className="bg-slate-50 p-6 border-2 border-slate-100 rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.1em]">Remaining Node Backlog</span>
-                          <span className="text-lg font-mono font-black text-slate-950 tabular-nums">₹{subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0}</span>
+                    <div className="flex justify-end pt-8 border-t border-slate-200">
+                      <div className="w-72 space-y-4">
+                        <div className="flex justify-between items-center text-lg font-bold">
+                          <span className="text-slate-900">Total Paid</span>
+                          <span className="text-slate-900">₹{Number(selectedPayment.amount).toLocaleString()}</span>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-md flex justify-between items-center">
+                          <span className="text-sm text-slate-600">Current Balance</span>
+                          <span className="text-base font-medium text-slate-900">₹{subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0}</span>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-32 flex justify-between items-end relative z-10">
-                    <div className="max-w-[400px]">
-                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-loose italic">
-                         THIS IS A CERTIFIED CRYPTOGRAPHIC VOUCHER EXTRACT. NO PHYSICAL SIGNATURE REQUIRED. AUDIT COMPLIANCE SECURED BY {brand.name.toUpperCase()} CORE SYSTEMS.
+                    <div className="mt-20 pt-4 border-t border-slate-200 text-center">
+                       <p className="text-xs text-slate-500">
+                         This is a computer generated receipt and does not require a physical signature.
                        </p>
                     </div>
-                    <div className="text-center px-12 border-t-[3px] border-slate-950 pt-4">
-                       <p className="text-[12px] font-black uppercase text-slate-950 tracking-[0.3em] italic">Chief Audit Head</p>
-                       <p className="text-[9px] text-slate-400 font-black uppercase mt-1.5 tracking-[0.2em]">Financial Security Div.</p>
-                    </div>
-                  </div>
-               </div>
+                 </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-       {/* Security Override Prompt */}
+      {/* Delete Confirmation Modal */}
       {confirmModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-3xl animate-in zoom-in-95 duration-200">
-          <div className="w-full max-w-md bg-slate-900 border border-white/5 rounded-[4rem] p-12 text-center shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.5)]" />
-            <div className="h-20 w-20 mx-auto rounded-[2.5rem] bg-rose-600/10 text-rose-500 border border-rose-500/20 flex items-center justify-center mb-8 shadow-2xl shadow-rose-600/10 animate-pulse">
-              <AlertCircle className="h-10 w-10" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-xl p-6 text-center shadow-xl">
+            <div className="mx-auto h-12 w-12 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mb-4">
+              <AlertCircle className="h-6 w-6" />
             </div>
-            <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white mb-4">Security <span className="text-rose-500">Override</span></h2>
-            <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-black leading-loose px-4 mb-10">
-              IRREVERSIBLE TRANSACTION PURGE INITIATED. AUTHENTICATE COMMAND EXECUTION.
+            <h2 className="text-lg font-semibold text-white mb-2">Delete Payment</h2>
+            <p className="text-sm text-slate-400 mb-6">
+              Are you sure you want to delete this payment record? This action cannot be undone and will affect the customer's balance.
             </p>
-            <div className="flex flex-col gap-3">
+            <div className="flex gap-3">
+              <Button variant="ghost" className="flex-1 bg-slate-800 hover:bg-slate-700 text-white" onClick={() => setConfirmModal(null)}>Cancel</Button>
               <Button 
                 variant="destructive" 
-                className="h-14 rounded-3xl font-black uppercase tracking-[0.2em] text-[10px] bg-rose-600 hover:bg-rose-500 shadow-2xl shadow-rose-600/30 transition-all active:scale-95" 
-                onClick={() => { deletePayment(confirmModal.id); setConfirmModal(null); toast.success("Ledger Expunged"); }}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white" 
+                onClick={() => { deletePayment(confirmModal.id); setConfirmModal(null); toast.success("Payment deleted"); }}
               >
-                Confirm Deletion
+                Delete
               </Button>
-              <Button variant="ghost" className="h-14 rounded-3xl font-black text-[10px] uppercase tracking-[0.3em] text-slate-600 hover:text-white transition-all" onClick={() => setConfirmModal(null)}>Abort Command</Button>
             </div>
           </div>
         </div>

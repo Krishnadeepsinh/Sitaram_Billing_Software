@@ -1,13 +1,15 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { formatCurrency, formatDate, formatMonthRanges } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Receipt, Wallet, CreditCard, Banknote, Filter, Loader2, Trash2, Download, Eye, X, MapPin, Phone, Wifi, Check, Send } from "lucide-react";
+import { Plus, Search, Receipt, Wallet, CreditCard, Banknote, Filter, Loader2, Trash2, Download, Eye, X, MapPin, Phone, Wifi, Check, Send, Activity, CheckCircle2, Share2, TrendingUp, ShieldCheck, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useBilling } from "@/context/BillingContext";
 import { Logo } from "@/components/Logo";
 import { getInvoiceServiceDates } from "@/components/invoice/invoicePreviewUtils";
 import { toast } from "sonner";
 import { BRAND_DISPLAY_NAME, getBrandSettings } from "@/lib/branding";
+import { cn } from "@/lib/utils";
+import { useBusinessMode } from "@/lib/turso";
 
 const Highlight = ({ text, query }: { text: string; query: string }) => {
   if (!query || !text) return <>{text || ""}</>;
@@ -33,13 +35,18 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
 };
 
 export default function Payments() {
-  const { payments, subscribers, plans, invoices, recordPayment, deletePayment, isLoading, companySettings } = useBilling();
+  const activeBusinessMode = useBusinessMode();
+  const isCableMode = activeBusinessMode === "cable";
+  const customerIdLabel = isCableMode ? "STB Number" : "Customer ID";
+  const { payments, subscribers, plans, invoices, recordPayment, deletePayment, isLoading, companySettings, refreshData } = useBilling();
   const brand = getBrandSettings(companySettings);
   const [q, setQ] = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{type: 'delete', id: string} | null>(null);
-  const [showReceipt, setShowReceipt] = useState(false);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [isGlobalRefreshing, setIsGlobalRefreshing] = useState(false);
+  const [dateF, setDateF] = useState("");
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -344,8 +351,8 @@ export default function Payments() {
       return;
     }
 
-    setIsSubmitting(true);
     try {
+      setIsSubmitting(true);
       const newPay = await recordPayment({
         subscriberId: formData.subscriberId,
         amount: formData.amount,
@@ -354,12 +361,33 @@ export default function Payments() {
         agent: "Chudasama Shaktisinh", 
       });
       toast.success("Payment recorded successfully");
-      setShowForm(false);
+      setIsAddOpen(false);
       setFormData({ subscriberId: "", amount: 0, method: "cash" });
       
       // Auto-open receipt
       setSelectedPayment(newPay);
-      setShowReceipt(true);
+      setIsReceiptOpen(true);
+    } catch (err) {
+      toast.error("Failed to record payment");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const addPayment = async (data: any) => {
+    try {
+      setIsSubmitting(true);
+      const newPay = await recordPayment({
+        subscriberId: data.subscriberId,
+        amount: data.amount,
+        method: data.method === "cash" ? "Cash" : "UPI",
+        date: new Date().toISOString(),
+        agent: "Chudasama Shaktisinh",
+      });
+      toast.success("Payment recorded successfully");
+      setIsAddOpen(false);
+      setSelectedPayment(newPay);
+      setIsReceiptOpen(true);
     } catch (err) {
       toast.error("Failed to record payment");
     } finally {
@@ -623,7 +651,7 @@ Thank you!`;
 
   const handleOpenReceipt = (payment: any) => {
     setSelectedPayment(payment);
-    setShowReceipt(true);
+    setIsReceiptOpen(true);
   };
 
   const getAllocationItems = (payment: any) => {
@@ -648,6 +676,7 @@ Thank you!`;
         seen.add(res.label);
         unique.push(res);
       }
+    }
     return unique;
   };
 
@@ -687,7 +716,7 @@ Thank you!`;
             Sync
           </Button>
           <Button 
-            onClick={handleOpenAdd}
+            onClick={() => setIsAddOpen(true)}
             className="h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm active:scale-95 transition-all flex items-center gap-2.5"
           >
             <Plus className="h-4 w-4" /> Record Payment
@@ -882,11 +911,7 @@ Thank you!`;
       <AddPaymentModal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        onAdd={async (payment) => {
-          await addPayment(payment);
-          setIsAddOpen(false);
-          toast.success("Payment recorded successfully");
-        }}
+        onAdd={addPayment}
         subscribers={subscribers}
       />
 
@@ -898,22 +923,22 @@ Thank you!`;
           subscriber={subscribers.find(s => s.id === selectedPayment.subscriberId)!}
         />
       )}
-    </div>
-  );
-};
-
-export default Payments;
 
       {/* Confirmation Modal */}
       {confirmModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white text-slate-900 w-full max-w-md p-8 rounded-[2rem] shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black mb-4 flex items-center gap-3">
+              <AlertCircle className="h-6 w-6 text-rose-500" />
+              Confirm Deletion
+            </h2>
             <p className="text-slate-400 mb-8 font-medium leading-relaxed">
               Are you sure you want to delete this payment record? This will deduct the payment amount from the subscriber's balance.
             </p>
             <div className="flex justify-end gap-3 pt-2">
               <Button 
                 variant="ghost" 
-                className="rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/5 h-12 px-6" 
+                className="rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-100 h-12 px-6" 
                 onClick={() => setConfirmModal(null)}
               >
                 Cancel
@@ -935,6 +960,107 @@ export default Payments;
     </div>
   );
 }
+
+// ── SUB-COMPONENTS ────────────────────────────────────────────────────────────
+
+const AddPaymentModal = ({ isOpen, onClose, onAdd, subscribers }: any) => {
+  const [formData, setFormData] = useState({ subscriberId: "", amount: 0, method: "cash" });
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-lg p-10 rounded-[2.5rem] shadow-2xl border border-slate-200 animate-in zoom-in-95">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Record <span className="text-primary italic">Payment</span></h2>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full"><X className="h-5 w-5" /></Button>
+        </div>
+        <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onAdd(formData); }}>
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Subscriber</Label>
+            <select 
+              className="w-full h-12 rounded-2xl bg-slate-50 border border-slate-100 px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              value={formData.subscriberId}
+              onChange={e => setFormData({...formData, subscriberId: e.target.value})}
+            >
+              <option value="">Select Subscriber</option>
+              {subscribers.map((s: any) => <option key={s.id} value={s.id}>#{s.customerNo} {s.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Amount</Label>
+            <Input 
+              type="number" 
+              className="h-12 rounded-2xl bg-slate-50 border-slate-100 font-black text-lg" 
+              value={formData.amount}
+              onChange={e => setFormData({...formData, amount: Number(e.target.value)})}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Method</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                type="button"
+                variant={formData.method === 'cash' ? 'default' : 'outline'}
+                className="h-12 rounded-2xl font-black uppercase tracking-widest text-[10px]"
+                onClick={() => setFormData({...formData, method: 'cash'})}
+              >Cash</Button>
+              <Button 
+                type="button"
+                variant={formData.method === 'upi' ? 'default' : 'outline'}
+                className="h-12 rounded-2xl font-black uppercase tracking-widest text-[10px]"
+                onClick={() => setFormData({...formData, method: 'upi'})}
+              >UPI / Online</Button>
+            </div>
+          </div>
+          <Button type="submit" className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-lg shadow-primary/20 mt-4 transition-all active:scale-[0.98]">Record Transaction</Button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const PaymentReceiptModal = ({ isOpen, onClose, payment, subscriber }: any) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl z-[300] flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
+        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-6 right-6 rounded-full"><X className="h-5 w-5" /></Button>
+        <div className="text-center space-y-6 pt-4">
+          <div className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto border-4 border-white shadow-xl shadow-emerald-500/10">
+            <CheckCircle2 className="h-10 w-10" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black tracking-tighter text-slate-900">PAYMENT SUCCESS</h2>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">Transaction ID: {payment.id}</p>
+          </div>
+          <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Received</p>
+            <p className="text-5xl font-black text-slate-900 tracking-tighter">{formatCurrency(payment.amount)}</p>
+            <div className="mt-6 pt-6 border-t border-slate-200/60 grid grid-cols-2 gap-4 text-left">
+              <div>
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Customer</p>
+                <p className="text-sm font-bold text-slate-800 line-clamp-1">{subscriber?.name}</p>
+              </div>
+              <div>
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Method</p>
+                <p className="text-sm font-bold text-slate-800">{payment.method}</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3">
+             <Button className="w-full h-14 rounded-2xl bg-[#25D366] hover:bg-[#20bd5c] text-white font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-3">
+              <Send className="h-5 w-5" /> Share on WhatsApp
+             </Button>
+             <Button variant="outline" className="w-full h-14 rounded-2xl border-slate-200 font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3">
+              <Download className="h-5 w-5" /> Download Receipt
+             </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Label = ({ children, className, ...props }: any) => <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70", className)} {...props}>{children}</label>;
 
 
 

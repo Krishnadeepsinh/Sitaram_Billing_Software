@@ -439,7 +439,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => { 
     fetchData();

@@ -40,12 +40,8 @@
   * { @apply border-border; }
   
   body {
-    @apply bg-slate-950 text-foreground antialiased selection:bg-blue-500/30 selection:text-white;
+    @apply bg-[#0A0A0F] text-[#F1F1F5] antialiased;
     font-family: 'Inter', system-ui, sans-serif;
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(217, 91%, 60%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(217, 91%, 60%, 0.05) 0px, transparent 50%);
-    background-attachment: fixed;
   }
 
   h1, h2, h3, h4, h5, h6 {

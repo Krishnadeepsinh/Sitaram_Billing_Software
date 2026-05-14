@@ -444,10 +444,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   useEffect(() => { 
-    fetchData().then(() => {
-      // Auto-sync balances and statuses on startup to ensure no data drift
-      recalculateBalances();
-    });
+    fetchData();
   }, [businessMode]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────────

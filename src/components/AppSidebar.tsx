@@ -2,10 +2,10 @@ import { NavLink, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Users, Package, FileText, Wallet, 
   BarChart3, Receipt, Send, ShieldCheck, 
-  Database, DatabaseZap
+  Database, DatabaseZap, ArrowRightLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { hasTursoDB, useBusinessMode } from "@/lib/turso";
+import { hasTursoDB, useBusinessMode, setActiveBusinessMode } from "@/lib/turso";
 import {
   Sidebar,
   SidebarContent,
@@ -54,11 +54,18 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-white/10 bg-slate-950 p-0 shrink-0">
         <div className="flex flex-col gap-4 p-5">
           <Logo showText={true} size="sm" variant="white" />
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900 border border-white/10 w-fit">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              {activeBusinessMode === "cable" ? "CABLE MODE" : "BROADBAND MODE"}
-            </span>
-          </div>
+          <button 
+            onClick={() => setActiveBusinessMode(activeBusinessMode === "cable" ? "broadband" : "cable")}
+            className="group flex items-center justify-between px-3 py-2 rounded-lg bg-slate-900 border border-white/10 hover:border-indigo-500/50 hover:bg-slate-800 transition-all cursor-pointer w-full"
+          >
+            <div className="flex items-center gap-2">
+              <div className={cn("w-2 h-2 rounded-full", activeBusinessMode === "cable" ? "bg-amber-500" : "bg-indigo-500")} />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors">
+                {activeBusinessMode === "cable" ? "CABLE" : "BROADBAND"}
+              </span>
+            </div>
+            <ArrowRightLeft className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" />
+          </button>
         </div>
       </SidebarHeader>
 

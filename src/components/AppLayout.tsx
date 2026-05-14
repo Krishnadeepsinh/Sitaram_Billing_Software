@@ -31,12 +31,12 @@ export default function AppLayout() {
                 <Input placeholder="Search subscribers, invoices…" className="pl-9 bg-secondary/50 border-border/60" />
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center rounded-xl border border-border/60 bg-secondary/40 p-1">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center rounded-xl border border-border/60 bg-secondary/40 p-0.5 sm:p-1">
                 <button
                   type="button"
                   onClick={() => activeBusinessMode !== "cable" && setActiveBusinessMode("cable")}
-                  className={`h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`h-7 sm:h-8 px-2 sm:px-3 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${
                     activeBusinessMode === "cable"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -47,7 +47,7 @@ export default function AppLayout() {
                 <button
                   type="button"
                   onClick={() => activeBusinessMode !== "broadband" && setActiveBusinessMode("broadband")}
-                  className={`h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`h-7 sm:h-8 px-2 sm:px-3 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${
                     activeBusinessMode === "broadband"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"

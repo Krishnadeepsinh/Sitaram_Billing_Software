@@ -157,7 +157,7 @@ export default function Dashboard() {
           <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-black mb-1">
             {companySettings?.name || 'SITARAM CABLE & BROADBAND'} · Control Center
           </p>
-          <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tighter uppercase">
+          <h1 className="font-display text-2xl sm:text-4xl font-black tracking-tighter uppercase">
             Operations <span className="text-primary italic">Intelligence</span>
           </h1>
           <div className="flex items-center gap-2 mt-2">
@@ -197,7 +197,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Today's Collection" value={formatCurrency(s.collectedToday)} delta="+12.5% vs yesterday" icon={Activity} variant="primary" />
         <StatCard label="Month Revenue" value={formatCurrency(s.monthRevenue)} delta={`${payments.length} transactions`} icon={Activity} variant="accent" />
         <StatCard label="Pending Dues" value={formatCurrency(s.pendingDues)} delta={`${s.expired} total expired`} icon={AlertCircle} variant="warning" />

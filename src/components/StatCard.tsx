@@ -32,7 +32,7 @@ export function StatCard({ label, value, delta, icon: Icon, variant = "primary" 
       <div className="relative flex items-start justify-between">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">{label}</p>
-          <p className="font-display text-3xl font-bold font-mono-num">{value}</p>
+          <p className="font-display text-2xl sm:text-3xl font-bold font-mono-num">{value}</p>
           {delta && <p className="text-xs text-muted-foreground">{delta}</p>}
         </div>
         <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center", iconBg)}>

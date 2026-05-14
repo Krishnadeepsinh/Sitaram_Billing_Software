@@ -512,7 +512,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.log('Updating subscriber (DB):', id, updates);
       // Optimistic update
       setSubscribers(prev => {
-        const next = prev.map(s => s.id === id ? { ...s, ...updates } : s);
+        console.log('Subscribers before update:', prev.length);
+        const next = prev.map(s => String(s.id) === String(id) ? { ...s, ...updates } : s);
+        const updatedCount = next.filter((s, i) => s.status !== prev[i].status).length;
+        console.log('Subscribers updated in local state:', updatedCount);
         return next;
       });
       

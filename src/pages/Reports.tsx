@@ -502,25 +502,25 @@ export default function Reports() {
               <div className="h-1 w-12 bg-slate-800 rounded-full" />
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Business Intelligence</span>
             </div>
-            <h1 className="font-display text-5xl lg:text-7xl font-black tracking-tighter uppercase leading-none">
+            <h1 className="font-display text-4xl lg:text-5xl font-black tracking-tighter uppercase leading-none">
               Reports <span className="text-primary italic">& Analytics</span>
             </h1>
-            <p className="text-slate-400 max-w-md text-sm font-medium leading-relaxed">
+            <p className="text-slate-400 max-w-sm text-xs font-medium leading-relaxed">
               Audit-ready financial records and performance tracking. Deep insights into your business growth.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-14 px-6 rounded-2xl border-slate-800 bg-slate-900/50 hover:bg-slate-900 hover:border-slate-700 text-slate-300 transition-all duration-300">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-12 px-5 rounded-xl border-slate-800 bg-slate-900/50 hover:bg-slate-900 hover:border-slate-700 text-slate-300 transition-all duration-300">
               <Eye className="h-4 w-4 mr-2 text-primary" />
               Preview Report
             </Button>
-            <Button variant="outline" onClick={handleExportExcel} className="h-14 px-6 rounded-2xl border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 transition-all duration-300">
+            <Button variant="outline" onClick={handleExportExcel} className="h-12 px-5 rounded-xl border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 transition-all duration-300">
               <TrendingUp className="h-4 w-4 mr-2" />
               Excel Export
             </Button>
-            <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-              {isGenerating ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Download className="h-5 w-5 mr-2" />}
+            <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-12 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+              {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
               Generate PDF
             </Button>
           </div>
@@ -529,33 +529,33 @@ export default function Reports() {
         {/* Global Filter Bar */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="relative group">
-            <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
-            <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+            <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="w-full h-12 pl-12 pr-6 bg-slate-900/50 border-slate-800 rounded-xl text-white font-bold text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
               {Array.from({ length: 12 }).map((_, i) => (
                 <option key={i} value={i} className="bg-slate-900">{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
               ))}
             </select>
           </div>
           
-          <div className="relative">
-            <TrendingUp className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-            <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+          <div className="relative group">
+            <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+            <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="w-full h-12 pl-12 pr-6 bg-slate-900/50 border-slate-800 rounded-xl text-white font-bold text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
               {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
             </select>
           </div>
 
-          <div className="relative">
-            <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-            <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+          <div className="relative group">
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+            <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="w-full h-12 pl-12 pr-6 bg-slate-900/50 border-slate-800 rounded-xl text-white font-bold text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
               {(areas as string[]).map(area => (
                 <option key={String(area)} value={String(area)} className="bg-slate-900">{String(area)}</option>
               ))}
             </select>
           </div>
 
-          <div className="relative">
-            <Wallet className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-            <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+          <div className="relative group">
+            <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+            <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="w-full h-12 pl-12 pr-6 bg-slate-900/50 border-slate-800 rounded-xl text-white font-bold text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
               <option value="All Methods" className="bg-slate-900">All Methods</option>
               <option value="Cash" className="bg-slate-900">Cash Only</option>
               <option value="UPI" className="bg-slate-900">UPI / Digital</option>
@@ -565,59 +565,59 @@ export default function Reports() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-800 hover:border-primary/50 transition-all duration-500 group shadow-2xl shadow-black/20">
-            <div className="flex justify-between items-start mb-6">
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
-                <ShieldCheck className="h-6 w-6" />
+          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 hover:border-primary/50 transition-all duration-500 group shadow-2xl shadow-black/20">
+            <div className="flex justify-between items-start mb-4">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
+                <ShieldCheck className="h-5 w-5" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-primary transition-colors">Compliance</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-primary transition-colors">Compliance</span>
             </div>
-            <p className="text-4xl font-black tracking-tighter text-white">{(integrityScore * 100).toFixed(1)}%</p>
+            <p className="text-3xl font-black tracking-tighter text-white">{(integrityScore * 100).toFixed(1)}%</p>
             <div className="mt-4 flex items-center gap-2">
-              <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div className="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
                 <div className="h-full bg-primary animate-grow-x" style={{ width: `${integrityScore * 100}%` }} />
               </div>
             </div>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Audit Integrity</p>
+            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-4">Audit Integrity</p>
           </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-800 hover:border-emerald-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
-            <div className="flex justify-between items-start mb-6">
-              <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-                <TrendingUp className="h-6 w-6" />
+          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 hover:border-emerald-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
+            <div className="flex justify-between items-start mb-4">
+              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                <TrendingUp className="h-5 w-5" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-emerald-500 transition-colors">Revenue</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-emerald-500 transition-colors">Revenue</span>
             </div>
-            <p className="text-4xl font-black tracking-tighter text-white">{formatCurrency(monthStats.revenue)}</p>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Monthly Income</p>
+            <p className="text-3xl font-black tracking-tighter text-white">{formatCurrency(monthStats.revenue)}</p>
+            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-4">Monthly Income</p>
           </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-800 hover:border-amber-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
-            <div className="flex justify-between items-start mb-6">
-              <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/5">
-                <AlertCircle className="h-6 w-6" />
+          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 hover:border-amber-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
+            <div className="flex justify-between items-start mb-4">
+              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/5">
+                <AlertCircle className="h-5 w-5" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-amber-500 transition-colors">Outstanding</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-amber-500 transition-colors">Outstanding</span>
             </div>
-            <p className="text-4xl font-black tracking-tighter text-white">{formatCurrency(stats.pendingDues)}</p>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Pending Balance</p>
+            <p className="text-3xl font-black tracking-tighter text-white">{formatCurrency(stats.pendingDues)}</p>
+            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-4">Pending Balance</p>
           </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-800 hover:border-indigo-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
-            <div className="flex justify-between items-start mb-6">
-              <div className="h-12 w-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
-                <Users className="h-6 w-6" />
+          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
+            <div className="flex justify-between items-start mb-4">
+              <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
+                <Users className="h-5 w-5" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-indigo-500 transition-colors">Base</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-indigo-500 transition-colors">Base</span>
             </div>
-            <p className="text-4xl font-black tracking-tighter text-white">{stats.active}</p>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Active Accounts</p>
+            <p className="text-3xl font-black tracking-tighter text-white">{stats.active}</p>
+            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-4">Active Accounts</p>
           </div>
         </div>
 
         {/* Detailed Logs Panel */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
-          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-[2.5rem] border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
+          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-3xl border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
             <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
               <h3 className="font-display text-xl font-black uppercase tracking-tight text-white flex items-center gap-3">
                 <Receipt className="h-5 w-5 text-primary" />
@@ -655,7 +655,7 @@ export default function Reports() {
             </div>
           </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-[2.5rem] border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
+          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-3xl border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
             <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
               <h3 className="font-display text-xl font-black uppercase tracking-tight text-white flex items-center gap-3">
                 <BarChart3 className="h-5 w-5 text-amber-500" />
@@ -732,7 +732,7 @@ export default function Reports() {
               </div>
             </div>
             
-            <div className="bg-white rounded-[2rem] shadow-2xl shadow-black/50 overflow-hidden mx-auto" style={{ width: '794px' }}>
+            <div className="bg-white rounded-2xl shadow-2xl shadow-black/50 overflow-hidden mx-auto" style={{ width: '794px' }}>
               <AuditReportTemplate 
                 id="preview-template"
                 monthName={monthNameLong}

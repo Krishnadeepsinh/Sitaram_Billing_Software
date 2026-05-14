@@ -74,7 +74,7 @@ export default function Agents() {
                     </div>
                   </div>
                 </div>
-                <div className={`h-2 w-2 rounded-full ${agent.status === 'active' ? 'bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.5)]' : 'bg-slate-800'}`} />
+                <div className={`h-2 w-2 rounded-full ${agent.status === 'active' ? 'bg-blue-500 animate-pulse shadow-[0_0_8px_hsl(220_26%_48%/0.45)]' : 'bg-slate-800'}`} />
               </div>
 
               <div className="space-y-4">

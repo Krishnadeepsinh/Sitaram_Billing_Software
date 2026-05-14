@@ -25,8 +25,8 @@ const queryClient = new QueryClient();
 const RouteLoader = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
     <div className="flex flex-col items-center gap-3">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <p className="text-sm font-medium text-muted-foreground">Loading page...</p>
+      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      <p className="text-sm font-medium text-slate-400">Loading…</p>
     </div>
   </div>
 );
@@ -65,10 +65,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (status === "checking") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-blue-950">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm font-medium text-muted-foreground">Checking secure session...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <p className="text-sm font-medium text-slate-400">Checking session…</p>
         </div>
       </div>
     );

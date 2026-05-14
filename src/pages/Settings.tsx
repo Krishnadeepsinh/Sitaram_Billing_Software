@@ -45,12 +45,12 @@ const Settings = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-blue-600/10 flex items-center justify-center border border-blue-600/20 shadow-[0_0_15px_rgba(37,99,235,0.1)]">
+          <div className="h-10 w-10 rounded-xl bg-blue-600/10 flex items-center justify-center border border-blue-600/20 shadow-[0_0_15px_hsl(220_26%_38%/0.12)]">
             <Building2 className="h-5 w-5 text-blue-500" />
           </div>
           <div>
-            <h1 className="text-lg font-black tracking-tight text-white uppercase">SYSTEM_CONFIG_PROTOCOL</h1>
-            <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em] uppercase">Enterprise Identity & Parameters</p>
+            <h1 className="font-display text-xl font-semibold tracking-tight text-white">Settings</h1>
+            <p className="mt-0.5 text-sm text-slate-500">Company profile used on invoices and receipts</p>
           </div>
         </div>
 
@@ -61,14 +61,14 @@ const Settings = () => {
                 <Building2 className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-[10px] uppercase tracking-[0.25em] font-black text-white">ORGANIZATION_IDENTITY_RECORD</h2>
-                <p className="text-[8px] text-slate-600 font-bold uppercase mt-0.5 tracking-[0.2em]">Master Branding Parameters</p>
+                <h2 className="text-sm font-semibold text-white">Business details</h2>
+                <p className="text-xs text-slate-500">Shown to customers on PDFs and messages</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1.5 group">
-                <label className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-600 ml-1 group-focus-within:text-blue-500 transition-colors">CORP_LEGAL_NAME</label>
+                <label className="ml-1 text-xs font-medium text-slate-400 transition-colors group-focus-within:text-blue-400">Legal business name</label>
                 <div className="relative">
                   <Input 
                     value={formData.name} 
@@ -80,7 +80,7 @@ const Settings = () => {
               </div>
 
               <div className="space-y-1.5 group">
-                <label className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-600 ml-1 group-focus-within:text-blue-500 transition-colors">FIN_UPI_GATEWAY_ID</label>
+                <label className="ml-1 text-xs font-medium text-slate-400 transition-colors group-focus-within:text-blue-400">UPI ID</label>
                 <div className="relative">
                   <Input 
                     value={formData.upiId} 
@@ -92,7 +92,7 @@ const Settings = () => {
               </div>
 
               <div className="space-y-1.5 group">
-                <label className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-600 ml-1 group-focus-within:text-blue-500 transition-colors">PRIMARY_COMM_TERMINAL</label>
+                <label className="ml-1 text-xs font-medium text-slate-400 transition-colors group-focus-within:text-blue-400">Phone</label>
                 <div className="relative">
                   <Input 
                     value={formData.phone} 
@@ -104,7 +104,7 @@ const Settings = () => {
               </div>
 
               <div className="space-y-1.5 group">
-                <label className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-600 ml-1 group-focus-within:text-blue-500 transition-colors">SUPPORT_DATA_NODE</label>
+                <label className="ml-1 text-xs font-medium text-slate-400 transition-colors group-focus-within:text-blue-400">Email</label>
                 <div className="relative">
                   <Input 
                     value={formData.email} 
@@ -116,7 +116,7 @@ const Settings = () => {
               </div>
 
               <div className="md:col-span-2 space-y-1.5 group">
-                <label className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-600 ml-1 group-focus-within:text-blue-500 transition-colors">PHYSICAL_LOCATION_DATA</label>
+                <label className="ml-1 text-xs font-medium text-slate-400 transition-colors group-focus-within:text-blue-400">Address</label>
                 <div className="relative">
                   <textarea 
                     value={formData.address} 
@@ -132,17 +132,17 @@ const Settings = () => {
               <Button 
                 type="submit" 
                 disabled={isSaving}
-                className="h-9 px-8 rounded-lg bg-blue-600 text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-blue-600/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                className="h-10 rounded-lg bg-blue-600 px-8 text-sm font-medium text-white shadow-md shadow-blue-600/25 transition-colors hover:bg-blue-500 disabled:opacity-50"
               >
                 {isSaving ? (
                   <>
-                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                    COMMITTING_CHANGES...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving…
                   </>
                 ) : (
                   <>
-                    <Save className="mr-2 h-3.5 w-3.5" />
-                    SYNC_CONFIGURATION
+                    <Save className="mr-2 h-4 w-4" />
+                    Save changes
                   </>
                 )}
               </Button>

@@ -59,7 +59,7 @@ export default function Plans() {
         await addPlan(payload);
       }
       setShowModal(false);
-      toast.success(editingPlan ? "Protocol Updated" : "Node Initialized");
+      toast.success(editingPlan ? "Plan updated" : "Plan added");
     } finally {
       setIsSaving(false);
     }
@@ -68,7 +68,7 @@ export default function Plans() {
   const executeDelete = async (id: string) => {
     try {
       await deletePlan(id);
-      toast.success("Protocol Purged");
+      toast.success("Plan removed");
     } catch (err) {
       toast.error("Operation Failed");
     }
@@ -76,41 +76,38 @@ export default function Plans() {
 
   return (
     <div className="space-y-4 animate-fade-in pb-20">
-      {/* INDUSTRIAL HEADER */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[8px] uppercase tracking-[0.4em] text-slate-500 font-black mb-1 flex items-center gap-2">
-            <Shield className="h-3 w-3 text-blue-500" />
-            INFRASTRUCTURE · SERVICE TIERS
+          <p className="app-eyebrow mb-1 flex items-center gap-2">
+            <Shield className="h-3.5 w-3.5 text-blue-500" />
+            Service plans
           </p>
-          <h1 className="font-display text-2xl font-black tracking-tighter text-white uppercase leading-none">
-            Network <span className="text-blue-600 italic">Topology</span>
-          </h1>
+          <h1 className="app-page-title">Plans & pricing</h1>
         </div>
         <Button 
           onClick={handleOpenAdd}
-          className="h-8 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-md font-black text-[9px] uppercase tracking-widest shadow-lg shadow-blue-600/20 active:scale-95 transition-all flex items-center gap-2"
+          className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500"
         >
-          <Plus className="h-3.5 w-3.5" /> Initialize Tier
+          <Plus className="mr-2 h-4 w-4" /> Add plan
         </Button>
       </div>
 
-      {/* HIGH-DENSITY PROTOCOL TABLE */}
-      <div className="bg-slate-900/60 backdrop-blur-xl rounded-xl border border-slate-800/50 shadow-2xl overflow-hidden">
-        <div className="px-4 py-2 border-b border-slate-800 bg-slate-950/50 flex justify-between items-center">
-          <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500">Active Service Protocols</p>
-          <span className="text-[7px] font-black text-blue-500 uppercase tracking-widest bg-blue-600/10 px-2 py-0.5 rounded border border-blue-600/20">{plans.length} Nodes</span>
+      <div className="app-panel overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/40 px-4 py-2.5">
+          <p className="text-xs font-medium text-slate-400">Active plans</p>
+          <span className="rounded-md border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-400">{plans.length} total</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="bg-slate-950/80 border-b border-slate-800 text-[7px] font-black uppercase tracking-[0.3em] text-slate-600">
-                <th className="px-4 py-2.5">Protocol Identity</th>
-                <th className="px-4 py-2.5">Tariff</th>
-                <th className="px-4 py-2.5">Cycle</th>
-                <th className="px-4 py-2.5">{isCableMode ? "Units" : "Bandwidth"}</th>
-                <th className="px-4 py-2.5">Connectivity</th>
-                <th className="px-4 py-2.5 text-right">Ops</th>
+              <tr className="border-b border-slate-800 bg-slate-950/80">
+                <th className="app-table-th px-4 py-2.5">Plan</th>
+                <th className="app-table-th px-4 py-2.5">Price</th>
+                <th className="app-table-th px-4 py-2.5">Cycle</th>
+                <th className="app-table-th px-4 py-2.5">{isCableMode ? "Units" : "Speed"}</th>
+                <th className="app-table-th px-4 py-2.5">Subscribers</th>
+                <th className="app-table-th px-4 py-2.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
@@ -124,28 +121,28 @@ export default function Plans() {
                           <Wifi className="h-3.5 w-3.5" />
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-bold text-xs tracking-tight text-white uppercase leading-none">{p.name}</span>
-                          <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest mt-1">Ref: {p.providerPlanId || "GLOBAL"}</span>
+                          <span className="text-xs font-semibold tracking-tight text-white">{p.name}</span>
+                          <span className="mt-1 text-[11px] font-medium text-slate-500">ID: {p.providerPlanId || "—"}</span>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-mono font-black text-xs text-blue-500">{formatCurrency(p.price)}</span>
+                      <span className="font-mono text-sm font-semibold text-blue-400">{formatCurrency(p.price)}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">
-                        {p.validityDays} Days
+                      <span className="text-xs font-medium text-slate-400">
+                        {p.validityDays} days
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-white tabular-nums">
-                        {isCableMode ? `${p.speedMbps} Unit` : `${p.speedMbps} Mbps`}
+                      <span className="text-xs font-medium tabular-nums text-slate-200">
+                        {isCableMode ? `${p.speedMbps} unit` : `${p.speedMbps} Mbps`}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className={cn("h-1 w-1 rounded-full", count > 0 ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" : "bg-slate-800")} />
-                        <span className="font-black text-[9px] text-slate-500 uppercase tracking-tighter">{count} Nodes</span>
+                        <div className={cn("h-1 w-1 rounded-full", count > 0 ? "bg-blue-500 shadow-[0_0_8px_hsl(220_26%_48%/0.45)]" : "bg-slate-800")} />
+                        <span className="text-xs font-medium text-slate-400">{count} on plan</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -168,83 +165,103 @@ export default function Plans() {
 
       {/* MODAL SECTION */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 w-full max-w-lg p-10 rounded-[3.5rem] shadow-2xl border border-slate-800 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-5 mb-10">
-              <div className="h-14 w-14 rounded-2xl bg-blue-600/10 flex items-center justify-center text-blue-500 border border-blue-600/20 shadow-inner">
-                <Wifi className="h-7 w-7" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md">
+          <div className="w-full max-w-lg animate-in zoom-in-95 rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl duration-200">
+            <div className="mb-8 flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400">
+                <Wifi className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{editingPlan ? 'Modify Protocol' : 'New Tier Entry'}</h2>
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] mt-2">Core Bandwidth Specification</p>
+                <h2 className="font-display text-xl font-semibold text-white">{editingPlan ? "Edit plan" : "New plan"}</h2>
+                <p className="mt-1 text-sm text-slate-500">Set how this plan appears on invoices and renewals.</p>
               </div>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="space-y-2">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Protocol Descriptor</Label>
+                <Label className="text-xs font-medium text-slate-400">Plan name</Label>
                 <Input 
                   value={formData.name} 
                   onChange={e => setFormData({...formData, name: e.target.value})} 
-                  placeholder="e.g. ULTIMATE_FIBER_200" 
-                  className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-black text-xs text-white uppercase"
+                  placeholder="e.g. Fiber 200" 
+                  className="h-10 rounded-lg border-slate-800 bg-slate-950 text-sm text-white focus-visible:border-blue-500/40"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Tariff Value (INR)</Label>
+                  <Label className="text-xs font-medium text-slate-400">Price (INR)</Label>
                   <Input 
                     type="number" 
                     value={formData.price || ''} 
                     onChange={e => setFormData({...formData, price: Number(e.target.value)})} 
-                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-mono font-black text-xs text-white"
+                    className="h-10 rounded-lg border-slate-800 bg-slate-950 font-mono text-sm text-white focus-visible:border-blue-500/40"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Cycle Length (Days)</Label>
+                  <Label className="text-xs font-medium text-slate-400">Validity (days)</Label>
                   <Input 
                     type="number" 
                     value={formData.validityDays || ''} 
                     onChange={e => setFormData({...formData, validityDays: Number(e.target.value)})} 
-                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-black text-xs text-white"
+                    className="h-10 rounded-lg border-slate-800 bg-slate-950 text-sm text-white focus-visible:border-blue-500/40"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">
-                    {isCableMode ? "Unit Payload" : "Throughput (Mbps)"}
+                  <Label className="text-xs font-medium text-slate-400">
+                    {isCableMode ? "Units" : "Speed (Mbps)"}
                   </Label>
                   <Input 
                     type="number" 
                     value={formData.speedMbps || ''} 
                     onChange={e => setFormData({...formData, speedMbps: Number(e.target.value)})} 
-                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-black text-xs text-white"
+                    className="h-10 rounded-lg border-slate-800 bg-slate-950 text-sm text-white focus-visible:border-blue-500/40"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Logic Ref ID</Label>
+                  <Label className="text-xs font-medium text-slate-400">Provider reference</Label>
                   <Input 
                     value={formData.providerPlanId} 
                     onChange={e => setFormData({...formData, providerPlanId: e.target.value})} 
-                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-mono font-black text-[10px] text-slate-400"
-                    placeholder="PLAN_HASH_00"
+                    className="h-10 rounded-lg border-slate-800 bg-slate-950 font-mono text-sm text-slate-300 focus-visible:border-blue-500/40"
+                    placeholder="Optional"
                   />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-slate-400">Category</Label>
+                <select
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      category: e.target.value as "welcome" | "renewal" | "iptv",
+                    })
+                  }
+                  className="h-10 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/25"
+                >
+                  {(Object.keys(categoryLabel) as (keyof typeof categoryLabel)[]).map((k) => (
+                    <option key={k} value={k}>
+                      {categoryLabel[k]}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div className="flex gap-3 mt-10">
-              <Button variant="ghost" className="flex-1 h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:text-white" onClick={() => setShowModal(false)}>Discard</Button>
+            <div className="mt-8 flex gap-3">
+              <Button variant="ghost" className="h-10 flex-1 rounded-lg text-sm font-medium text-slate-400 hover:text-white" onClick={() => setShowModal(false)}>Cancel</Button>
               <Button 
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex-1 h-12 rounded-2xl bg-blue-600 text-white hover:bg-blue-500 shadow-xl shadow-blue-600/20 font-black text-[10px] uppercase tracking-widest"
+                className="h-10 flex-1 rounded-lg bg-blue-600 text-sm font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500"
               >
-                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />}
-                Commit Tier
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ChevronRight className="mr-2 h-4 w-4" />}
+                Save plan
               </Button>
             </div>
           </div>
@@ -252,27 +269,27 @@ export default function Plans() {
       )}
 
       {confirmModal && (
-        <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
-          <div className="bg-slate-900 text-white w-full max-w-sm p-10 rounded-[3rem] shadow-2xl border border-slate-800 text-center animate-in zoom-in-95 duration-200">
-            <div className="h-16 w-16 rounded-3xl bg-rose-500/10 flex items-center justify-center text-rose-500 border border-rose-500/20 mx-auto mb-6">
-              <Trash2 className="h-8 w-8" />
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/95 p-4 backdrop-blur-xl">
+          <div className="w-full max-w-sm animate-in zoom-in-95 rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center text-white shadow-2xl duration-200">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-rose-500/25 bg-rose-500/10 text-rose-400">
+              <Trash2 className="h-7 w-7" />
             </div>
-            <h2 className="text-xl font-black mb-3 uppercase tracking-tighter">Purge Protocol?</h2>
-            <p className="text-slate-500 mb-8 font-black text-[9px] uppercase tracking-widest leading-relaxed">
-              This will permanently delete the service tier. Nodes currently utilizing this protocol will require immediate reconfiguration.
+            <h2 className="font-display text-lg font-semibold">Delete this plan?</h2>
+            <p className="mb-8 mt-2 text-sm text-slate-400">
+              Subscribers on this plan may need to be moved to another plan first.
             </p>
             <div className="flex flex-col gap-2">
               <Button 
                 variant="destructive" 
-                className="h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-rose-600 shadow-xl shadow-rose-600/20"
+                className="h-10 rounded-lg bg-rose-600 text-sm font-medium shadow-md shadow-rose-600/20 hover:bg-rose-500"
                 onClick={() => {
                   executeDelete(confirmModal.id);
                   setConfirmModal(null);
                 }}
               >
-                Confirm Purge
+                Delete plan
               </Button>
-              <Button variant="ghost" className="h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600" onClick={() => setConfirmModal(null)}>Abort</Button>
+              <Button variant="ghost" className="h-10 rounded-lg text-sm font-medium text-slate-500 hover:text-white" onClick={() => setConfirmModal(null)}>Cancel</Button>
             </div>
           </div>
         </div>

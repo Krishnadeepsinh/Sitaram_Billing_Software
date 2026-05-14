@@ -43,22 +43,22 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center bg-blue-950 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px]" />
 
       <div className="w-full max-w-[420px] p-6 relative z-10 animate-fade-in">
-        <div className="bg-slate-900/50 backdrop-blur-2xl border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl">
+        <div className="w-full max-w-[420px] rounded-2xl border border-slate-800/80 bg-slate-900/55 p-8 shadow-2xl backdrop-blur-2xl">
           <div className="flex flex-col items-center mb-10 text-center">
             <Logo size="xl" showText={false} className="mb-5" />
-            <h1 className="text-3xl font-black text-white tracking-tight">SITARAM</h1>
-            <p className="text-orange-400 text-sm mt-2 font-bold uppercase tracking-[0.18em]">Cable & Broadband</p>
-            <p className="text-slate-400 text-sm mt-3">Connecting every home through one secure billing workspace</p>
+            <h1 className="font-display text-3xl font-semibold tracking-tight text-white">Sitaram</h1>
+            <p className="mt-2 text-sm font-medium text-slate-400">Cable & broadband billing</p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-500">Secure workspace for collections, invoices, and subscriber records.</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Username</label>
+              <label className="ml-1 text-xs font-medium text-slate-400">Username</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                 <Input
@@ -73,7 +73,7 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Password</label>
+              <label className="ml-1 text-xs font-medium text-slate-400">Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                 <Input
@@ -112,9 +112,7 @@ export default function Login() {
           </form>
 
           <div className="mt-10 text-center border-t border-slate-800 pt-6">
-            <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">
-              Secure Terminal 0.4.2
-            </p>
+            <p className="text-xs text-slate-500">Billing workspace v0.4.2</p>
           </div>
         </div>
       </div>

@@ -44,10 +44,10 @@ const AuditReportTemplate = ({
           src: url(data:font/ttf;base64,${GUJARATI_FONT});
         }
         .gujarati { font-family: 'Gujarati', system-ui, sans-serif !important; font-size: 14px !important; line-height: 1.2; }
-        .report-header { background-color: #020617; color: #fff; padding: 42px; border-bottom: 6px solid #2563eb; page-break-inside: avoid; }
+        .report-header { background-color: #0a1019; color: #fff; padding: 42px; border-bottom: 6px solid #3d516d; page-break-inside: avoid; }
         .logo-box { width: 104px; height: 104px; background: #fff; border-radius: 18px; padding: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 18px 35px rgb(0 0 0 / 0.24); }
-        .badge { background: #2563eb; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: 900; letter-spacing: 0.1em; display: inline-block; }
-        .mode-badge { margin-top: 10px; background: rgb(37 99 235 / 0.1); color: #60a5fa; border: 1px solid rgb(59 130 246 / 0.3); padding: 5px 12px; border-radius: 999px; font-size: 9px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; display: inline-block; }
+        .badge { background: #3d516d; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: 900; letter-spacing: 0.1em; display: inline-block; }
+        .mode-badge { margin-top: 10px; background: rgb(61 81 109 / 0.12); color: #8a9bb5; border: 1px solid rgb(90 108 132 / 0.35); padding: 5px 12px; border-radius: 999px; font-size: 9px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; display: inline-block; }
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 30px 40px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; page-break-inside: avoid; }
         .stat-box { border-left: 3px solid #cbd5e1; padding-left: 15px; }
         .stat-label { font-size: 8px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 4px; }
@@ -81,7 +81,7 @@ const AuditReportTemplate = ({
           </div>
           <div style={{ textAlign: 'right' }}>
             <div className="badge">AUDIT RECONCILIATION</div>
-            <h2 style={{ fontSize: '20px', fontWeight: '900', margin: '10px 0 0 0', color: '#2563eb' }}>{monthName}</h2>
+            <h2 style={{ fontSize: '20px', fontWeight: '900', margin: '10px 0 0 0', color: '#3d516d' }}>{monthName}</h2>
             <p style={{ fontSize: '10px', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginTop: '5px' }}>
               Cycle: {new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
             </p>
@@ -90,17 +90,17 @@ const AuditReportTemplate = ({
       </div>
 
       <div className="stat-grid">
-        <div className="stat-box" style={{ borderLeftColor: '#2563eb' }}>
+        <div className="stat-box" style={{ borderLeftColor: '#3d516d' }}>
           <div className="stat-label">Total Collections</div>
-          <div className="stat-value" style={{ color: '#1e40af' }}>{formatCurrency(monthStats.revenue)}</div>
+          <div className="stat-value" style={{ color: '#2c3e54' }}>{formatCurrency(monthStats.revenue)}</div>
         </div>
         <div className="stat-box" style={{ borderLeftColor: '#ef4444' }}>
           <div className="stat-label">Expenditure</div>
           <div className="stat-value" style={{ color: '#dc2626' }}>{formatCurrency(monthStats.expenses)}</div>
         </div>
-        <div className="stat-box" style={{ borderLeftColor: '#2563eb' }}>
+        <div className="stat-box" style={{ borderLeftColor: '#3d516d' }}>
           <div className="stat-label">Net Yield</div>
-          <div className="stat-value" style={{ color: '#1d4ed8' }}>{formatCurrency(monthStats.revenue - monthStats.expenses)}</div>
+          <div className="stat-value" style={{ color: '#33465d' }}>{formatCurrency(monthStats.revenue - monthStats.expenses)}</div>
         </div>
         <div className="stat-box" style={{ borderLeftColor: '#64748b' }}>
           <div className="stat-label">Transactions</div>
@@ -110,7 +110,7 @@ const AuditReportTemplate = ({
 
       <div className="report-body">
         <div className="table-title">
-          <div style={{ width: '4px', height: '18px', background: '#2563eb', borderRadius: '2px' }}></div>
+          <div style={{ width: '4px', height: '18px', background: '#3d516d', borderRadius: '2px' }}></div>
           Collection Protocol Ledger — {selectedArea}
         </div>
 
@@ -162,7 +162,7 @@ const AuditReportTemplate = ({
             })}
             <tr style={{ background: '#f8fafc' }}>
               <td colSpan={6} style={{ textAlign: 'right', padding: '15px', fontWeight: '900', fontSize: '11px', textTransform: 'uppercase', color: '#64748b' }}>Total Periodic Collection</td>
-              <td style={{ textAlign: 'right', padding: '15px', fontWeight: '900', fontSize: '13px', color: '#2563eb' }}>{formatCurrency(monthStats.revenue)}</td>
+              <td style={{ textAlign: 'right', padding: '15px', fontWeight: '900', fontSize: '13px', color: '#3d516d' }}>{formatCurrency(monthStats.revenue)}</td>
             </tr>
           </tbody>
         </table>
@@ -171,7 +171,7 @@ const AuditReportTemplate = ({
           <div>
             <p style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', marginBottom: '4px' }}>Security & Audit Protocol</p>
             <p style={{ fontSize: '9px', color: '#94a3b8', maxWidth: '300px', lineHeight: '1.4' }}>Automated reconciliation report. Verified against decentralized billing records.</p>
-            <div style={{ marginTop: '20px', border: '2px solid #2563eb', color: '#2563eb', padding: '6px 15px', borderRadius: '8px', display: 'inline-block', fontWeight: '900', fontSize: '11px' }}>CERTIFIED AUDIT RECORD</div>
+            <div style={{ marginTop: '20px', border: '2px solid #3d516d', color: '#3d516d', padding: '6px 15px', borderRadius: '8px', display: 'inline-block', fontWeight: '900', fontSize: '11px' }}>CERTIFIED AUDIT RECORD</div>
           </div>
           <div style={{ display: 'flex', gap: '40px' }}>
             <div className="sign-box"><p style={{ fontSize: '9px', fontWeight: '800', textTransform: 'uppercase', color: '#64748b' }}>Accountant</p></div>
@@ -298,7 +298,7 @@ export default function Reports() {
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(collectionData), "Collections");
       XLSX.writeFile(wb, `Audit_${monthNameLong.replace(/ /g, '_')}.xlsx`);
-      toast.success("Excel Protocol Exported");
+      toast.success("Excel file exported");
     } catch (error) {
       toast.error("Export Failed");
     }
@@ -318,7 +318,7 @@ export default function Reports() {
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       await html2pdf().set(opt).from(element).save();
-      toast.success("PDF Protocol Issued");
+      toast.success("PDF report downloaded");
     } catch (err) {
       toast.error("Generation Failed");
     } finally {
@@ -331,32 +331,30 @@ export default function Reports() {
   return (
     <div className="space-y-4 animate-fade-in pb-12">
       {/* INDUSTRIAL HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[8px] uppercase tracking-[0.4em] text-slate-500 font-black mb-1 flex items-center gap-2">
-            <Shield className="h-3 w-3 text-blue-500" />
-            ANALYTICS · AUDIT INFRASTRUCTURE
+          <p className="app-eyebrow mb-1 flex items-center gap-2">
+            <Shield className="h-3.5 w-3.5 text-blue-500" />
+            Financial performance
           </p>
-          <h1 className="font-display text-2xl font-black tracking-tighter text-white uppercase leading-none">
-            Business <span className="text-blue-600 italic">Intelligence</span>
-          </h1>
+          <h1 className="app-page-title">Reports & audit</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-8 px-3 rounded-md border-slate-800 bg-slate-950/50 hover:bg-slate-900 text-slate-500 text-[9px] uppercase font-black tracking-widest transition-all">
-            <Eye className="h-3.5 w-3.5 mr-2" /> Preview
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-9 rounded-lg border-slate-700 bg-slate-900/60 px-3 text-xs font-medium text-slate-300 hover:bg-slate-800">
+            <Eye className="mr-2 h-3.5 w-3.5" /> Preview
           </Button>
-          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-8 px-4 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[9px] shadow-lg shadow-blue-600/20 transition-all">
-            {isGenerating ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-2" />}
-            PDF Protocol
+          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
+            {isGenerating ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}
+            Download PDF
           </Button>
         </div>
       </div>
 
-      {/* COMPACT FILTERS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+      {/* Filters */}
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
         <div className="relative group">
           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
-          <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="w-full h-8 pl-9 pr-6 bg-slate-900/60 border-slate-800 rounded-lg text-white font-black text-[9px] uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-blue-600/50 appearance-none transition-all">
+          <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="h-9 w-full appearance-none rounded-lg border border-slate-800 bg-slate-900/70 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-blue-500/40 focus:outline-none focus:ring-0">
             {Array.from({ length: 12 }).map((_, i) => (
               <option key={i} value={i} className="bg-slate-900">{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
             ))}
@@ -364,13 +362,13 @@ export default function Reports() {
         </div>
         <div className="relative group">
           <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
-          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="w-full h-8 pl-9 pr-6 bg-slate-900/60 border-slate-800 rounded-lg text-white font-black text-[9px] uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-blue-600/50 appearance-none transition-all">
+          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="h-9 w-full appearance-none rounded-lg border border-slate-800 bg-slate-900/70 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-blue-500/40 focus:outline-none focus:ring-0">
             {[2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
           </select>
         </div>
         <div className="relative group">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
-          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="w-full h-8 pl-9 pr-6 bg-slate-900/60 border-slate-800 rounded-lg text-white font-black text-[9px] uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-blue-600/50 appearance-none transition-all">
+          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-slate-800 bg-slate-900/70 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-blue-500/40 focus:outline-none focus:ring-0">
             {areas.map(area => (
               <option key={area} value={area} className="bg-slate-900">{area}</option>
             ))}
@@ -378,7 +376,7 @@ export default function Reports() {
         </div>
         <div className="relative group">
           <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
-          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="w-full h-8 pl-9 pr-6 bg-slate-900/60 border-slate-800 rounded-lg text-white font-black text-[9px] uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-blue-600/50 appearance-none transition-all">
+          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-slate-800 bg-slate-900/70 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-blue-500/40 focus:outline-none focus:ring-0">
             <option value="All Methods" className="bg-slate-900">All Methods</option>
             <option value="Cash" className="bg-slate-900">Cash</option>
             <option value="UPI" className="bg-slate-900">UPI / Digital</option>
@@ -389,23 +387,23 @@ export default function Reports() {
       {/* STATS INFRASTRUCTURE */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Audit Integrity", value: `${(integrityScore * 100).toFixed(1)}%`, icon: ShieldCheck, color: "blue" },
-          { label: "Net Revenue", value: formatCurrency(monthStats.revenue), icon: TrendingUp, color: "blue" },
-          { label: "Total Dues", value: formatCurrency(stats.pendingDues), icon: AlertCircle, color: "rose" },
-          { label: "Active Nodes", value: stats.active, icon: Users, color: "indigo" }
+          { label: "Data quality", value: `${(integrityScore * 100).toFixed(1)}%`, icon: ShieldCheck, color: "blue" },
+          { label: "Net revenue", value: formatCurrency(monthStats.revenue), icon: TrendingUp, color: "blue" },
+          { label: "Outstanding dues", value: formatCurrency(stats.pendingDues), icon: AlertCircle, color: "rose" },
+          { label: "Active subscribers", value: stats.active, icon: Users, color: "indigo" }
         ].map((item, idx) => (
-          <div key={idx} className="bg-slate-900/40 backdrop-blur-xl p-4 rounded-xl border border-slate-800/50 shadow-xl group hover:border-blue-600/30 transition-all">
-            <div className="flex justify-between items-center mb-3">
-              <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center border", 
-                item.color === "blue" ? "bg-blue-600/10 text-blue-500 border-blue-600/20" : 
-                item.color === "rose" ? "bg-rose-600/10 text-rose-500 border-rose-600/20" : 
-                "bg-indigo-600/10 text-indigo-400 border-indigo-600/20"
+          <div key={idx} className="app-panel group p-5 transition-colors hover:border-blue-500/25">
+            <div className="mb-3 flex items-center justify-between">
+              <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg border", 
+                item.color === "blue" ? "bg-blue-600/10 text-blue-400 border-blue-600/20" : 
+                item.color === "rose" ? "bg-rose-600/10 text-rose-400 border-rose-600/20" : 
+                "bg-indigo-600/10 text-indigo-300 border-indigo-600/20"
               )}>
                 <item.icon className="h-4 w-4" />
               </div>
-              <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500">{item.label}</span>
+              <span className="text-right text-xs font-medium text-slate-500">{item.label}</span>
             </div>
-            <p className="text-xl font-black text-white tracking-tighter tabular-nums leading-none">{item.value}</p>
+            <p className="font-display text-xl font-semibold tabular-nums leading-none tracking-tight text-white">{item.value}</p>
           </div>
         ))}
       </div>
@@ -416,21 +414,21 @@ export default function Reports() {
           { title: "Collection Ledger", icon: Receipt, data: filteredPayments, type: "collection" },
           { title: "Expenditure Ledger", icon: BarChart3, data: filteredExpenses, type: "expense" }
         ].map((ledger, idx) => (
-          <div key={idx} className="bg-slate-900/40 backdrop-blur-2xl rounded-xl border border-slate-800/50 shadow-2xl overflow-hidden flex flex-col h-[500px]">
-            <div className="px-5 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.1em] text-white flex items-center gap-2">
-                <ledger.icon className="h-3.5 w-3.5 text-blue-600" />
+          <div key={idx} className="app-panel flex h-[500px] flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/40 px-5 py-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                <ledger.icon className="h-4 w-4 text-blue-400" />
                 {ledger.title}
               </h3>
-              <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest bg-slate-900 px-2 py-0.5 rounded border border-slate-800">{ledger.data.length} Entries</span>
+              <span className="rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs font-medium text-slate-500">{ledger.data.length} rows</span>
             </div>
-            <div className="overflow-auto flex-1 custom-scrollbar">
-              <table className="w-full text-left border-collapse">
-                <thead className="sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10 border-b border-slate-800">
-                  <tr className="text-[7px] uppercase tracking-[0.2em] text-slate-600 font-black">
-                    <th className="px-5 py-2.5">{ledger.type === "collection" ? "Subscriber" : "Category"}</th>
-                    <th className="px-5 py-2.5">Date</th>
-                    <th className="px-5 py-2.5 text-right">Value</th>
+            <div className="custom-scrollbar flex-1 overflow-auto">
+              <table className="w-full border-collapse text-left">
+                <thead className="sticky top-0 z-10 border-b border-slate-800 bg-slate-900/95 backdrop-blur-sm">
+                  <tr>
+                    <th className="app-table-th px-5 py-2.5">{ledger.type === "collection" ? "Subscriber" : "Category"}</th>
+                    <th className="app-table-th px-5 py-2.5">Date</th>
+                    <th className="app-table-th px-5 py-2.5 text-right">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/50">
@@ -439,21 +437,21 @@ export default function Reports() {
                       <td className="px-5 py-2.5">
                         {ledger.type === "collection" ? (
                           <>
-                            <p className="text-[10px] font-black text-white group-hover:text-blue-500 transition-colors">{subscribers.find(s => s.id === item.subscriberId)?.name || "Unknown"}</p>
-                            <p className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">{subscribers.find(s => s.id === item.subscriberId)?.area || "General"}</p>
+                            <p className="text-sm font-medium text-white transition-colors group-hover:text-blue-300">{subscribers.find(s => s.id === item.subscriberId)?.name || "Unknown"}</p>
+                            <p className="mt-0.5 text-xs text-slate-500">{subscribers.find(s => s.id === item.subscriberId)?.area || "—"}</p>
                           </>
                         ) : (
                           <>
-                            <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[7px] font-black uppercase text-blue-500">{item.category}</span>
-                            <p className="text-[7px] font-black text-slate-600 mt-1 uppercase truncate max-w-[120px]">{item.description}</p>
+                            <span className="rounded border border-slate-800 bg-slate-950 px-1.5 py-0.5 text-xs font-medium text-blue-400">{item.category}</span>
+                            <p className="mt-1 max-w-[140px] truncate text-xs text-slate-500">{item.description}</p>
                           </>
                         )}
                       </td>
                       <td className="px-5 py-2.5">
-                        <span className="text-[8px] font-black text-slate-500 uppercase">{formatDate(item.date)}</span>
+                        <span className="text-xs font-medium text-slate-500">{formatDate(item.date)}</span>
                       </td>
                       <td className="px-5 py-2.5 text-right">
-                        <span className="font-mono font-black text-[10px] text-white">{formatCurrency(item.amount)}</span>
+                        <span className="font-mono text-sm font-semibold text-white">{formatCurrency(item.amount)}</span>
                       </td>
                     </tr>
                   ))}
@@ -492,17 +490,17 @@ export default function Reports() {
                   <Eye className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white uppercase tracking-tighter">Audit Protocol Preview</h2>
-                  <p className="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em]">{monthNameLong}</p>
+                  <h2 className="font-display text-lg font-semibold text-white">Report preview</h2>
+                  <p className="text-sm font-medium text-blue-400">{monthNameLong}</p>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" className="h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-white" onClick={() => setIsPreviewOpen(false)}>
-                  Dismiss
+                <Button variant="ghost" className="h-10 rounded-lg px-5 text-sm font-medium text-slate-400 hover:text-white" onClick={() => setIsPreviewOpen(false)}>
+                  Close
                 </Button>
-                <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-10 px-8 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[10px] shadow-xl shadow-blue-600/20">
-                  {isGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-                  Export PDF Protocol
+                <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-10 rounded-lg bg-blue-600 px-6 text-sm font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
+                  {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  Download PDF
                 </Button>
               </div>
             </div>

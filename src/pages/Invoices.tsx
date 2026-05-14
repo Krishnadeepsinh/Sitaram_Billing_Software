@@ -265,37 +265,33 @@ export default function Invoices() {
     <div className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-blue-500/30 selection:text-white pb-10">
       <div className="max-w-[1600px] mx-auto px-4 pt-4">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 bg-slate-900/40 p-4 rounded-xl border border-slate-800/50 backdrop-blur-sm">
+        <div className="mb-6 flex flex-col gap-4 rounded-xl border border-slate-800/80 bg-slate-900/45 p-5 backdrop-blur-sm md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 shadow-md shadow-blue-600/30">
               <FileText className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-black uppercase tracking-tighter text-white leading-none">Invoicing <span className="text-blue-500">Registry</span></h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-500">Core Settlement Layer</span>
-                <div className="h-1 w-1 rounded-full bg-slate-700" />
-                <span className="text-[7px] font-bold uppercase tracking-widest text-blue-500/70">{invoices.length} Objects Indexed</span>
-              </div>
+              <h1 className="font-display text-xl font-semibold tracking-tight text-white">Invoices</h1>
+              <p className="mt-1 text-xs text-slate-500">Create, track, and collect against subscriber invoices</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button 
               variant="outline" 
               onClick={handleSync}
               disabled={isProcessing}
-              className="h-7 px-3 rounded bg-slate-950 border-slate-800 hover:bg-slate-900 text-slate-400 text-[8px] uppercase font-black tracking-widest transition-all"
+              className="h-9 rounded-lg border-slate-700 bg-slate-950/80 px-3 text-xs font-medium text-slate-300 hover:bg-slate-800"
             >
-              <RefreshCcw className={`h-3 w-3 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
-              Reconcile
+              <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${isProcessing ? 'animate-spin' : ''}`} />
+              Refresh
             </Button>
             <Button 
               onClick={() => setShowSubSelect(true)}
-              className="h-7 px-4 rounded bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[8px] shadow-lg shadow-blue-600/10 transition-all"
+              className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500"
             >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              New Entry
+              <Plus className="mr-2 h-3.5 w-3.5" />
+              New invoice
             </Button>
           </div>
         </div>
@@ -308,22 +304,22 @@ export default function Invoices() {
               <input 
                 value={q} 
                 onChange={(e) => setQ(e.target.value)} 
-                placeholder="SEARCH ENTITIES..." 
-                className="w-full pl-8 pr-4 h-7 bg-slate-950 border-slate-800 text-white rounded font-black text-[9px] uppercase tracking-wider outline-none focus:border-blue-600 transition-all"
+                placeholder="Search by name, invoice #, or area…" 
+                className="h-9 w-full rounded-lg border-slate-800 bg-slate-950 pl-9 pr-4 text-sm text-white outline-none transition-colors placeholder:text-slate-600 focus:border-blue-500/40"
               />
             </div>
             <div className="flex gap-1 bg-slate-950 p-0.5 rounded border border-slate-800">
               {(["all", "paid", "pending", "overdue"] as const).map(f => (
-                <button key={f} onClick={() => setStatusF(f)} className={`flex-1 h-6 rounded text-[7px] font-black uppercase tracking-widest transition-all ${statusF === f ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-300"}`}>{f}</button>
+                <button key={f} onClick={() => setStatusF(f)} className={`flex-1 rounded-md py-1.5 text-xs font-medium capitalize transition-colors ${statusF === f ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-300"}`}>{f}</button>
               ))}
             </div>
           </div>
 
           <div className="lg:col-span-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800/50 backdrop-blur-sm">
-            <label className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500 block mb-2">Service Filter</label>
+            <label className="mb-2 block text-xs font-medium text-slate-500">Invoice type</label>
             <div className="flex gap-1 bg-slate-950 p-0.5 rounded border border-slate-800">
               {(["all", "plan", "legacy"] as const).map(t => (
-                <button key={t} onClick={() => setTypeF(t)} className={`flex-1 h-6 rounded text-[7px] font-black uppercase tracking-widest transition-all ${typeF === t ? "bg-blue-600 text-white" : "text-slate-500 hover:text-slate-300"}`}>{t}</button>
+                <button key={t} onClick={() => setTypeF(t)} className={`flex-1 rounded-md py-1.5 text-xs font-medium capitalize transition-colors ${typeF === t ? "bg-blue-600 text-white" : "text-slate-500 hover:text-slate-300"}`}>{t}</button>
               ))}
             </div>
             <select value={areaF} onChange={(e) => setAreaF(e.target.value)} className="w-full h-7 mt-2 bg-slate-950 border border-slate-800 rounded px-2 text-[8px] font-black uppercase tracking-widest text-slate-400 outline-none">

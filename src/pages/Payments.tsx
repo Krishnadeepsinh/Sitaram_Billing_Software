@@ -206,38 +206,37 @@ export default function Payments() {
   const upiTotal = filtered.filter(p => p.method !== 'Cash').reduce((s, p) => s + Number(p.amount), 0);
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-blue-500/30">
-      <div className="max-w-[1600px] mx-auto px-4 py-4">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div className="min-h-screen bg-blue-950 text-slate-200 selection:bg-blue-500/25">
+      <div className="mx-auto max-w-[1600px] px-4 py-6">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center border border-blue-600/20 shadow-lg shadow-blue-900/10">
-              <Wallet className="w-5 h-5 text-blue-500" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-500/25 bg-blue-500/10 shadow-sm">
+              <Wallet className="h-5 w-5 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-white uppercase">Transactions</h1>
-              <p className="text-[10px] text-slate-500 font-mono tracking-wider uppercase">Financial Ledger</p>
+              <h1 className="font-display text-xl font-semibold tracking-tight text-white">Payments</h1>
+              <p className="text-xs text-slate-500">Recorded collections and receipts</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="hidden lg:flex items-center gap-4 px-3 py-1.5 bg-slate-900/50 border border-slate-800 rounded-lg">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="hidden items-center gap-4 rounded-lg border border-slate-800/90 bg-slate-900/50 px-4 py-2 lg:flex">
               <div className="flex flex-col">
-                <span className="text-[8px] text-slate-500 uppercase font-bold">Cash</span>
-                <span className="text-xs font-mono font-bold text-blue-400">₹{cashTotal.toLocaleString()}</span>
+                <span className="text-[11px] font-medium text-slate-500">Cash</span>
+                <span className="font-mono text-sm font-semibold text-slate-100">₹{cashTotal.toLocaleString()}</span>
               </div>
-              <div className="w-px h-5 bg-slate-800" />
+              <div className="h-6 w-px bg-slate-800" />
               <div className="flex flex-col">
-                <span className="text-[8px] text-slate-500 uppercase font-bold">UPI</span>
-                <span className="text-xs font-mono font-bold text-blue-400">₹{upiTotal.toLocaleString()}</span>
+                <span className="text-[11px] font-medium text-slate-500">UPI</span>
+                <span className="font-mono text-sm font-semibold text-slate-100">₹{upiTotal.toLocaleString()}</span>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => { setIsGlobalRefreshing(true); refreshData().finally(() => setIsGlobalRefreshing(false)); }} className="h-8 border-slate-800 bg-slate-900/50 text-[10px] uppercase font-bold">
-              <Activity className={cn("w-3 h-3 mr-2 text-blue-500", isGlobalRefreshing && "animate-spin")} />
-              Sync
+            <Button variant="outline" size="sm" onClick={() => { setIsGlobalRefreshing(true); refreshData().finally(() => setIsGlobalRefreshing(false)); }} className="h-9 rounded-lg border-slate-700 bg-slate-900/60 text-xs font-medium text-slate-300 hover:bg-slate-800">
+              <Activity className={cn("mr-2 h-3.5 w-3.5 text-blue-400", isGlobalRefreshing && "animate-spin")} />
+              Refresh
             </Button>
-            <Button size="sm" onClick={() => setIsAddOpen(true)} className="h-8 bg-blue-600 hover:bg-blue-500 text-white text-[10px] uppercase font-bold tracking-widest">
-              <Plus className="w-3 h-3 mr-2" /> Record Payment
+            <Button size="sm" onClick={() => setIsAddOpen(true)} className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
+              <Plus className="mr-2 h-3.5 w-3.5" /> Record payment
             </Button>
           </div>
         </div>
@@ -273,16 +272,16 @@ export default function Payments() {
         </div>
 
         {/* Table */}
-        <div className="bg-slate-900/40 border border-slate-800 rounded-lg overflow-hidden shadow-2xl">
+        <div className="app-panel overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/80 text-[9px] uppercase tracking-widest text-slate-500 font-black">
-                  <th className="px-4 py-3">Receipt</th>
-                  <th className="px-4 py-3">Account Holder</th>
-                  <th className="px-4 py-3">Allocation</th>
-                  <th className="px-4 py-3 text-right">Value</th>
-                  <th className="px-4 py-3 w-32 text-right"></th>
+                <tr className="border-b border-slate-800 bg-slate-900/80">
+                  <th className="app-table-th px-4 py-3">Receipt</th>
+                  <th className="app-table-th px-4 py-3">Customer</th>
+                  <th className="app-table-th px-4 py-3">Applied to</th>
+                  <th className="app-table-th px-4 py-3 text-right">Amount</th>
+                  <th className="app-table-th w-32 px-4 py-3 text-right"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">

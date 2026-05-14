@@ -154,144 +154,147 @@ export default function Dashboard() {
     <div className="space-y-4 animate-fade-in pb-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="text-[8px] uppercase tracking-[0.3em] text-slate-500 font-black mb-1 flex items-center gap-2">
-            <Activity className="h-3 w-3 text-blue-500" />
-            {companySettings?.name || 'SITARAM CABLE & BROADBAND'} · OPS HUB
+          <p className="app-eyebrow mb-1 flex items-center gap-2">
+            <Activity className="h-3.5 w-3.5 text-blue-500" />
+            {companySettings?.name || "Sitaram Cable & Broadband"}
           </p>
-          <h1 className="font-display text-2xl font-black tracking-tighter uppercase leading-none text-white">
-            Operational <span className="text-blue-500 italic">Overview</span>
+          <h1 className="app-page-title">
+            Dashboard <span className="text-blue-400">overview</span>
           </h1>
         </div>
         
-        <div className="flex flex-wrap items-center gap-1.5">
-          <div className="flex items-center gap-1 bg-slate-900/50 p-1 rounded-md border border-slate-800 shadow-inner">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 rounded-lg border border-slate-800/90 bg-slate-900/50 p-1 shadow-inner">
             <Select value={months[dashboardDate.getMonth()]} onValueChange={handleMonthChange}>
-              <SelectTrigger className="w-[85px] h-7 border-none bg-transparent focus:ring-0 text-[8px] font-black uppercase tracking-wider text-slate-400">
+              <SelectTrigger className="h-8 w-[100px] border-none bg-transparent text-xs font-medium text-slate-200 focus:ring-0">
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 rounded-lg">
-                {months.map(m => <SelectItem key={m} value={m} className="text-[8px] font-black uppercase tracking-wider text-white">{m}</SelectItem>)}
+              <SelectContent className="rounded-lg border border-slate-800 bg-slate-900">
+                {months.map(m => <SelectItem key={m} value={m} className="text-sm text-slate-100">{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="w-px h-2.5 bg-slate-800" />
+            <div className="h-4 w-px bg-slate-800" />
             <Select value={dashboardDate.getFullYear().toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="w-[65px] h-7 border-none bg-transparent focus:ring-0 text-[8px] font-black uppercase tracking-wider text-slate-400">
+              <SelectTrigger className="h-8 w-[72px] border-none bg-transparent text-xs font-medium text-slate-200 focus:ring-0">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 rounded-lg">
-                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-[8px] font-black uppercase tracking-wider text-white">{y}</SelectItem>)}
+              <SelectContent className="rounded-lg border border-slate-800 bg-slate-900">
+                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-sm text-slate-100">{y}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
-          <Button size="sm" asChild className="bg-blue-600 text-white hover:bg-blue-500 rounded-md px-3 h-8 font-black uppercase tracking-widest text-[9px] transition-all active:scale-95 shadow-lg shadow-blue-600/20">
+          <Button size="sm" asChild className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500">
             <Link to="/invoices">
-              <Wallet className="mr-1.5 h-3.5 w-3.5" /> Billing Console
+              <Wallet className="mr-2 h-4 w-4" /> Open invoices
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatCard label="Today's Collection" value={formatCurrency(s.collectedToday)} delta="+12.5% vs yesterday" icon={Activity} variant="primary" />
         <StatCard label="Month Revenue" value={formatCurrency(s.monthRevenue)} delta={`${payments.length} txn`} icon={Activity} variant="primary" />
         <StatCard label="Pending Dues" value={formatCurrency(s.pendingDues)} delta={`${s.expired} expired`} icon={AlertCircle} variant="warning" />
         <StatCard label="Expenses" value={formatCurrency(s.monthExpenses)} delta={`${expenses.length} logs`} icon={FileText} variant="destructive" />
       </div>
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Quick Operations</h2>
-          <div className="h-px flex-1 bg-slate-800/50 ml-4" />
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Shortcuts</h2>
+          <div className="ml-4 h-px flex-1 bg-slate-800/60" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Link to="/subscribers" className="group bg-slate-900/40 backdrop-blur-xl p-3.5 rounded-xl border border-slate-800 hover:border-blue-600/50 hover:bg-slate-900 transition-all flex flex-col items-center justify-center gap-2">
-             <div className="h-10 w-10 rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          <Link to="/subscribers" className="app-panel group flex flex-col items-center justify-center gap-2.5 p-4 transition-colors hover:border-blue-500/30">
+             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/80 text-slate-400 shadow-inner transition-all group-hover:scale-105 group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
                <Users className="h-5 w-5" />
              </div>
-             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Registry</span>
+             <span className="text-xs font-medium text-slate-400 transition-colors group-hover:text-white">Subscribers</span>
           </Link>
 
-          <Link to="/invoices" className="group bg-slate-900/40 backdrop-blur-xl p-3.5 rounded-xl border border-slate-800 hover:border-blue-600/50 hover:bg-slate-900 transition-all flex flex-col items-center justify-center gap-2">
-             <div className="h-10 w-10 rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+          <Link to="/invoices" className="app-panel group flex flex-col items-center justify-center gap-2.5 p-4 transition-colors hover:border-blue-500/30">
+             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/80 text-slate-400 shadow-inner transition-all group-hover:scale-105 group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
                <Wallet className="h-5 w-5" />
              </div>
-             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Billing</span>
+             <span className="text-xs font-medium text-slate-400 transition-colors group-hover:text-white">Invoices</span>
           </Link>
 
-          <Link to="/reports" className="group bg-slate-900/40 backdrop-blur-xl p-3.5 rounded-xl border border-slate-800 hover:border-blue-600/50 hover:bg-slate-900 transition-all flex flex-col items-center justify-center gap-2">
-             <div className="h-10 w-10 rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+          <Link to="/reports" className="app-panel group flex flex-col items-center justify-center gap-2.5 p-4 transition-colors hover:border-blue-500/30">
+             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/80 text-slate-400 shadow-inner transition-all group-hover:scale-105 group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
                <BarChart3 className="h-5 w-5" />
              </div>
-             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Analytics</span>
+             <span className="text-xs font-medium text-slate-400 transition-colors group-hover:text-white">Reports</span>
           </Link>
 
           <Button 
             variant="ghost" 
             onClick={handleDownloadReport}
-            className="group bg-slate-900/40 backdrop-blur-xl p-3.5 h-auto rounded-xl border border-slate-800 hover:border-blue-600/50 hover:bg-slate-900 transition-all flex flex-col items-center justify-center gap-2"
+            className="app-panel group flex h-auto flex-col items-center justify-center gap-2.5 p-4 transition-colors hover:border-blue-500/30"
           >
-             <div className="h-10 w-10 rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-800 bg-slate-800/80 text-slate-400 shadow-inner transition-all group-hover:scale-105 group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
                {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
              </div>
-             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Export</span>
+             <span className="text-xs font-medium text-slate-400 transition-colors group-hover:text-white">Export PDF</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        <div className="bg-slate-900/50 backdrop-blur-2xl rounded-2xl p-4 lg:col-span-2 border border-slate-800 shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between mb-4">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="app-panel overflow-hidden p-5 lg:col-span-2">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <h2 className="font-display text-sm font-black uppercase tracking-tight text-white">Recent Collections</h2>
-              <p className="text-[7px] text-slate-500 uppercase tracking-[0.3em] font-black mt-0.5 italic">Cashflow Monitoring</p>
+              <h2 className="font-display text-base font-semibold text-white">Recent collections</h2>
+              <p className="mt-0.5 text-xs text-slate-500">Latest payments</p>
             </div>
-            <Button variant="outline" size="sm" asChild className="h-7 px-3 rounded-md hover:bg-slate-800 text-[8px] uppercase font-black tracking-widest border-slate-800 text-slate-400"><Link to="/payments">Full Registry <ArrowUpRight className="ml-1.5 h-3 w-3 text-blue-500" /></Link></Button>
+            <Button variant="outline" size="sm" asChild className="h-8 border-slate-700 bg-slate-900/60 text-xs font-medium text-slate-300 hover:bg-slate-800">
+              <Link to="/payments">All payments <ArrowUpRight className="ml-1.5 h-3.5 w-3.5 text-blue-400" /></Link>
+            </Button>
           </div>
           <div className="space-y-2">
             {recent.map((p) => {
               const sub = subscribers.find(s => s.id === p.subscriberId);
               return (
-                <div key={p.id} className="flex items-center justify-between p-2 rounded-lg border border-slate-800/40 bg-slate-950/40 hover:bg-blue-600/5 transition-all group">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-7 w-7 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all text-slate-500">
-                      <Wallet className="h-3.5 w-3.5" />
+                <div key={p.id} className="group flex items-center justify-between gap-3 rounded-lg border border-slate-800/50 bg-slate-950/30 p-2.5 transition-colors hover:border-slate-700 hover:bg-slate-900/40">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-slate-500 transition-colors group-hover:border-blue-500/40 group-hover:bg-blue-600 group-hover:text-white">
+                      <Wallet className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[7px] font-black text-blue-500 bg-blue-500/10 px-1 py-0.5 rounded border border-blue-500/20">#{sub?.customerNo || '—'}</span>
-                        <p className="text-[11px] font-black text-white truncate tracking-tight">{sub?.name || 'Unknown'}</p>
+                        <span className="rounded border border-blue-500/25 bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">#{sub?.customerNo || "—"}</span>
+                        <p className="truncate text-sm font-medium text-white">{sub?.name || "Unknown"}</p>
                       </div>
-                      <p className="text-[7px] text-slate-500 uppercase font-black tracking-[0.1em] mt-0.5">{p.method} · {formatDate(p.date)}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">{p.method} · {formatDate(p.date)}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-mono font-black text-blue-500 text-[11px]">+{formatCurrency(p.amount)}</p>
+                  <div className="shrink-0 text-right">
+                    <p className="font-mono text-sm font-semibold text-blue-400">+{formatCurrency(p.amount)}</p>
                   </div>
                 </div>
               );
             })}
             {recent.length === 0 && (
-              <div className="py-12 text-center flex flex-col items-center gap-2 opacity-30">
-                <Activity className="h-8 w-8 text-slate-400" />
-                <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">No records</p>
+              <div className="flex flex-col items-center gap-2 py-12 text-center text-slate-500">
+                <Activity className="h-8 w-8 opacity-40" />
+                <p className="text-sm font-medium">No payments yet</p>
               </div>
             )}
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-2xl p-4 border border-slate-800 shadow-2xl">
-            <h2 className="font-display text-sm font-black uppercase tracking-tight text-white mb-4">Sector View</h2>
-            <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="app-panel p-5">
+            <h2 className="font-display mb-4 text-base font-semibold text-white">By area</h2>
+            <div className="custom-scrollbar max-h-[250px] space-y-4 overflow-y-auto pr-1">
               {areaBreakdown.map(([area, count]) => (
                 <div key={area} className="space-y-2">
-                  <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.2em]">
-                    <span className="flex items-center gap-1.5 text-slate-500"><MapPin className="h-3 w-3 text-slate-700" /> {area}</span>
-                    <span className="text-slate-600">{count} SUBS</span>
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className="flex items-center gap-1.5 text-slate-400"><MapPin className="h-3.5 w-3.5 text-slate-600" /> {area}</span>
+                    <span className="text-slate-500">{count} subscribers</span>
                   </div>
-                  <div className="h-1 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800/50">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full border border-slate-800/60 bg-slate-950">
                     <div 
-                      className="h-full bg-blue-600 rounded-full transition-all duration-1000" 
+                      className="h-full rounded-full bg-blue-600 transition-all duration-1000" 
                       style={{ width: `${(count / Math.max(1, subscribers.length)) * 100}%` }}
                     />
                   </div>
@@ -300,20 +303,20 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-blue-600/5 backdrop-blur-2xl rounded-2xl p-4 border border-blue-600/10 shadow-2xl">
-            <h2 className="font-display text-sm font-black uppercase tracking-tight text-blue-500 flex items-center gap-2 mb-4">
-              <AlertCircle className="h-4 w-4" /> Terminating
+          <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.06] p-5 shadow-lg shadow-black/20 backdrop-blur-xl">
+            <h2 className="font-display mb-4 flex items-center gap-2 text-base font-semibold text-blue-300">
+              <AlertCircle className="h-4 w-4" /> Expiring soon
             </h2>
             <div className="space-y-2">
               {expiring.map((sub) => {
                 const days = Math.ceil((+new Date(sub.expiryDate) - Date.now()) / 86400000);
                 return (
-                  <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-blue-600/10 hover:border-blue-600/30 transition-all">
+                  <div key={sub.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-800/60 bg-slate-950/40 p-2.5 transition-colors hover:border-blue-500/25">
                     <div className="min-w-0">
-                      <p className="text-[10px] font-black text-white truncate tracking-tight">{sub.name}</p>
-                      <p className="text-[7px] text-slate-600 uppercase font-black tracking-widest truncate mt-0.5">{sub.area}</p>
+                      <p className="truncate text-sm font-medium text-white">{sub.name}</p>
+                      <p className="mt-0.5 truncate text-xs text-slate-500">{sub.area}</p>
                     </div>
-                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded border ${days <= 3 ? 'bg-blue-600/20 text-blue-400 border-blue-600/30' : 'bg-slate-900 text-slate-500 border-slate-800'}`}>
+                    <span className={`shrink-0 rounded-md border px-2 py-1 text-xs font-medium ${days <= 3 ? "border-blue-500/30 bg-blue-500/15 text-blue-300" : "border-slate-800 bg-slate-900 text-slate-400"}`}>
                       {days}d
                     </span>
                   </div>

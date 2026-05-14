@@ -29,7 +29,7 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
     <>
       {parts.map((part, i) => 
         regex.test(part) ? (
-          <mark key={i} className="bg-blue-500/20 text-blue-400 px-0.5 rounded-sm font-black">{part}</mark>
+          <mark key={i} className="rounded-sm bg-blue-500/20 px-0.5 font-semibold text-blue-300">{part}</mark>
         ) : (
           part
         )
@@ -202,7 +202,7 @@ export default function Subscribers() {
       const isLegacy = billingType === "legacy";
       const startDate = rechargeDate ? new Date(`${rechargeDate}T12:00:00`) : new Date();
       await generateInvoice(invoiceSub.id, isLegacy ? 0 : planMonths, false, startDate, isLegacy);
-      toast.success(isLegacy ? "Legacy Protocol Issued" : "Recharge Protocol Issued");
+      toast.success(isLegacy ? "Legacy invoice created" : "Invoice created");
       setShowInvoiceModal(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to generate invoice");
@@ -222,50 +222,47 @@ export default function Subscribers() {
 
   return (
     <div className="space-y-4 animate-fade-in relative pb-10">
-      {/* INDUSTRIAL HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[8px] uppercase tracking-[0.4em] text-slate-500 font-black mb-1 flex items-center gap-2">
-            <Shield className="h-3 w-3 text-blue-500" />
-            {activeBusinessMode === "cable" ? "CABLE" : "BROADBAND"} · NETWORK REGISTRY
+          <p className="app-eyebrow mb-1 flex items-center gap-2">
+            <Shield className="h-3.5 w-3.5 text-blue-500" />
+            {activeBusinessMode === "cable" ? "Cable" : "Broadband"} subscribers
           </p>
-          <h1 className="font-display text-2xl font-black tracking-tighter text-white uppercase leading-none">
-            Subscriber <span className="text-blue-600 italic">Protocol</span>
-          </h1>
+          <h1 className="app-page-title">Subscriber directory</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button 
             variant="outline"
-            className="h-8 px-3 rounded-md font-black text-[9px] uppercase tracking-widest border-slate-800 bg-slate-950/50 hover:bg-slate-900 active:scale-95 transition-all flex items-center gap-2 text-slate-500 hover:text-white" 
+            className="h-9 rounded-lg border-slate-800 bg-slate-900/60 px-3 text-xs font-medium text-slate-300 hover:bg-slate-800" 
             onClick={async () => {
               setIsGlobalRefreshing(true);
               try {
                 await refreshData();
-                toast.success("Registry Synced");
+                toast.success("Data refreshed");
               } finally {
                 setIsGlobalRefreshing(false);
               }
             }}
           >
-            <Loader2 className={cn("h-3 w-3", isGlobalRefreshing && "animate-spin")} />
-            Sync
+            <Loader2 className={cn("mr-2 h-3.5 w-3.5", isGlobalRefreshing && "animate-spin")} />
+            Refresh
           </Button>
           <Button 
             onClick={handleOpenAdd}
-            className="h-8 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-md font-black text-[9px] uppercase tracking-widest shadow-lg shadow-blue-600/20 active:scale-95 transition-all flex items-center gap-2"
+            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-medium text-white shadow-md shadow-blue-600/25 hover:bg-blue-500"
           >
-            <Plus className="h-3.5 w-3.5" /> Register Account
+            <Plus className="mr-2 h-4 w-4" /> Add subscriber
           </Button>
         </div>
       </div>
 
       {/* COMPACT FILTERS */}
-      <div className="bg-slate-900/60 backdrop-blur-xl p-1.5 rounded-xl border border-slate-800/50 shadow-2xl flex flex-col lg:flex-row gap-2">
+      <div className="app-panel flex flex-col gap-2 p-2 lg:flex-row lg:items-center">
         <div className="relative flex-1 group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-all" />
           <Input
             placeholder="Search by name, ID, or phone..."
-            className="pl-9 bg-slate-950/80 border-slate-800 rounded-lg h-9 focus:bg-slate-950 focus:ring-0 focus:border-blue-600/50 transition-all text-[10px] font-bold placeholder:text-slate-700 text-white"
+            className="h-9 rounded-lg border-slate-800 bg-slate-950/50 pl-9 text-sm text-white placeholder:text-slate-600 focus-visible:border-blue-500/40 focus-visible:ring-blue-500/20"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -282,7 +279,7 @@ export default function Subscribers() {
         <div className="flex flex-wrap items-center gap-1.5">
           <div className="flex items-center gap-1 bg-slate-950/80 p-0.5 rounded-lg border border-slate-800">
             <select 
-              className="bg-transparent border-none rounded-md h-7.5 px-2 text-[8px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[90px] cursor-pointer text-slate-500 hover:text-white"
+              className="h-8 min-w-[100px] cursor-pointer rounded-md border-none bg-transparent px-2 text-xs font-medium text-slate-300 focus:outline-none focus:ring-0"
               value={statusF}
               onChange={(e: any) => setStatusF(e.target.value)}
             >
@@ -292,7 +289,7 @@ export default function Subscribers() {
             </select>
             <div className="w-px h-2.5 bg-slate-800" />
             <select 
-              className="bg-transparent border-none rounded-md h-7.5 px-2 text-[8px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[90px] cursor-pointer text-slate-500 hover:text-white"
+              className="h-8 min-w-[100px] cursor-pointer rounded-md border-none bg-transparent px-2 text-xs font-medium text-slate-300 focus:outline-none focus:ring-0"
               value={areaF}
               onChange={(e) => setAreaF(e.target.value)}
             >
@@ -308,23 +305,22 @@ export default function Subscribers() {
               onCheckedChange={setShowDuesOnly}
               className="scale-75 data-[state=checked]:bg-blue-600"
             />
-            <Label htmlFor="dues-only" className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600 cursor-pointer select-none">Overdue Only</Label>
+            <Label htmlFor="dues-only" className="cursor-pointer text-xs font-medium text-slate-500 select-none">Overdue only</Label>
           </div>
         </div>
       </div>
 
-      {/* HIGH-DENSITY REGISTRY TABLE */}
-      <div className="hidden md:block bg-slate-900/60 backdrop-blur-xl rounded-xl border border-slate-800/50 shadow-2xl overflow-hidden">
+      <div className="hidden md:block app-panel overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="bg-slate-950/80 border-b border-slate-800">
-                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">ID</th>
-                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">Subscriber Details</th>
-                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">Network / Area</th>
-                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">Financial Balance</th>
-                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">Status</th>
-                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500 text-right">Ops</th>
+              <tr className="border-b border-slate-800 bg-slate-950/70">
+                <th className="app-table-th px-4 py-3">ID</th>
+                <th className="app-table-th px-4 py-3">Subscriber</th>
+                <th className="app-table-th px-4 py-3">Network</th>
+                <th className="app-table-th px-4 py-3">Balance</th>
+                <th className="app-table-th px-4 py-3">Status</th>
+                <th className="app-table-th px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">

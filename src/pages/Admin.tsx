@@ -111,7 +111,7 @@ const Admin: React.FC = () => {
 
         <div className="mt-10 pt-8 border-t border-slate-800/50">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-1.5 w-1.5 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]" />
+            <div className="h-1.5 w-1.5 rounded-full bg-blue-600 shadow-[0_0_8px_hsl(220_26%_48%/0.45)]" />
             <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Infrastructure Tools</h3>
           </div>
           <div className="flex flex-wrap gap-3">

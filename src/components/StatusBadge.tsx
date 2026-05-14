@@ -14,9 +14,9 @@ export function StatusBadge({ status, onClick, className }: { status: string, on
     <span
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-all",
-        onClick && "cursor-pointer hover:scale-105 active:scale-95",
-        styles[status] ?? "bg-secondary text-secondary-foreground border-border",
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all",
+        onClick && "cursor-pointer hover:scale-105 active:scale-95 hover:shadow-md",
+        styles[status.toLowerCase()] ?? "bg-secondary text-secondary-foreground border-border",
         className
       )}
     >

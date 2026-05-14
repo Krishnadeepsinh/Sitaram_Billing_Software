@@ -91,7 +91,6 @@ export default function Backup() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Export Card */}
         <div className="bg-slate-900/40 backdrop-blur-xl rounded-xl p-6 border border-slate-800 shadow-2xl relative overflow-hidden group hover:bg-slate-900/60 transition-all">

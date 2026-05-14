@@ -618,34 +618,12 @@ ${brand.name}`;
                         <p className="text-[10px] text-amber-700 leading-relaxed mb-3">
                           This will generate a separate invoice for the opening balance debt of this subscriber.
                         </p>
-                            <span className="text-muted-foreground font-medium">Recharge Date</span>
-                            <span className="font-mono-num font-bold">{isValidRechargeDate ? formatDate(`${rechargeDate}T12:00:00`) : "-"}</span>
-                          </div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-muted-foreground font-medium">Plan Price</span>
-                            <span className="font-mono-num font-bold">{formatCurrency(plansList.find(p => p.id === subscribers.find(s => s.id === selectedSub)?.planId)?.price || 0)}</span>
-                          </div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-muted-foreground font-medium">Plan Duration</span>
-                            <span className="font-mono-num font-bold">
-                              {(selectedPlanForManualInvoice?.validityDays || 30) * planMonths} Days
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-muted-foreground font-medium">Months / Cycles</span>
-                            <span className="font-mono-num font-bold">{planMonths}</span>
-                          </div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-muted-foreground font-medium">Expiry Date</span>
-                            <span className="font-mono-num font-bold">{formatDate(projectedExpiryDate || "")}</span>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex justify-between text-sm mb-1 text-amber-600 font-bold">
-                          <span className="flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Legacy Due</span>
-                          <span className="font-mono-num">{formatCurrency(subscribers.find(s => s.id === selectedSub)?.openingBalance || 0)}</span>
+                        <div className="pt-3 border-t border-amber-200 flex justify-between items-center text-amber-950">
+                          <span className="text-sm font-black">Total Due</span>
+                          <span className="text-xl font-black">{formatCurrency(subscribers.find(s => s.id === selectedSub)?.openingBalance || 0)}</span>
                         </div>
-                      )}
+                      </div>
+                    )}
                       <div className="pt-2 mt-2 border-t border-border/50 space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">

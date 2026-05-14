@@ -27,23 +27,22 @@ export function StatCard({ label, value, delta, icon: Icon, variant = "primary" 
   }[variant];
 
   return (
-    <div className="glass-card relative overflow-hidden rounded-[2.5rem] p-6 animate-fade-in group hover:-translate-y-1 transition-all duration-500">
-      <div className={cn("absolute -top-16 -right-16 h-48 w-48 rounded-full bg-gradient-to-br blur-3xl opacity-20 transition-opacity duration-500 group-hover:opacity-40", ring)} />
-      <div className="relative flex items-start justify-between">
+    <div className="bg-white rounded-[2rem] p-7 border border-slate-200/60 shadow-xl shadow-slate-200/40 animate-fade-in group hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-500 border-b-4 border-b-primary/10">
+      <div className="flex items-start justify-between">
         <div className="space-y-4">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-black opacity-60">{label}</p>
+          <div className="flex items-center gap-2">
+            <div className={cn("h-2 w-2 rounded-full", iconBg.split(' ')[1])} />
+            <p className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black">{label}</p>
+          </div>
           <div className="space-y-1">
-            <p className="font-display text-3xl sm:text-4xl font-black font-mono-num tracking-tighter text-glow-primary">{value}</p>
+            <p className="font-display text-4xl font-black font-mono-num tracking-tighter text-slate-900">{value}</p>
             {delta && (
-              <div className="flex items-center gap-2">
-                <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">{delta}</p>
-              </div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">{delta}</p>
             )}
           </div>
         </div>
-        <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-lg border border-white/5", iconBg)}>
-          <Icon className="h-6 w-6" />
+        <div className={cn("h-14 w-14 rounded-[1.25rem] flex items-center justify-center transition-all duration-500 group-hover:scale-105 shadow-sm border", iconBg)}>
+          <Icon className="h-6 w-6 stroke-[2.5]" />
         </div>
       </div>
     </div>

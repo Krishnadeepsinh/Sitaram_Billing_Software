@@ -8,9 +8,10 @@ interface LogoProps {
   showText?: boolean;
   showModeLabel?: boolean;
   size?: "sm" | "md" | "lg" | "xl";
+  variant?: "default" | "white";
 }
 
-export function Logo({ className, iconClassName, showText = true, showModeLabel = showText, size = "md" }: LogoProps) {
+export function Logo({ className, iconClassName, showText = true, showModeLabel = showText, size = "md", variant = "default" }: LogoProps) {
   const businessMode = useBusinessMode();
   const modeLabel = businessMode === "cable" ? "Cable Mode" : "Broadband Mode";
   const sizeClasses = {
@@ -38,15 +39,24 @@ export function Logo({ className, iconClassName, showText = true, showModeLabel 
       
       {showText && (
         <div className="flex flex-col leading-none">
-          <span className={cn("font-display font-black tracking-tight text-foreground", currentSize.text)}>
+          <span className={cn(
+            "font-display font-black tracking-tight",
+            variant === "white" ? "text-slate-50" : "text-foreground",
+            currentSize.text
+          )}>
             SITARAM
           </span>
-          <span className={cn("font-bold text-muted-foreground uppercase tracking-[0.14em] mt-0.5", currentSize.sub)}>
+          <span className={cn(
+            "font-bold uppercase tracking-[0.14em] mt-0.5",
+            variant === "white" ? "text-slate-300/60" : "text-muted-foreground",
+            currentSize.sub
+          )}>
             Cable & Broadband
           </span>
           {showModeLabel && (
             <span className={cn(
-              "mt-1 w-fit rounded-full border border-primary/20 bg-primary/10 font-black uppercase tracking-[0.12em] text-primary",
+              "mt-1 w-fit rounded-full border font-black uppercase tracking-[0.12em]",
+              variant === "white" ? "border-white/10 bg-white/5 text-slate-300" : "border-primary/20 bg-primary/10 text-primary",
               currentSize.badge
             )}>
               {modeLabel}

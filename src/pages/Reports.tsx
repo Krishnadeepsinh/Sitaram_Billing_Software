@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { formatCurrency, formatDate } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { Download, Calendar, BarChart3, PieChart, TrendingUp, Wallet, Receipt, Users, Filter, Loader2, ShieldCheck, MapPin, Check, Eye, AlertCircle, Wifi, Phone, Mail } from "lucide-react";
@@ -221,6 +221,23 @@ export default function Reports() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasTimedOut, setHasTimedOut] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth - 64; 
+        const newScale = Math.min(1, containerWidth / 794);
+        setScale(newScale);
+      }
+    };
+    if (isPreviewOpen) {
+      handleResize();
+      window.addEventListener("resize", handleResize);
+    }
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isPreviewOpen]);
   
   // Filter validation
   useEffect(() => {
@@ -673,8 +690,11 @@ export default function Reports() {
               <span className="text-xs font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-widest">{monthNameLong}</span>
             </DialogTitle>
           </DialogHeader>
-          <div className="p-8 flex justify-center">
-            <div className="shadow-2xl ring-1 ring-black/5 rounded-sm overflow-hidden">
+          <div ref={containerRef} className="p-4 sm:p-8 flex justify-center overflow-x-hidden">
+            <div 
+              className="shadow-2xl ring-1 ring-black/5 rounded-sm overflow-hidden origin-top transition-transform duration-300"
+              style={{ transform: `scale(${scale})`, marginBottom: `${(scale - 1) * 1122}px` }}
+            >
               <AuditReportTemplate 
                 monthName={monthNameLong}
                 selectedYear={selectedYear}

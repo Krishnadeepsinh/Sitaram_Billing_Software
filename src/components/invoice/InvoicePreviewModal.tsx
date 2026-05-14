@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Download, Loader2, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/mockData";
@@ -39,6 +39,22 @@ export default function InvoicePreviewModal({
   subscribers,
 }: InvoicePreviewModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth - 32; // padding
+        const newScale = Math.min(1, containerWidth / 794);
+        setScale(newScale);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const subscriber = useMemo(
     () => subscribers.find((item) => item.id === invoice.subscriberId),
@@ -189,8 +205,12 @@ Due Date: ${formatDate(invoice.dueDate)}`;
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto bg-slate-100 flex justify-center p-4">
-          <div id="invoice-content" className="bg-white relative font-sans text-slate-800 flex flex-col h-[1122px] w-[794px] shrink-0 sm:shadow-2xl overflow-hidden">
+        <div ref={containerRef} className="flex-1 overflow-auto bg-slate-100 flex justify-center p-4">
+          <div 
+            id="invoice-content" 
+            className="bg-white relative font-sans text-slate-800 flex flex-col h-[1122px] w-[794px] shrink-0 sm:shadow-2xl overflow-hidden origin-top transition-transform duration-300"
+            style={{ transform: `scale(${scale})`, marginBottom: `${(scale - 1) * 1122}px` }}
+          >
             <InvoiceHeader brand={brand} invoiceLabel={invoiceLabel} />
 
             <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col">

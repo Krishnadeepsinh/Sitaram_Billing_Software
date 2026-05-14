@@ -769,7 +769,11 @@ export default function Subscribers() {
                     <td className="px-4 py-4">
                       <StatusBadge 
                         status={s.status} 
-                        onClick={() => updateSubscriber(s.id, { status: String(s.status).toLowerCase() === 'active' ? 'expired' : 'active' })}
+                        onClick={() => {
+                          const newStatus = String(s.status).toLowerCase() === 'active' ? 'expired' : 'active';
+                          updateSubscriber(s.id, { status: newStatus });
+                          toast.success(`Subscriber marked as ${newStatus === 'active' ? 'Active' : 'Inactive'}`);
+                        }}
                         className="shadow-sm"
                       />
                     </td>

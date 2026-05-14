@@ -9,19 +9,40 @@ const styles: Record<string, string> = {
   overdue: "bg-destructive/15 text-destructive border-destructive/30",
 };
 
-export function StatusBadge({ status, onClick, className }: { status: string, onClick?: () => void, className?: string }) {
-  return (
-    <span
-      onClick={onClick}
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all",
-        onClick && "cursor-pointer hover:scale-105 active:scale-95 hover:shadow-md",
-        styles[status.toLowerCase()] ?? "bg-secondary text-secondary-foreground border-border",
-        className
-      )}
-    >
+export function StatusBadge({ status, onClick, className }: { status: string, onClick?: (e: React.MouseEvent) => void, className?: string }) {
+  const badgeStyles = cn(
+    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all",
+    onClick && "cursor-pointer hover:scale-105 active:scale-95 hover:shadow-md",
+    styles[status.toLowerCase()] ?? "bg-secondary text-secondary-foreground border-border",
+    className
+  );
+
+  const content = (
+    <>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {status === 'expired' ? 'Inactive' : status}
+      {status.toLowerCase() === 'expired' || status.toLowerCase() === 'inactive' ? 'Inactive' : status}
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button 
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick(e);
+        }}
+        className={badgeStyles}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <span className={badgeStyles}>
+      {content}
     </span>
   );
 }

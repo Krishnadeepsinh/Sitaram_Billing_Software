@@ -6,121 +6,87 @@
 
 @layer base {
   :root {
-    /* Ultra-modern Neon Dashboard — Deep Space Navy with Vibrant Accents */
-    --background: 230 80% 2.5%;
-    --foreground: 210 40% 98%;
-
-    --card: 230 60% 4.5%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 230 80% 3%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 190 100% 50%;
-    --primary-foreground: 230 80% 3%;
-    --primary-glow: 190 100% 65%;
-
-    --secondary: 230 50% 8%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 230 50% 6%;
-    --muted-foreground: 215 35% 75%;
-
-    --accent: 280 100% 65%;
-    --accent-foreground: 0 0% 100%;
-    --accent-glow: 280 100% 80%;
-
-    --success: 160 100% 45%;
-    --success-foreground: 160 100% 5%;
-
-    --warning: 45 100% 50%;
-    --warning-foreground: 45 100% 5%;
-
-    --destructive: 0 100% 60%;
+    /* Professional Dashboard — Clean Slate with Muted Accents */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 230 50% 12%;
-    --input: 230 50% 8%;
-    --ring: 190 100% 50%;
-
-    --radius: 1rem;
-
-    --gradient-primary: linear-gradient(135deg, hsl(190 100% 50%), hsl(210 100% 60%));
-    --gradient-accent: linear-gradient(135deg, hsl(280 100% 65%), hsl(300 100% 60%));
-    --gradient-hero: radial-gradient(circle at 0% 0%, hsl(190 100% 50% / 0.15), transparent 50%),
-                     radial-gradient(circle at 100% 100%, hsl(280 100% 65% / 0.1), transparent 50%);
-    --gradient-card: linear-gradient(165deg, hsl(230 60% 7% / 0.98), hsl(230 80% 3.5% / 0.99));
-
-    --shadow-glow: 0 0 25px -5px hsl(190 100% 50% / 0.4);
-    --shadow-accent-glow: 0 0 25px -5px hsl(280 100% 65% / 0.4);
-    --shadow-elevated: 0 40px 80px -20px hsl(230 100% 1% / 0.98);
-
-    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-
-    --sidebar-background: 230 80% 2%;
-    --sidebar-foreground: 215 30% 80%;
-    --sidebar-primary: 190 100% 50%;
-    --sidebar-primary-foreground: 230 80% 3%;
-    --sidebar-accent: 230 50% 6%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 230 50% 6%;
-    --sidebar-ring: 190 100% 50%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
   }
-}
 
-@layer base {
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+
   * { @apply border-border; }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-slate-50 text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
-    background-image: var(--gradient-hero);
-    background-attachment: fixed;
   }
   h1, h2, h3, h4, h5 { font-family: 'Sora', sans-serif; letter-spacing: -0.02em; }
-  .font-mono-num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  .font-mono-num { font-family: 'JetBrains Mono', 'Roboto Mono', monospace; font-variant-numeric: tabular-nums; }
 }
 
 @layer components {
+  .glow-primary {
+    @apply shadow-[0_4px_12px_-2px_rgba(var(--primary),0.15)];
+  }
+
+  .glow-accent {
+    @apply shadow-[0_4px_12px_-2px_rgba(var(--accent),0.15)];
+  }
+
   .glass-card {
-    background: var(--gradient-card);
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border) / 0.5);
-    @apply shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)];
+    @apply bg-white border border-slate-200 shadow-sm transition-all duration-300;
   }
-  .glow-primary { box-shadow: var(--shadow-glow); }
-  .glow-accent { box-shadow: var(--shadow-accent-glow); }
+
   .gradient-text {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-slate-900 to-slate-600;
   }
-  .gradient-text-accent {
-    background: var(--gradient-accent);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+  
   .glass-panel {
-    @apply bg-secondary/30 backdrop-blur-md border border-white/5;
-  }
-  .text-glow-primary {
-    @apply drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)];
+    @apply bg-white/80 backdrop-blur-md border border-slate-200/60;
   }
 }
 
 @layer utilities {
-  .bg-grid-white {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(255 255 255 / 0.04)'%3E%3Cpath d='M0 .5H31.5V32'/%3E%3C/svg%3E");
+  .bg-grid-slate {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(0 0 0 / 0.02)'%3E%3Cpath d='M0 .5H31.5V32'/%3E%3C/svg%3E");
   }
   
-  .bg-mesh {
-    background: radial-gradient(at 0% 0%, hsla(185,100%,50%,0.05) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(265,100%,70%,0.05) 0, transparent 50%), 
-                radial-gradient(at 100% 100%, hsla(185,100%,50%,0.05) 0, transparent 50%), 
-                radial-gradient(at 0% 100%, hsla(265,100%,70%,0.05) 0, transparent 50%);
-  }
-
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -129,4 +95,5 @@
     scrollbar-width: none;
   }
 }
+
 

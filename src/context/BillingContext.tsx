@@ -165,7 +165,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [dashboardDate, setDashboardDate] = useState(new Date());
 
   // ── Fetch: Turso DB ─────────────────────────────────────────────────────────
-  const fetchFromDB = async () => {
+  const fetchFromDB = useCallback(async () => {
     if (!db) return false;
     try {
       const schemaMigrated = LS.get(`schema_migrated_v2_${businessMode}`, false);
@@ -288,7 +288,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         LS.set(`schema_migrated_v2_${businessMode}`, true);
       }
 
-            const results = await db.batch([
+      const results = await db.batch([
         'SELECT * FROM subscribers ORDER BY name ASC',
         'SELECT * FROM payments ORDER BY date DESC',
         'SELECT * FROM invoices ORDER BY date DESC',
@@ -407,10 +407,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error('Turso fetch error:', err);
       return false;
     }
-  };
+  }, [businessMode]);
 
   // ── Fetch: localStorage ─────────────────────────────────────────────────────
-  const fetchFromLS = () => {
+  const fetchFromLS = useCallback(() => {
     setSubscribers(LS.get<Subscriber[]>('subscribers', []));
     setPayments(LS.get<Payment[]>('payments', []));
     setInvoices(LS.get<Invoice[]>('invoices', []));
@@ -425,9 +425,9 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       gstin: '',
       upiId: BRAND_UPI,
     });
-  };
+  }, [businessMode]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       if (db) {

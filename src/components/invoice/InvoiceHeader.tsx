@@ -22,7 +22,7 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
           />
           <div className="min-w-0">
             <p className="text-[9px] font-black uppercase tracking-[0.24em] text-orange-300">{BRAND_DISPLAY_NAME}</p>
-            <h1 className="text-xl font-black tracking-tight mt-1 leading-tight">{brand.name}</h1>
+            <h1 className="text-2xl font-black tracking-tight mt-1 leading-tight">{brand.name}</h1>
           </div>
         </div>
         <div className="text-right text-xs space-y-1 max-w-[250px] shrink-0">

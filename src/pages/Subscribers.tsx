@@ -297,24 +297,24 @@ export default function Subscribers() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in relative pb-10">
+    <div className="space-y-6 animate-fade-in relative pb-10">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div>
           <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-black mb-2 flex items-center gap-2">
-            <Activity className="h-3 w-3 animate-pulse" />
-            Network Management · Intelligence
+            <Activity className="h-3 w-3" />
+            Network Management · Global
           </p>
-          <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tighter uppercase leading-none">
-            Active <span className="gradient-text italic">Subscribers</span>
+          <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tighter text-slate-900 uppercase leading-none">
+            Active <span className="text-primary italic">Subscribers</span>
           </h1>
-          <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.2em] mt-4 flex items-center gap-2">
+          <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mt-4 flex items-center gap-2">
             Manage your {activeBusinessMode === "cable" ? "Cable" : "Broadband"} network accounts.
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button 
             variant="outline"
-            className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-white/5 bg-white/5 hover:bg-white/10 active:scale-95 transition-all flex items-center gap-3 text-foreground" 
+            className="h-11 px-5 rounded-xl font-black text-[10px] uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-2.5 text-slate-600" 
             onClick={async () => {
               setIsGlobalRefreshing(true);
               try {
@@ -325,372 +325,182 @@ export default function Subscribers() {
               }
             }}
           >
-            <Loader2 className={cn("h-4 w-4", isGlobalRefreshing && "animate-spin")} />
+            <Loader2 className={cn("h-3.5 w-3.5", isGlobalRefreshing && "animate-spin")} />
             Sync
           </Button>
           <Button 
             onClick={handleOpenAdd}
-            className="h-12 px-8 bg-gradient-primary hover:opacity-90 text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-widest glow-primary shadow-lg active:scale-95 transition-all flex items-center gap-3"
+            className="h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm active:scale-95 transition-all flex items-center gap-2.5"
           >
             <Plus className="h-4 w-4" /> Add Subscriber
           </Button>
         </div>
       </div>
 
-      {showHistory && historySub && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card w-full max-w-2xl p-6 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-xl font-bold">Payment History</h2>
-                <p className="text-xs text-muted-foreground">Transactions for {historySub.name}</p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>✕</Button>
-            </div>
-            
-            <div className="overflow-y-auto flex-1 space-y-2 pr-2 custom-scrollbar">
-              {subPayments.map(p => (
-                <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                      <History className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold uppercase text-muted-foreground">{p.id}</p>
-                      <p className="text-sm font-medium">{formatDate(p.date)}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-mono-num font-bold text-success">+{formatCurrency(p.amount)}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">{p.method}</p>
-                  </div>
-                </div>
-              ))}
-              {subPayments.length === 0 && (
-                <div className="py-12 text-center text-muted-foreground italic text-sm">
-                  No payment records found for this subscriber.
-                </div>
-              )}
-            </div>
-            <div className="p-4 bg-secondary/20 border-t border-border/40 flex gap-3">
-              <Button className="flex-1 rounded-xl" variant="outline" onClick={() => setShowHistory(false)}>Close Profile</Button>
-              <Button className="flex-1 bg-primary text-primary-foreground rounded-xl" onClick={() => { setShowHistory(false); handleOpenEdit(historySub); }}>Edit Details</Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="glass-card p-6 rounded-[2.5rem] border-white/5 bg-white/5 backdrop-blur-xl shadow-2xl space-y-6 mb-10">
-        <div className="flex flex-col lg:flex-row gap-6">
+      <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm space-y-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-2">
           <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40 group-focus-within:text-primary transition-all duration-300 group-focus-within:scale-110" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-all duration-300" />
             <Input
               placeholder={`Search name, phone, area, or ${customerIdLabel}...`}
-              className="pl-12 bg-white/5 border-white/5 rounded-2xl h-14 focus:ring-primary/20 transition-all text-sm font-bold placeholder:text-muted-foreground/30"
+              className="pl-10 bg-slate-50 border-transparent rounded-xl h-11 focus:bg-white focus:ring-primary/10 transition-all text-[11px] font-bold placeholder:text-slate-400"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
             {q && (
               <button 
                 onClick={() => setQ("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-muted-foreground transition-all"
+                className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 text-slate-500 transition-all"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3 w-3" />
               </button>
             )}
           </div>
           
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2 glass-panel p-1.5 rounded-2xl border-white/5">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
               <select 
-                className="bg-transparent border-none rounded-xl h-10 px-4 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[130px] cursor-pointer"
+                className="bg-transparent border-none rounded-lg h-9 px-3 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[110px] cursor-pointer text-slate-600"
                 value={statusF}
                 onChange={(e: any) => setStatusF(e.target.value)}
               >
-                <option value="all" className="bg-card">All Status</option>
-                <option value="active" className="bg-card">Active Only</option>
-                <option value="inactive" className="bg-card">Inactive Only</option>
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
               </select>
-              <div className="w-px h-4 bg-white/10" />
+              <div className="w-px h-3 bg-slate-200" />
               <select 
-                className="bg-transparent border-none rounded-xl h-10 px-4 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[130px] cursor-pointer"
+                className="bg-transparent border-none rounded-lg h-9 px-3 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[110px] cursor-pointer text-slate-600"
                 value={areaF}
                 onChange={(e) => setAreaF(e.target.value)}
               >
-                <option value="all" className="bg-card">All Areas</option>
-                {areas.map(a => <option key={a} value={a} className="bg-card">{a}</option>)}
+                <option value="all">All Areas</option>
+                {areas.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
-              <div className="w-px h-4 bg-white/10" />
+              <div className="w-px h-3 bg-slate-200" />
               <select 
-                className="bg-transparent border-none rounded-xl h-10 px-4 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[130px] cursor-pointer"
+                className="bg-transparent border-none rounded-lg h-9 px-3 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[110px] cursor-pointer text-slate-600"
                 value={planF}
                 onChange={(e) => setPlanF(e.target.value)}
               >
-                <option value="all" className="bg-card">All Plans</option>
-                {dbPlans.map(p => <option key={p.id} value={p.id} className="bg-card">{p.name}</option>)}
+                <option value="all">All Plans</option>
+                {dbPlans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
 
-            <div className="flex items-center gap-4 glass-panel px-6 h-14 rounded-2xl border-white/5">
+            <div className="flex items-center gap-3 bg-slate-50 px-4 h-11 rounded-xl border border-slate-100">
               <Switch 
                 id="dues-only" 
                 checked={showDuesOnly} 
                 onCheckedChange={setShowDuesOnly}
-                className="data-[state=checked]:bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.3)]"
+                className="scale-75 data-[state=checked]:bg-rose-500 shadow-sm"
               />
-              <Label htmlFor="dues-only" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 cursor-pointer select-none">Show Overdue</Label>
+              <Label htmlFor="dues-only" className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 cursor-pointer select-none">Overdue Only</Label>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Card View */}
-      <div className="grid grid-cols-1 gap-4 md:hidden pb-20">
-        {filtered.map((s) => {
-          const plan = dbPlans.find(p => p.id === s.planId);
-          const balance = effectiveBalances[s.id] || 0;
-          const isDue = balance < -0.01;
-          
-          return (
-            <div key={s.id} className="glass-card p-5 rounded-3xl border-border/40 bg-background/60 backdrop-blur-md shadow-lg relative overflow-hidden group">
-              {/* Background gradient hint */}
-              <div className={cn(
-                "absolute top-0 right-0 w-24 h-24 -mr-12 -mt-12 rounded-full blur-3xl opacity-20 transition-all",
-                isDue ? "bg-rose-500" : "bg-emerald-500"
-              )} />
-              
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-active:scale-95",
-                    isDue ? "bg-gradient-to-br from-rose-500 to-rose-600 shadow-rose-500/20" : "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/20"
-                  )}>
-                    <span className="text-lg font-black">{s.name.charAt(0).toUpperCase()}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-base leading-tight">
-                      <Highlight text={s.name} query={q} />
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{s.id}</span>
-                          <StatusBadge 
-                            status={s.status} 
-                            isLoading={updatingStatus[s.id]}
-                            className="scale-90 origin-left"
-                            onClick={async () => {
-                              const currentStatus = String(s.status || "").toLowerCase().trim();
-                              const newStatus = (currentStatus === 'active') ? 'inactive' : 'active';
-                              setUpdatingStatus(prev => ({ ...prev, [s.id]: true }));
-                              try {
-                                await updateSubscriber(s.id, { status: newStatus });
-                                toast.success(`${s.name} is now ${newStatus}`);
-                              } catch (err) {
-                                toast.error("Failed to update status");
-                              } finally {
-                                setUpdatingStatus(prev => ({ ...prev, [s.id]: false }));
-                              }
-                            }}
-                          />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-9 w-9 rounded-xl hover:bg-primary/10 text-primary transition-all"
-                    onClick={() => handleOpenHistory(s)}
-                    title="History"
-                  >
-                    <History className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-9 w-9 rounded-xl hover:bg-emerald-500/10 text-emerald-500 transition-all"
-                    onClick={() => handleOpenInvoice(s)}
-                    title="Invoice"
-                  >
-                    <FileText className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-9 w-9 rounded-xl hover:bg-slate-500/10 text-slate-500 transition-all"
-                    onClick={() => handleOpenEdit(s)}
-                    title="Edit"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-9 w-9 rounded-xl hover:bg-rose-500/10 text-rose-500 transition-all"
-                    onClick={() => handleDelete(s.id)}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Contact</p>
-                  <a href={`tel:${s.phone}`} className="flex items-center gap-2 text-sm font-bold text-foreground hover:text-primary transition-colors">
-                    <Phone className="h-3.5 w-3.5" />
-                    {s.phone}
-                  </a>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{addressLabel}</p>
-                  <p className="flex items-center gap-2 text-sm font-bold truncate">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {s.area}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/30 border border-border/40">
-                <div className="space-y-0.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/70">Plan & Balance</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-black">{plan?.name || "No Plan"}</span>
-                    <span className="h-1 w-1 rounded-full bg-border" />
-                    <span className="text-xs font-bold text-primary">{formatCurrency(plan?.price || 0)}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className={cn(
-                    "px-3 py-1.5 rounded-xl font-black text-sm shadow-sm",
-                    balance >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
-                  )}>
-                    {formatCurrency(balance)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Due Date Indicator for mobile */}
-              {isDue && (
-                <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-500/5 border border-rose-500/10">
-                  <AlertCircle className="h-3.5 w-3.5 text-rose-500" />
-                  <span className="text-[10px] font-bold text-rose-600 uppercase tracking-tight">Payment is currently overdue</span>
-                  <ChevronRight className="h-3 w-3 ml-auto text-rose-400" />
-                </div>
-              )}
-            </div>
-          );
-        })}
-        {filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 bg-background/40 rounded-3xl border border-dashed border-border/60">
-            <Search className="h-12 w-12 text-muted-foreground/20 mb-4" />
-            <p className="text-muted-foreground text-sm font-medium italic">No subscribers found matching criteria</p>
-          </div>
-        )}
-      </div>
-
       {/* Desktop Table View */}
-      <div className="hidden md:block glass-card overflow-hidden rounded-3xl border-border/40 bg-background/40 backdrop-blur-md shadow-2xl mb-20">
+      <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-20">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-secondary/40 border-b border-border/60">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Subscriber</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{customerIdLabel}</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Plan & Price</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Balance</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Status</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground text-right">Actions</th>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Subscriber</th>
+                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{customerIdLabel}</th>
+                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Plan & Price</th>
+                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Balance</th>
+                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
+                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/40">
+            <tbody className="divide-y divide-slate-100">
               {filtered.map((s) => {
                 const plan = dbPlans.find(p => p.id === s.planId);
                 const balance = effectiveBalances[s.id] || 0;
                 
                 return (
-                  <tr key={s.id} className="hover:bg-secondary/20 transition-colors group">
-                    <td className="px-6 py-4">
+                  <tr key={s.id} className="hover:bg-slate-50/80 transition-colors group">
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className={cn(
-                          "h-10 w-10 rounded-xl flex items-center justify-center font-display font-black text-sm text-white shadow-lg transition-transform group-hover:scale-105",
-                          balance >= 0 ? "bg-gradient-to-br from-emerald-500 to-emerald-600" : "bg-gradient-to-br from-rose-500 to-rose-600"
+                          "h-9 w-9 rounded-xl flex items-center justify-center font-display font-black text-[11px] text-white shadow-sm transition-transform group-hover:scale-105",
+                          balance >= 0 ? "bg-emerald-600" : "bg-rose-600"
                         )}>
-                          {s.name.charAt(0).toUpperCase()}
+                          {s.customerNo || '?'}
                         </div>
                         <div>
-                          <p className="font-bold text-sm tracking-tight"><Highlight text={s.name} query={q} /></p>
-                          <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1.5 mt-0.5 opacity-70">
-                            <Phone className="h-3 w-3" /> {s.phone}
+                          <p className="font-bold text-sm tracking-tight text-slate-900"><Highlight text={s.name} query={q} /></p>
+                          <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <Phone className="h-3 w-3" /> {s.phone || 'No phone'}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black uppercase tracking-widest text-primary"><Highlight text={s.customerId || "N/A"} query={q} /></span>
-                        <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 mt-1 opacity-70 italic">
+                        <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-1">
                           <MapPin className="h-2.5 w-2.5" /> <Highlight text={s.area} query={q} />
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <div className="space-y-1">
-                        <p className="text-xs font-bold flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-700 flex items-center gap-2">
                           <Wifi className="h-3 w-3 text-primary" />
                           {plan?.name || "No Plan"}
                         </p>
-                        <p className="text-[10px] font-black text-muted-foreground opacity-60">{formatCurrency(plan?.price || 0)}/mo</p>
+                        <p className="text-[10px] font-black text-slate-400">{formatCurrency(plan?.price || 0)}/mo</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <div className="relative group/balance">
                         <div className={cn(
                           "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-mono-num font-black text-xs border transition-all",
                           balance >= 0 
-                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]" 
-                            : "bg-rose-500/10 text-rose-600 border-rose-500/20 shadow-[0_0_10px_rgba(225,29,72,0.1)]"
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm" 
+                            : "bg-rose-50 text-rose-600 border-rose-100 shadow-sm"
                         )}>
                           {formatCurrency(balance)}
                         </div>
                         
-                        {/* Hover Tooltip for Balance details */}
+                        {/* Statement Analysis Tooltip */}
                         <div className="absolute bottom-full left-0 mb-2 invisible group-hover/balance:visible opacity-0 group-hover/balance:opacity-100 transition-all z-50 pointer-events-none">
-                          <div className="bg-slate-950/95 backdrop-blur-md border border-white/10 rounded-2xl p-4 shadow-2xl min-w-[220px]">
-                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
-                              <div className="h-5 w-1.5 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xl min-w-[220px]">
+                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                              <div className="h-5 w-1.5 bg-emerald-500 rounded-full" />
                               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Statement Analysis</p>
                             </div>
                             <div className="space-y-3 font-mono-num text-[11px]">
                               <div className="flex justify-between items-center gap-6">
                                 <span className="text-slate-500 font-bold uppercase tracking-tighter">Invoiced Total</span>
-                                <span className="text-rose-400 font-black bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20">-{formatCurrency(invoices.filter(inv => inv.subscriberId === s.id).reduce((sum, inv) => sum + Number(inv.amount || 0), 0))}</span>
+                                <span className="text-rose-600 font-black bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">-{formatCurrency(invoices.filter(inv => inv.subscriberId === s.id).reduce((sum, inv) => sum + Number(inv.amount || 0), 0))}</span>
                               </div>
                               <div className="flex justify-between items-center gap-6">
                                 <span className="text-slate-500 font-bold uppercase tracking-tighter">Opening Balance</span>
-                                <span className={Number(s.openingBalance || 0) >= 0 ? "text-rose-400 font-black bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20" : "text-emerald-400 font-black bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20"}>
+                                <span className={Number(s.openingBalance || 0) >= 0 ? "text-rose-600 font-black bg-rose-50 px-2 py-1 rounded-lg border border-rose-100" : "text-emerald-600 font-black bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100"}>
                                   {Number(s.openingBalance || 0) >= 0 ? "-" : "+"}{formatCurrency(Math.abs(Number(s.openingBalance || 0)))}
                                 </span>
                               </div>
-                              <div className="flex justify-between items-center gap-6 pb-3 border-b border-white/5 border-dashed">
+                              <div className="flex justify-between items-center gap-6 pb-3 border-b border-slate-100 border-dashed">
                                 <span className="text-slate-500 font-bold uppercase tracking-tighter">Total Received</span>
-                                <span className="text-emerald-400 font-black bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">+{formatCurrency(payments.filter(p => p.subscriberId === s.id).reduce((sum, p) => sum + Number(p.amount || 0), 0))}</span>
+                                <span className="text-emerald-600 font-black bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">+{formatCurrency(payments.filter(p => p.subscriberId === s.id).reduce((sum, p) => sum + Number(p.amount || 0), 0))}</span>
                               </div>
                               <div className="flex justify-between items-center gap-6 pt-1">
-                                <span className="text-white font-black uppercase text-[10px] tracking-[0.15em]">Net Ledger Balance</span>
-                                <div className={`px-3 py-2 rounded-xl border-2 ${(effectiveBalances[s.id] || 0) >= 0 ? "bg-emerald-500 text-white border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-rose-600 text-white border-rose-500 shadow-[0_0_15px_rgba(225,29,72,0.3)]"}`}>
+                                <span className="text-slate-900 font-black uppercase text-[10px] tracking-[0.15em]">Net Balance</span>
+                                <div className={`px-3 py-2 rounded-xl border-2 ${(effectiveBalances[s.id] || 0) >= 0 ? "bg-emerald-500 text-white border-emerald-400" : "bg-rose-600 text-white border-rose-500"}`}>
                                   <span className="font-black text-xs">{formatCurrency(effectiveBalances[s.id] || 0)}</span>
                                 </div>
                               </div>
                             </div>
-                            {/* Arrow */}
-                            <div className="absolute -bottom-1.5 left-8 w-4 h-4 bg-slate-950/95 rotate-45 border-r border-b border-white/10" />
+                            <div className="absolute -bottom-1.5 left-8 w-4 h-4 bg-white rotate-45 border-r border-b border-slate-200" />
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <StatusBadge 
                         status={s.status} 
                         isLoading={updatingStatus[s.id]}
@@ -710,12 +520,12 @@ export default function Subscribers() {
                         className="shadow-sm"
                       />
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 rounded-xl hover:bg-primary/10 text-primary transition-all"
+                          className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-all"
                           onClick={() => handleOpenHistory(s)}
                           title="Payment History"
                         >
@@ -724,7 +534,7 @@ export default function Subscribers() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 rounded-xl hover:bg-emerald-500/10 text-emerald-500 transition-all"
+                          className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-all"
                           onClick={() => handleOpenInvoice(s)}
                           title="Generate Invoice"
                         >
@@ -733,7 +543,7 @@ export default function Subscribers() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 rounded-xl hover:bg-slate-500/10 text-slate-500 transition-all"
+                          className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
                           onClick={() => handleOpenEdit(s)}
                           title="Edit Account"
                         >
@@ -742,7 +552,7 @@ export default function Subscribers() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 rounded-xl hover:bg-rose-500/10 text-rose-500 transition-all"
+                          className="h-8 w-8 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all"
                           onClick={() => handleDelete(s.id)}
                           title="Delete Account"
                         >
@@ -755,7 +565,7 @@ export default function Subscribers() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground text-sm italic">
+                  <td colSpan={6} className="px-6 py-16 text-center text-slate-400 text-sm italic">
                     No subscribers found matching your search criteria.
                   </td>
                 </tr>

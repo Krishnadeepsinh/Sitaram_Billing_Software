@@ -145,7 +145,7 @@ const AuditReportTemplate = ({
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span className={isGujarati ? 'gujarati' : ''} style={{ fontWeight: '800', color: '#0f172a', fontSize: isGujarati ? '13px' : '11px' }}>
-                        {sub?.name || 'Unknown'}
+                        {sub?.customerNo ? `#${sub.customerNo} ` : ''}{sub?.name || 'Unknown'}
                       </span>
                       <span style={{ fontSize: '9px', color: '#94a3b8' }}>{sub?.phone || 'No Contact'}</span>
                     </div>
@@ -608,94 +608,122 @@ export default function Reports() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          <div className="glass-card rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
-            <div className="p-8 border-b border-border/40 bg-secondary/10 flex items-center justify-between">
-              <h3 className="text-xl font-black tracking-tight">Collection Log</h3>
-              <span className="bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Showing {Math.min(filteredPayments.length, 50)} Trx</span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="text-[10px] uppercase tracking-widest text-muted-foreground font-black border-b border-border/40">
-                    <th className="px-8 py-5">Date</th>
-                    <th className="px-8 py-5">Subscriber</th>
-                    <th className="px-8 py-5">Area</th>
-                    <th className="px-8 py-5">Method</th>
-                    <th className="px-8 py-5 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/20 text-sm">
-                  {filteredPayments.slice(0, 50).map((p) => {
-                    const sub = subscribers.find(s => s.id === p.subscriberId);
-                    const isGujarati = /[\u0a80-\u0aff]/.test(sub?.name || '');
-                    return (
-                      <tr key={p.id} className="hover:bg-primary/[0.02] transition-all group">
-                        <td className="px-8 py-5 font-medium text-muted-foreground">{formatDate(p.date)}</td>
-                        <td className="px-8 py-5">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/20">{sub?.customerNo || '?'}</div>
-                            <div className="flex flex-col">
-                              <span className={`font-bold text-foreground group-hover:text-primary transition-colors ${isGujarati ? 'gujarati text-base' : ''}`}>{sub?.name || 'Unknown'}</span>
-                              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">{customerIdLabel}: {sub?.customerId || 'N/A'}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-8 py-5 text-muted-foreground font-medium">
-                          <div className="flex items-center gap-1.5"><MapPin className="h-3 w-3 text-primary/40" />{sub?.area || 'N/A'}</div>
-                        </td>
-                        <td className="px-8 py-5">
-                          <span className={`text-[9px] px-2 py-0.5 rounded-md font-black uppercase border ${p.method === 'UPI' ? 'bg-indigo-500/5 text-indigo-500 border-indigo-500/20' : 'bg-amber-500/5 text-amber-500 border-amber-500/20'}`}>{p.method}</span>
-                        </td>
-                        <td className="px-8 py-5 text-right font-black tabular-nums text-primary">{formatCurrency(p.amount)}</td>
-                      </tr>
-                    );
-                  })}
-                  {filteredPayments.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-8 py-20 text-center">
-                        <div className="flex flex-col items-center justify-center gap-3">
-                          <div className="p-4 bg-muted/50 rounded-full"><Filter className="h-8 w-8 text-muted-foreground/30" /></div>
-                          <p className="text-muted-foreground font-medium italic">No transactions match your current filters.</p>
+      <div className="hidden md:block bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden mb-8">
+        <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <h3 className="text-xl font-black tracking-tight text-slate-900">Collection Log</h3>
+          <span className="bg-primary/10 text-primary text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-primary/10">Showing {Math.min(filteredPayments.length, 50)} Trx</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="text-[9px] uppercase tracking-[0.2em] text-slate-400 font-black border-b border-slate-100">
+                <th className="px-8 py-5">Subscriber</th>
+                <th className="px-8 py-5">Date</th>
+                <th className="px-8 py-5">Area</th>
+                <th className="px-8 py-5">Method</th>
+                <th className="px-8 py-5 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50 text-sm">
+              {filteredPayments.slice(0, 50).map((p) => {
+                const sub = subscribers.find(s => s.id === p.subscriberId);
+                const isGujarati = /[\u0a80-\u0aff]/.test(sub?.name || '');
+                return (
+                  <tr key={p.id} className="hover:bg-slate-50/80 transition-all group">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-xl bg-slate-100 flex items-center justify-center text-[11px] font-black text-slate-500 border border-slate-200 group-hover:scale-110 transition-transform">
+                          {sub?.customerNo || '?'}
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                        <div className="flex flex-col">
+                          <span className={`font-bold text-slate-900 group-hover:text-primary transition-colors ${isGujarati ? 'gujarati text-base' : ''}`}>
+                            {sub?.customerNo ? `#${sub.customerNo} ` : ''}{sub?.name || 'Unknown'}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{customerIdLabel}: {sub?.customerId || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 font-bold text-slate-600">{formatDate(p.date)}</td>
+                    <td className="px-8 py-5 text-slate-500 font-bold">
+                      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider"><MapPin className="h-3.5 w-3.5 text-slate-300" />{sub?.area || 'N/A'}</div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className={`text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-widest border shadow-sm ${p.method === 'UPI' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{p.method}</span>
+                    </td>
+                    <td className="px-8 py-5 text-right font-black tabular-nums text-slate-900">{formatCurrency(p.amount)}</td>
+                  </tr>
+                );
+              })}
+              {filteredPayments.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-8 py-24 text-center">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <div className="p-5 bg-slate-50 rounded-full border border-slate-100"><Filter className="h-10 w-10 text-slate-200" /></div>
+                      <p className="text-slate-400 font-bold italic text-sm">No transactions match your current filters.</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div className="bg-white rounded-[2rem] p-10 border border-slate-200 shadow-sm transition-all hover:shadow-md">
+            <h3 className="text-2xl font-black tracking-tight text-slate-900 mb-8 flex items-center gap-3">
+              <TrendingUp className="h-6 w-6 text-primary" />
+              Performance Analytics
+            </h3>
+            <div className="space-y-10">
+              <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6 group hover:border-primary/20 transition-all">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black mb-2">Net Period Profit</p>
+                  <p className="text-5xl font-black text-slate-900 tracking-tighter tabular-nums">{formatCurrency(monthStats.revenue - monthStats.expenses)}</p>
+                </div>
+                <div className="h-20 w-20 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-slate-200/50 group-hover:scale-110 transition-transform">
+                  <TrendingUp className="h-10 w-10 text-emerald-500" />
+                </div>
+              </div>
+              <div className="space-y-6">
+                <div className="flex justify-between items-end">
+                  <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.2em]">Profit Margin Efficiency</p>
+                  <span className="text-lg font-black text-primary tabular-nums">{monthStats.revenue > 0 ? `${Math.max(0, Math.round(((monthStats.revenue - monthStats.expenses) / monthStats.revenue) * 100))}%` : '0%'}</span>
+                </div>
+                <div className="h-6 w-full bg-slate-100 rounded-full overflow-hidden p-1.5 border border-slate-200/50 shadow-inner">
+                  <div className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.3)] transition-all duration-1000 ease-out" style={{ width: monthStats.revenue > 0 ? `${Math.max(0, ((monthStats.revenue - monthStats.expenses) / monthStats.revenue) * 100)}%` : '0%' }} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="space-y-8">
-          <div className="glass-card rounded-[2rem] p-8 bg-gradient-to-br from-primary/[0.02] to-transparent border border-border/40">
-            <h3 className="text-xl font-black tracking-tight mb-8">Performance ROI</h3>
-            <div className="space-y-8">
-              <div className="p-6 bg-background/50 rounded-[1.5rem] border border-border/40 shadow-sm group hover:border-primary/30 transition-colors">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-black mb-2">Net Period Profit</p>
-                <p className="text-4xl font-black text-primary tracking-tighter tabular-nums">{formatCurrency(monthStats.revenue - monthStats.expenses)}</p>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Profit Margin</p>
-                  <span className="text-sm font-black text-primary">{monthStats.revenue > 0 ? `${Math.max(0, Math.round(((monthStats.revenue - monthStats.expenses) / monthStats.revenue) * 100))}%` : '0%'}</span>
-                </div>
-                <div className="h-4 w-full bg-secondary/50 rounded-full overflow-hidden p-1 border border-border/20 shadow-inner">
-                  <div className="h-full bg-gradient-to-r from-primary to-indigo-500 rounded-full transition-all duration-1000" style={{ width: monthStats.revenue > 0 ? `${Math.max(0, ((monthStats.revenue - monthStats.expenses) / monthStats.revenue) * 100)}%` : '0%' }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card rounded-[2rem] p-8 bg-slate-900 text-white border-none shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform"><ShieldCheck className="h-24 w-24" /></div>
-            <h3 className="text-xl font-black tracking-tight mb-6 flex items-center gap-3"><ShieldCheck className="h-5 w-5 text-emerald-400" /> Audit Actions</h3>
-            <p className="text-xs text-slate-400 mb-8 leading-relaxed font-medium">Finalize this month's financial records. This report includes all verified collections and operational expenses.</p>
-            <div className="flex flex-col gap-3">
-              <Button className="w-full h-14 bg-white text-slate-900 hover:bg-white/90 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:-translate-y-1 active:scale-95" onClick={() => setIsPreviewOpen(true)}>
-                <Eye className="h-4 w-4 mr-2" /> Preview Audit
+          <div className="bg-white rounded-[2rem] p-10 border border-slate-200 shadow-sm relative overflow-hidden group hover:border-primary/20 transition-all">
+            <div className="absolute -top-10 -right-10 p-10 opacity-[0.03] group-hover:rotate-12 transition-transform pointer-events-none text-primary"><ShieldCheck className="h-40 w-40" /></div>
+            <h3 className="text-xl font-black tracking-tight text-slate-900 mb-6 flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-emerald-500" /> 
+              Audit Actions
+            </h3>
+            <p className="text-[11px] text-slate-500 mb-10 leading-relaxed font-bold uppercase tracking-wider">
+              Verify and export financial records for {monthNameLong}.
+            </p>
+            <div className="flex flex-col gap-4">
+              <Button 
+                variant="outline"
+                className="w-full h-14 bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-sm transition-all flex items-center justify-center gap-3 active:scale-95" 
+                onClick={() => setIsPreviewOpen(true)}
+              >
+                <Eye className="h-4 w-4" /> Preview Audit
               </Button>
-              <Button className="w-full h-14 bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:-translate-y-1 active:scale-95" onClick={handleDownloadPremiumReport} disabled={isGenerating}>
-                {isGenerating ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Generating...</> : <><Download className="h-4 w-4 mr-2" /> Download Report</>}
+              <Button 
+                className="w-full h-14 bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-3 active:scale-95" 
+                onClick={handleDownloadPremiumReport} 
+                disabled={isGenerating}
+              >
+                {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                Export Audit PDF
               </Button>
             </div>
           </div>

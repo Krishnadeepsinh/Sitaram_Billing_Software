@@ -70,22 +70,22 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
               </div>
             )}
 
-            <div className="bg-[#1e3a5f] rounded-3xl p-6 flex justify-between items-center text-white shadow-2xl relative overflow-hidden mt-4">
+            <div className="bg-[#1e3a5f] rounded-3xl p-5 flex justify-between items-center text-white shadow-lg relative overflow-hidden mt-4">
               <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
               <div className="flex flex-col relative z-10">
-                <span className="font-black text-[10px] uppercase tracking-[0.3em] text-orange-300">Final Amount Payable</span>
-                <div className="mt-1.5 h-1 w-12 bg-orange-50 rounded-full" />
+                <span className="font-black text-[9px] uppercase tracking-[0.3em] text-orange-300">Final Amount Payable</span>
+                <div className="mt-1 h-1 w-10 bg-orange-50 rounded-full" />
               </div>
               <div className="text-right relative z-10">
-                <span className="font-black text-4xl text-white tracking-tighter">
+                <span className="font-black text-3xl text-white tracking-tighter">
                   ₹{grandTotal.toFixed(2)}
                 </span>
               </div>
             </div>
 
-            <div className="px-1 pt-4">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total in Words</p>
-              <p className="text-xs font-black text-[#1e3a5f] uppercase italic leading-tight">
+            <div className="px-1 pt-3">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total in Words</p>
+              <p className="text-[11px] font-black text-[#1e3a5f] uppercase italic leading-tight">
                 Rupees {numberToWords(grandTotal)}
               </p>
             </div>

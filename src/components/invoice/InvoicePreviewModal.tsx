@@ -165,13 +165,21 @@ export default function InvoicePreviewModal({
           letterRendering: true,
           windowWidth: 794,
           onclone: (doc: Document) => {
-            const clonedElement = doc.getElementById("invoice-content");
-            if (clonedElement) {
-              clonedElement.style.transform = "none";
-              clonedElement.style.margin = "0";
-              clonedElement.style.width = "794px";
-              clonedElement.style.height = "auto";
-              clonedElement.style.display = "flex";
+            const el = doc.getElementById("invoice-preview-content");
+            if (el) {
+              el.style.transform = "none";
+              el.style.margin = "0";
+              el.style.padding = "40px";
+              el.style.width = "794px";
+              el.style.backgroundColor = "white";
+              el.style.color = "black";
+              const allText = el.querySelectorAll('*');
+              allText.forEach((node: any) => {
+                if (node.style) {
+                  node.style.color = "black";
+                  node.style.borderColor = "#eee";
+                }
+              });
             }
           }
         },
@@ -341,17 +349,17 @@ Due Date: ${formatDate(invoice.dueDate)}`;
           </div>
         </div>
 
-        <div className="p-4 sm:p-10 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="p-4 sm:p-8 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Button
             variant="outline"
-            className="flex-1 h-12 sm:h-16 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest text-slate-600 hover:bg-white border-slate-200 transition-all hover:shadow-md"
+            className="flex-1 h-12 sm:h-14 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest text-slate-600 hover:bg-white border-slate-200 transition-all hover:shadow-md"
             onClick={onClose}
           >
             Cancel Preview
           </Button>
           <Button
             onClick={handleSharePDF}
-            className="flex-1 h-12 sm:h-16 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-emerald-100 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
+            className="flex-1 h-12 sm:h-14 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-emerald-100 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
           >
             <Send className="h-5 w-5" />
             WhatsApp Bill
@@ -359,7 +367,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
           <Button
             onClick={handleDownloadPDF}
             disabled={isProcessing}
-            className="flex-1 h-12 sm:h-16 bg-slate-900 text-white hover:bg-black rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
+            className="flex-1 h-12 sm:h-14 bg-slate-900 text-white hover:bg-black rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
           >
             {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             Download PDF Record

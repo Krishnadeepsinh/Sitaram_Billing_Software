@@ -20,6 +20,7 @@ export function InvoiceCustomerBlock({ subscriber, customerIdLabel }: InvoiceCus
     <div className="flex-1 bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col">
       <p className="text-orange-500 text-[10px] font-black mb-3 uppercase tracking-widest">Billed To Customer</p>
       <h2 className="text-2xl font-black text-slate-900 mb-3 leading-tight tracking-tight">
+        <span className="text-primary mr-2 opacity-50">#{subscriber?.customerNo || "—"}</span>
         {subscriber?.name || "Valued Customer"}
       </h2>
       <div className="text-sm text-slate-600 space-y-1 leading-relaxed flex-1">

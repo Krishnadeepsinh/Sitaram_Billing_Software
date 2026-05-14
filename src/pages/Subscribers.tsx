@@ -227,9 +227,19 @@ export default function Subscribers() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-white">
-            Subscribers
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight text-white">
+              Subscribers
+            </h1>
+            <div className={cn(
+              "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border animate-in fade-in zoom-in duration-300",
+              isCableMode 
+                ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
+                : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+            )}>
+              {activeBusinessMode} Mode
+            </div>
+          </div>
           <p className="text-sm text-slate-400">Manage your network nodes and customers</p>
         </div>
         

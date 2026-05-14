@@ -120,7 +120,17 @@ export default function Dashboard() {
       {/* Header section */}
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 border-b border-white/10 pb-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
+            <div className={cn(
+              "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border animate-in fade-in zoom-in duration-300",
+              useBusinessMode() === "cable" 
+                ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
+                : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+            )}>
+              {useBusinessMode()} Mode
+            </div>
+          </div>
           <p className="text-sm text-slate-400">Overview of your operations and revenue.</p>
         </div>
         

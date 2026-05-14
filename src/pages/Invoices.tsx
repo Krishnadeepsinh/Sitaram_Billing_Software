@@ -529,8 +529,9 @@ ${brand.name}`;
                     ))}
                 </select>
               </div>
+            </div>
 
-              {billingType === "plan" && (
+            {billingType === "plan" && (
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Recharge Date</label>

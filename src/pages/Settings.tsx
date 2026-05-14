@@ -53,7 +53,6 @@ const Settings = () => {
             <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em] uppercase">Enterprise Identity & Parameters</p>
           </div>
         </div>
-      </div>
 
         <form onSubmit={handleSave} className="space-y-4">
           <div className="bg-slate-900/40 backdrop-blur-xl rounded-xl border border-slate-800 shadow-2xl p-6 lg:p-8 space-y-8">

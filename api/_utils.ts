@@ -4,9 +4,32 @@ import { VercelRequest, VercelResponse } from "@vercel/node";
 
 export type BusinessMode = "cable" | "broadband";
 
+export const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+
+if (isProduction && !process.env.SESSION_SECRET) {
+  throw new Error("CRITICAL: SESSION_SECRET is missing in production environment");
+}
 const sessionSecret = process.env.SESSION_SECRET || "fallback-secret-for-dev-only";
 export const sessionTtlMs = 1000 * 60 * 60 * 12;
-export const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+
+export const hashPassword = (password: string) => {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const derivedKey = crypto.scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${derivedKey}`;
+};
+
+export const verifyPassword = (password: string, hash: string) => {
+  try {
+    const [salt, key] = hash.split(":");
+    if (!salt || !key) return false;
+    const derivedKey = crypto.scryptSync(password, salt, 64);
+    const keyBuffer = Buffer.from(key, "hex");
+    if (derivedKey.length !== keyBuffer.length) return false;
+    return crypto.timingSafeEqual(derivedKey, keyBuffer);
+  } catch {
+    return false;
+  }
+};
 
 const configs = {
   broadband: {
@@ -24,7 +47,17 @@ export const getDb = (mode: BusinessMode) => {
   if (!config.url || !config.authToken) {
     throw new Error(`${mode} database is not configured.`);
   }
-  return createClient({ url: config.url, authToken: config.authToken });
+
+  // Use a local embedded replica that syncs with Turso
+  // Note: Vercel functions are read-only, so we use /tmp/ for Vercel, else local directory
+  const localDbUrl = process.env.VERCEL === "1" ? `file:/tmp/${mode}_local.db` : `file:./${mode}_local.db`;
+
+  return createClient({ 
+    url: localDbUrl, 
+    syncUrl: config.url, 
+    authToken: config.authToken,
+    syncInterval: 2 // Automatically sync every 2 seconds in the background
+  });
 };
 
 export const sign = (payload: string) =>
@@ -122,16 +155,16 @@ export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
     const { username, password } = resolveAdminCredentials();
 
     const existingUser = await db.execute({
-      sql: "SELECT id, password_text FROM admin_users WHERE username = ? LIMIT 1",
+      sql: "SELECT id, password_hash FROM admin_users WHERE username = ? LIMIT 1",
       args: [username],
     });
 
     const userRow = existingUser.rows[0];
     const userExists = existingUser.rows.length > 0;
-    const storedPassword = userRow ? String(userRow.password_text || "") : "";
+    const storedHash = userRow ? String(userRow.password_hash || "") : "";
     
     // Only sync if user doesn't exist, password changed, or force sync is enabled
-    const passwordChanged = userExists && storedPassword.trim() !== password.trim();
+    const passwordChanged = userExists && !verifyPassword(password, storedHash);
     const forceSync = String(process.env.SYNC_ADMIN_PASSWORD_ON_BOOT || "").toLowerCase() === "true";
     const shouldSync = !userExists || passwordChanged || forceSync;
 
@@ -143,7 +176,7 @@ export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
       });
       await db.execute({
         sql: "INSERT INTO admin_users (id, username, password_hash, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        args: [`admin-${crypto.randomUUID()}`, username, password, password, "Administrator", "admin", "active", new Date().toISOString()],
+        args: [`admin-${crypto.randomUUID()}`, username, hashPassword(password), '', "Administrator", "admin", "active", new Date().toISOString()],
       });
       return { created: !userExists, updated: userExists, skipped: false };
     }
@@ -166,7 +199,7 @@ export const upsertConfiguredAdminUser = async (db: ReturnType<typeof createClie
   const id = `admin-${crypto.randomUUID()}`;
   await db.execute({
     sql: "INSERT INTO admin_users (id, username, password_hash, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-    args: [id, username, password, password, "Administrator", "admin", "active", new Date().toISOString()],
+    args: [id, username, hashPassword(password), '', "Administrator", "admin", "active", new Date().toISOString()],
   });
   return { id, display_name: "Administrator" };
 };

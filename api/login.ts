@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { getDb, createSession, sessionTtlMs, ensureAdminUser, readJsonBody, isProduction } from "./_utils.js";
+import { getDb, createSession, sessionTtlMs, ensureAdminUser, readJsonBody, isProduction, verifyPassword } from "./_utils.js";
 
 type LoginUserRow = {
   id?: string;
@@ -35,10 +35,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const user = result.rows[0] as LoginUserRow;
-    const dbPassword = String(user.password_text || user.password_hash || "");
+    const dbHash = String(user.password_hash || "");
     
-    // Use simple comparison for now to avoid any timingSafeEqual issues in serverless
-    const valid = dbPassword.trim() === passString.trim();
+    let valid = false;
+    if (dbHash.includes(":")) {
+      valid = verifyPassword(passString, dbHash);
+    } else {
+      // Fallback for legacy plaintext during transition
+      const dbPassword = String(user.password_text || user.password_hash || "");
+      valid = dbPassword === passString;
+    }
     
     if (!valid) {
       console.log(`Login attempt failed: Password mismatch for user '${userTrimmed}'.`);

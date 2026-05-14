@@ -591,7 +591,13 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const updatePlan = async (id: string, updates: Partial<typeof plans[0]>) => {
     if (db) {
       try {
-        const setClause = Object.keys(updates)
+        const allowedKeys = ['name', 'price', 'validityDays', 'speedMbps', 'priceWithoutGst', 'providerPlanId', 'category'];
+        const mapped: Record<string, any> = {};
+        for (const k of allowedKeys) {
+          if ((updates as any)[k] !== undefined) mapped[k] = (updates as any)[k];
+        }
+        if (Object.keys(mapped).length === 0) return;
+        const setClause = Object.keys(mapped)
           .map(k =>
             k === 'validityDays' ? 'validity_days = ?' :
             k === 'speedMbps' ? 'speed_mbps = ?' :
@@ -602,7 +608,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           .join(', ');
         await db.execute({
           sql: `UPDATE plans SET ${setClause} WHERE id = ?`,
-          args: [...Object.values(updates), id],
+          args: [...Object.values(mapped), id],
         });
       } catch (err) { console.error('updatePlan DB error:', err); }
       await fetchData();

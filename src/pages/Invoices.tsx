@@ -645,6 +645,7 @@ ${brand.name}`;
                             Discount of {formatCurrency(discountAmount)} applied
                           </p>
                         )}
+                      </div>
 
                        <div className="flex justify-between text-lg mt-2 pt-2 border-t border-border/50">
                         <span className="font-bold">Total Amount</span>

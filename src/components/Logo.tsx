@@ -26,7 +26,7 @@ export function Logo({ className, iconClassName, showText = true, showModeLabel 
   return (
     <div className={cn("flex items-center gap-3", className)}>
       <div className={cn(
-        "relative flex shrink-0 items-center justify-center overflow-hidden border border-white/15 bg-white/95 p-1 shadow-[0_10px_30px_rgba(15,23,42,0.18)]",
+        "relative flex shrink-0 items-center justify-center overflow-hidden border border-white/10 bg-slate-900/80 backdrop-blur-md p-1.5 shadow-2xl",
         currentSize.box,
         iconClassName
       )}>

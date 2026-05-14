@@ -52,13 +52,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-white/5 bg-slate-950 text-white selection:bg-white/10">
-      <SidebarHeader className="border-b border-white/5 bg-slate-950">
+      <SidebarHeader className="border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
         <div className="flex flex-col gap-2 px-3 py-6">
           <Logo showText={!collapsed} size="md" variant="white" />
           {!collapsed && (
             <div className="flex items-center gap-2 mt-4 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 w-fit">
-              <div className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-300">{activeBusinessLabel} CLOUD ACTIVE</span>
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 font-mono">{activeBusinessLabel} SECURE NODE</span>
             </div>
           )}
         </div>
@@ -117,20 +117,20 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <div className="mt-auto p-4 border-t border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-white border border-slate-200 shadow-sm">
+      <div className="mt-auto p-4 border-t border-white/5 bg-slate-950/50 backdrop-blur-xl">
+        <div className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-slate-900/50 border border-white/5 shadow-inner">
           <div className="flex flex-col">
             <div className="flex items-center gap-2 mb-0.5">
-              <div className={`h-2 w-2 rounded-full ${hasTursoDB ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">
+              <div className={`h-2 w-2 rounded-full ${hasTursoDB ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]'}`} />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white">
                 {activeBusinessLabel} Node
               </span>
             </div>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
+            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter">
               {hasTursoDB ? 'Securely Synced' : 'Local Instance'}
             </span>
           </div>
-          <div className={`ml-auto h-8 w-8 rounded-lg flex items-center justify-center ${hasTursoDB ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+          <div className={`ml-auto h-8 w-8 rounded-lg flex items-center justify-center ${hasTursoDB ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
             <DatabaseZap className="h-4 w-4" />
           </div>
         </div>

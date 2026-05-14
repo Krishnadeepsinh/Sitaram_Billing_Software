@@ -71,7 +71,7 @@ export default function Payments() {
       }, 50);
     };
 
-    if (showReceipt) {
+    if (isReceiptOpen) {
       handleResize();
       window.addEventListener("resize", handleResize);
       
@@ -85,7 +85,7 @@ export default function Payments() {
         clearTimeout(timer2);
       };
     }
-  }, [showReceipt]);
+  }, [isReceiptOpen]);
   const loadHtml2Pdf = async () => (await import("html2pdf.js")).default;
 
   const getPaymentItems = (payment: any) => {
@@ -680,379 +680,349 @@ Thank you!`;
     return unique;
   };
 
-  const cashTotal = filtered.filter(p => p.method === 'Cash').reduce((s, p) => s + p.amount, 0);
-  const upiTotal = filtered.filter(p => p.method !== 'Cash').reduce((s, p) => s + p.amount, 0);
+  const cashTotal = filtered.filter(p => p.method === 'Cash').reduce((s, p) => s + Number(p.amount), 0);
+  const upiTotal = filtered.filter(p => p.method !== 'Cash').reduce((s, p) => s + Number(p.amount), 0);
 
   return (
-    <div className="space-y-6 animate-fade-in relative pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-black mb-2 flex items-center gap-2">
-            <Activity className="h-3 w-3" />
-            Financial Records · Secure
-          </p>
-          <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tighter text-slate-900 uppercase leading-none">
-            Revenue <span className="text-primary italic">Collection</span>
-          </h1>
-          <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mt-4 flex items-center gap-2">
-            Track and record {activeBusinessMode === "cable" ? "Cable" : "Broadband"} customer payments.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="outline"
-            className="h-11 px-5 rounded-xl font-black text-[10px] uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-2.5 text-slate-600" 
-            onClick={async () => {
-              setIsGlobalRefreshing(true);
-              try {
-                await refreshData();
-                toast.success("Payments Synchronized");
-              } finally {
-                setIsGlobalRefreshing(false);
-              }
-            }}
-          >
-            <Loader2 className={cn("h-3.5 w-3.5", isGlobalRefreshing && "animate-spin")} />
-            Sync
-          </Button>
-          <Button 
-            onClick={() => setIsAddOpen(true)}
-            className="h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm active:scale-95 transition-all flex items-center gap-2.5"
-          >
-            <Plus className="h-4 w-4" /> Record Payment
-          </Button>
-        </div>
+    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-primary/30 selection:text-white">
+      {/* Background Decorative Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm space-y-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-2">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-all duration-300" />
-            <Input
-              placeholder="Search subscriber name, phone, or transaction ID..."
-              className="pl-10 bg-slate-50 border-transparent rounded-xl h-11 focus:bg-white focus:ring-primary/10 transition-all text-[11px] font-bold placeholder:text-slate-400"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-            {q && (
-              <button 
-                onClick={() => setQ("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 text-slate-500 transition-all"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            )}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/10">
+                <Wallet className="h-6 w-6 text-primary" />
+              </div>
+              <div className="h-1 w-12 bg-slate-800 rounded-full" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Financial Ledger</span>
+            </div>
+            <h1 className="font-display text-5xl lg:text-7xl font-black tracking-tighter uppercase leading-none">
+              Payment <span className="text-primary italic">History</span>
+            </h1>
+            <p className="text-slate-400 max-w-md text-sm font-medium leading-relaxed">
+              Real-time transaction tracking and receipt management. Monitor all incoming revenue with precision.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" onClick={() => { setIsGlobalRefreshing(true); refreshData().finally(() => setIsGlobalRefreshing(false)); }} className="h-14 px-6 rounded-2xl border-slate-800 bg-slate-900/50 hover:bg-slate-900 hover:border-slate-700 text-slate-300 transition-all duration-300">
+              <Activity className={cn("h-4 w-4 mr-2 text-primary", isGlobalRefreshing && "animate-spin")} />
+              Sync Ledger
+            </Button>
+            <Button onClick={() => setIsAddOpen(true)} className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+              <Plus className="h-5 w-5 mr-2" />
+              Record Payment
+            </Button>
+          </div>
+        </div>
+
+        {/* Search & Filter Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="lg:col-span-2 relative group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+            <Input placeholder="Search records by name, area, ID or method..." className="h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 focus:border-primary/50 focus:ring-primary/20 rounded-2xl text-white placeholder:text-slate-600 font-medium transition-all" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
-              <select 
-                className="bg-transparent border-none rounded-lg h-9 px-3 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[120px] cursor-pointer text-slate-600"
-                value={methodF}
-                onChange={(e) => setMethodF(e.target.value)}
-              >
-                <option value="all">All Methods</option>
-                <option value="Cash">Cash</option>
-                <option value="Online">Online</option>
-                <option value="GPay">GPay</option>
-                <option value="PhonePe">PhonePe</option>
-                <option value="Other">Other</option>
-              </select>
-              <div className="w-px h-3 bg-slate-200" />
-              <select 
-                className="bg-transparent border-none rounded-lg h-9 px-3 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[120px] cursor-pointer text-slate-600"
-                value={areaF}
-                onChange={(e) => setAreaF(e.target.value)}
-              >
-                <option value="all">All Areas</option>
-                {areas.map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </div>
+          <div className="relative">
+            <Filter className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <select value={areaF} onChange={(e) => setAreaF(e.target.value)} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+              <option value="all" className="bg-slate-900">All Areas</option>
+              {areas.map(a => <option key={a} value={a} className="bg-slate-900">{a}</option>)}
+            </select>
+          </div>
 
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
-              <Input
-                type="date"
-                className="bg-transparent border-none h-9 px-3 text-[10px] font-black w-[130px] focus:ring-0 cursor-pointer text-slate-600"
-                value={dateF}
-                onChange={(e) => setDateF(e.target.value)}
-              />
-              {dateF && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 rounded-lg text-slate-400"
-                  onClick={() => setDateF("")}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
+          <div className="relative">
+            <Banknote className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <select value={methodF} onChange={(e) => setMethodF(e.target.value)} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+              <option value="all" className="bg-slate-900">All Methods</option>
+              <option value="Cash" className="bg-slate-900">Cash Payments</option>
+              <option value="UPI" className="bg-slate-900">UPI / Digital</option>
+            </select>
           </div>
         </div>
-      </div>
 
-      {/* Analytics Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-5 transition-all hover:border-emerald-200 group">
-          <div className="h-14 w-14 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 transition-transform group-hover:scale-110">
-            <Wallet className="h-7 w-7" />
+        {/* Date Range Filters */}
+        <div className="flex flex-wrap items-center gap-4 mb-10 p-6 bg-slate-900/30 border border-slate-800/50 rounded-[2rem] backdrop-blur-xl">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3">From</span>
+            <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value === "all" ? "all" : Number(e.target.value))} className="h-10 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-bold text-white uppercase px-3 focus:outline-none focus:ring-2 focus:ring-primary/20">
+              <option value="all" className="bg-slate-900">Start Month</option>
+              {months.map((m, i) => <option key={m} value={i} className="bg-slate-900">{m}</option>)}
+            </select>
+            <select value={filterYear} onChange={(e) => setFilterYear(e.target.value === "all" ? "all" : Number(e.target.value))} className="h-10 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-bold text-white uppercase px-3 focus:outline-none focus:ring-2 focus:ring-primary/20">
+              {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+            </select>
           </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Cash Collection</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{formatCurrency(cashTotal)}</p>
+          
+          <div className="h-px w-8 bg-slate-800 hidden sm:block" />
+          
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3">To</span>
+            <select value={filterEndMonth} onChange={(e) => setFilterEndMonth(e.target.value === "all" ? "all" : Number(e.target.value))} className="h-10 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-bold text-white uppercase px-3 focus:outline-none focus:ring-2 focus:ring-primary/20">
+              <option value="all" className="bg-slate-900">End Month</option>
+              {months.map((m, i) => <option key={m} value={i} className="bg-slate-900">{m}</option>)}
+            </select>
+            <select value={filterEndYear} onChange={(e) => setFilterEndYear(e.target.value === "all" ? "all" : Number(e.target.value))} className="h-10 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-bold text-white uppercase px-3 focus:outline-none focus:ring-2 focus:ring-primary/20">
+              {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+            </select>
+          </div>
+
+          <div className="ml-auto hidden lg:flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{sorted.length} Entries Found</span>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-5 transition-all hover:border-primary/20 group">
-          <div className="h-14 w-14 rounded-xl bg-primary/5 flex items-center justify-center text-primary transition-transform group-hover:scale-110">
-            <CreditCard className="h-7 w-7" />
-          </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Digital Revenue</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{formatCurrency(upiTotal)}</p>
-          </div>
-        </div>
-      </div>
 
-      <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-20">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Subscriber</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Date & Time</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Transaction ID</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Amount</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Method</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filtered.map((p) => {
-                const sub = subscribers.find(s => s.id === p.subscriberId);
-                return (
-                  <tr key={p.id} className="hover:bg-slate-50/80 transition-colors group">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-xl bg-slate-100 flex items-center justify-center font-display font-black text-[11px] text-slate-600 shadow-sm group-hover:scale-105 transition-transform">
-                          {sub?.customerNo || '?'}
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm tracking-tight text-slate-900">{sub?.name || "Deleted Sub"}</p>
-                          <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5 mt-0.5">
-                            <MapPin className="h-3 w-3" /> {sub?.area || "N/A"}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-slate-700">{formatDate(p.date)}</span>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Recorded at {new Date(p.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="px-2 py-1 bg-slate-100 rounded-md border border-slate-200">
-                          <span className="text-[10px] font-mono font-bold text-slate-500">{p.id}</span>
-                        </div>
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-mono-num font-black text-sm bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
-                        {formatCurrency(p.amount)}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className={cn(
-                        "inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                        p.method === 'Cash' ? "bg-slate-100 text-slate-600 border-slate-200" : "bg-primary/5 text-primary border-primary/10"
-                      )}>
-                        {p.method}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
-                          onClick={() => handleShareReceipt(p)}
-                          title="Share Receipt"
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all"
-                          onClick={() => handleDelete(p.id)}
-                          title="Delete Record"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+        {/* Main Records Table */}
+        <div className="bg-slate-900/50 backdrop-blur-2xl rounded-[2.5rem] border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden mb-20">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-separate border-spacing-y-2.5 px-6 pb-6">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-black">
+                  <th className="px-6 py-6">Transaction</th>
+                  <th className="px-6 py-6">Account Holder</th>
+                  <th className="px-6 py-6 text-center">Status</th>
+                  <th className="px-6 py-6">Payment Info</th>
+                  <th className="px-6 py-6 text-right">Value</th>
+                  <th className="px-6 py-6 w-32"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center">
+                      <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Accessing secure database...</p>
                     </td>
                   </tr>
-                );
-              })}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-slate-400 text-sm italic">
-                    No payment records found matching your search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ) : sorted.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center">
+                      <AlertCircle className="h-10 w-10 text-slate-800 mx-auto mb-4" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">No payment records match your filters</p>
+                    </td>
+                  </tr>
+                ) : sorted.map((p) => {
+                  const sub = subscribers.find(s => s.id === p.subscriberId);
+                  return (
+                    <tr key={p.id} className="group bg-slate-950/40 border border-slate-800/50 hover:bg-slate-900 transition-all duration-300 rounded-2xl">
+                      <td className="px-6 py-5 first:rounded-l-2xl border-y border-l border-slate-800/50 group-hover:bg-slate-950/30">
+                        <div className="flex items-center gap-4">
+                          <div className={cn(
+                            "h-12 w-12 rounded-xl flex items-center justify-center transition-all shadow-inner border",
+                            p.method === 'UPI' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                          )}>
+                            {p.method === 'UPI' ? <CreditCard className="h-5 w-5" /> : <Banknote className="h-5 w-5" />}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-mono-num font-black text-xs text-white">#{p.id.slice(-6).toUpperCase()}</span>
+                            <span className="text-[9px] text-slate-500 uppercase font-bold mt-1 tracking-wider">{formatDate(p.date)}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 border-y border-slate-800/50 group-hover:bg-slate-950/30">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black text-primary bg-primary/10 px-2.5 py-0.5 rounded-lg border border-primary/20">#{sub?.customerNo}</span>
+                            <span className="text-sm font-black text-white tracking-tight"><Highlight text={sub?.name || "Unknown User"} query={q} /></span>
+                          </div>
+                          <span className="text-[9px] uppercase tracking-[0.1em] font-bold text-slate-500 mt-1.5 flex items-center gap-1">
+                            <MapPin className="h-2.5 w-2.5" />
+                            <Highlight text={sub?.area || "Unspecified Area"} query={q} />
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 border-y border-slate-800/50 group-hover:bg-slate-950/30 text-center">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase border border-emerald-500/20 shadow-inner">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Successful
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 border-y border-slate-800/50 group-hover:bg-slate-950/30">
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className={cn(
+                              "text-[8px] font-black uppercase px-2 py-0.5 rounded border shadow-inner",
+                              p.method === 'UPI' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                            )}>{p.method}</span>
+                            <span className="text-[9px] font-bold text-slate-500">{p.agent}</span>
+                          </div>
+                          {p.reference && <span className="text-[9px] font-mono text-slate-600 truncate max-w-[120px]">REF: {p.reference}</span>}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-right border-y border-slate-800/50 group-hover:bg-slate-950/30">
+                        <p className="font-mono-num font-black text-sm text-white">{formatCurrency(p.amount)}</p>
+                        {p.discount > 0 && <p className="text-[9px] text-primary font-black uppercase mt-1 tracking-tighter">Save: {formatCurrency(p.discount)}</p>}
+                      </td>
+                      <td className="px-6 py-5 last:rounded-r-2xl border-y border-r border-slate-800/50 group-hover:bg-slate-950/30">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                          <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white" title="View Receipt" onClick={() => handleOpenReceipt(p)}><Eye className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-primary/10 text-primary rounded-xl" title="Share Receipt" onClick={() => handleWhatsApp(p)}><Share2 className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-rose-500/10 text-rose-500 rounded-xl" title="Delete Record" onClick={() => handleDelete(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <AddPaymentModal
-        isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        onAdd={addPayment}
-        subscribers={subscribers}
-      />
+      {/* Modals */}
+      {isAddOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-2xl font-black uppercase tracking-tight text-white">Record <span className="text-primary italic">Payment</span></h2>
+              <Button variant="ghost" size="icon" onClick={() => setIsAddOpen(false)} className="rounded-xl hover:bg-slate-800"><X className="h-5 w-5" /></Button>
+            </div>
 
-      {selectedPayment && (
-        <PaymentReceiptModal
-          isOpen={isReceiptOpen}
-          onClose={() => setIsReceiptOpen(false)}
-          payment={selectedPayment}
-          subscriber={subscribers.find(s => s.id === selectedPayment.subscriberId)!}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Subscriber</Label>
+                  <select value={formData.subscriberId} onChange={(e) => setFormData({ ...formData, subscriberId: e.target.value })} className="w-full h-14 rounded-xl border border-slate-800 bg-slate-950 px-4 font-bold text-white focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none text-sm">
+                    <option value="" className="bg-slate-900">Search for subscriber...</option>
+                    {subscribers.sort((a,b) => a.name.localeCompare(b.name)).map(s => (
+                      <option key={s.id} value={s.id} className="bg-slate-900">#{s.customerNo} - {s.name} ({s.area})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Amount</Label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">₹</span>
+                      <Input type="number" value={formData.amount || ""} onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })} className="h-14 pl-8 bg-slate-950 border-slate-800 rounded-xl font-bold text-white" placeholder="0.00" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Method</Label>
+                    <div className="flex gap-2">
+                      {(["Cash", "UPI"] as const).map(m => (
+                        <button key={m} type="button" onClick={() => setFormData({ ...formData, method: m })} className={cn(
+                          "flex-1 h-14 rounded-xl border-2 font-black text-[10px] uppercase tracking-widest transition-all",
+                          formData.method === m ? "bg-primary border-primary text-white" : "bg-slate-950 border-slate-800 text-slate-500 hover:text-white"
+                        )}>{m}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={isSubmitting} className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-[0.2em] text-xs rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+                {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin" /> : "Authorize Transaction"}
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Modal */}
+      {isReceiptOpen && selectedPayment && (
+        <PaymentReceiptModal 
+          isOpen={isReceiptOpen} 
+          onClose={() => setIsReceiptOpen(false)} 
+          payment={selectedPayment} 
+          subscriber={subscribers.find(s => s.id === selectedPayment.subscriberId)}
+          contentRef={contentRef}
+          onDownload={handleDownloadReceipt}
+          onShare={handleWhatsApp}
+          isGenerating={isSubmitting}
         />
       )}
 
-      {/* Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       {confirmModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white text-slate-900 w-full max-w-md p-8 rounded-[2rem] shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
-            <h2 className="text-xl font-black mb-4 flex items-center gap-3">
-              <AlertCircle className="h-6 w-6 text-rose-500" />
-              Confirm Deletion
-            </h2>
-            <p className="text-slate-400 mb-8 font-medium leading-relaxed">
-              Are you sure you want to delete this payment record? This will deduct the payment amount from the subscriber's balance.
-            </p>
-            <div className="flex justify-end gap-3 pt-2">
-              <Button 
-                variant="ghost" 
-                className="rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-100 h-12 px-6" 
-                onClick={() => setConfirmModal(null)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="destructive" 
-                className="rounded-2xl h-12 px-8 font-black text-[10px] uppercase tracking-widest transition-all"
-                onClick={() => {
-                  executeDelete(confirmModal.id);
-                  setConfirmModal(null);
-                }}
-              >
-                Delete
-              </Button>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-in zoom-in duration-200">
+          <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 text-center space-y-6">
+            <div className="h-20 w-20 bg-rose-500/10 rounded-full flex items-center justify-center text-rose-500 mx-auto border border-rose-500/20">
+              <Trash2 className="h-10 w-10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-display text-2xl font-black uppercase tracking-tight text-white">Irreversible Action</h3>
+              <p className="text-slate-400 text-xs font-medium leading-relaxed">This payment record will be permanently purged from the ledger. This action cannot be undone.</p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="ghost" className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-400 hover:bg-slate-800" onClick={() => setConfirmModal(null)}>Cancel</Button>
+              <Button className="flex-1 h-14 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-rose-500/20" onClick={() => { if (confirmModal?.id) deletePayment(confirmModal.id); setConfirmModal(null); }}>Delete Record</Button>
             </div>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-// ── SUB-COMPONENTS ────────────────────────────────────────────────────────────
-
-const AddPaymentModal = ({ isOpen, onClose, onAdd, subscribers }: any) => {
-  const [formData, setFormData] = useState({ subscriberId: "", amount: 0, method: "cash" });
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-lg p-10 rounded-[2.5rem] shadow-2xl border border-slate-200 animate-in zoom-in-95">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Record <span className="text-primary italic">Payment</span></h2>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full"><X className="h-5 w-5" /></Button>
-        </div>
-        <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onAdd(formData); }}>
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Subscriber</Label>
-            <select 
-              className="w-full h-12 rounded-2xl bg-slate-50 border border-slate-100 px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-              value={formData.subscriberId}
-              onChange={e => setFormData({...formData, subscriberId: e.target.value})}
-            >
-              <option value="">Select Subscriber</option>
-              {subscribers.map((s: any) => <option key={s.id} value={s.id}>#{s.customerNo} {s.name}</option>)}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Amount</Label>
-            <Input 
-              type="number" 
-              className="h-12 rounded-2xl bg-slate-50 border-slate-100 font-black text-lg" 
-              value={formData.amount}
-              onChange={e => setFormData({...formData, amount: Number(e.target.value)})}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Method</Label>
-            <div className="grid grid-cols-2 gap-3">
-              <Button 
-                type="button"
-                variant={formData.method === 'cash' ? 'default' : 'outline'}
-                className="h-12 rounded-2xl font-black uppercase tracking-widest text-[10px]"
-                onClick={() => setFormData({...formData, method: 'cash'})}
-              >Cash</Button>
-              <Button 
-                type="button"
-                variant={formData.method === 'upi' ? 'default' : 'outline'}
-                className="h-12 rounded-2xl font-black uppercase tracking-widest text-[10px]"
-                onClick={() => setFormData({...formData, method: 'upi'})}
-              >UPI / Online</Button>
-            </div>
-          </div>
-          <Button type="submit" className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-lg shadow-primary/20 mt-4 transition-all active:scale-[0.98]">Record Transaction</Button>
-        </form>
-      </div>
     </div>
   );
 };
 
-const PaymentReceiptModal = ({ isOpen, onClose, payment, subscriber }: any) => {
+const PaymentReceiptModal = ({ isOpen, onClose, payment, subscriber, contentRef, onDownload, onShare, isGenerating }: any) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl z-[300] flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
-        <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-6 right-6 rounded-full"><X className="h-5 w-5" /></Button>
-        <div className="text-center space-y-6 pt-4">
-          <div className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto border-4 border-white shadow-xl shadow-emerald-500/10">
-            <CheckCircle2 className="h-10 w-10" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-black tracking-tighter text-slate-900">PAYMENT SUCCESS</h2>
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-1">Transaction ID: {payment.id}</p>
-          </div>
-          <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Received</p>
-            <p className="text-5xl font-black text-slate-900 tracking-tighter">{formatCurrency(payment.amount)}</p>
-            <div className="mt-6 pt-6 border-t border-slate-200/60 grid grid-cols-2 gap-4 text-left">
-              <div>
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Customer</p>
-                <p className="text-sm font-bold text-slate-800 line-clamp-1">{subscriber?.name}</p>
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[300] flex items-center justify-center p-4 overflow-y-auto">
+      <div className="w-full max-w-md my-8">
+        <div className="bg-white rounded-[3rem] shadow-2xl relative overflow-hidden text-slate-900">
+          <Button variant="ghost" size="icon" onClick={onClose} className="absolute top-6 right-6 rounded-full text-slate-400 hover:bg-slate-100"><X className="h-5 w-5" /></Button>
+          
+          <div id="receipt-content" ref={contentRef} className="p-10 space-y-8 bg-white">
+            <div className="text-center space-y-4">
+              <div className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto border-4 border-white shadow-xl shadow-emerald-500/10">
+                <CheckCircle2 className="h-10 w-10" />
               </div>
               <div>
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Method</p>
-                <p className="text-sm font-bold text-slate-800">{payment.method}</p>
+                <h2 className="text-3xl font-black tracking-tighter uppercase">Payment Success</h2>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Ref No: {payment.id?.slice(-8).toUpperCase()}</p>
               </div>
             </div>
+
+            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Received</p>
+              <p className="text-5xl font-black tracking-tighter">₹{payment.amount}</p>
+              <div className="mt-6 pt-6 border-t border-slate-200/60 grid grid-cols-2 gap-4 text-left">
+                <div>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Customer</p>
+                  <p className="text-sm font-bold truncate">{subscriber?.name}</p>
+                </div>
+                <div>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Method</p>
+                  <p className="text-sm font-bold">{payment.method}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-slate-400">Date</span>
+                <span>{new Date(payment.date).toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                <span className="text-slate-400">Account No</span>
+                <span>#{subscriber?.customerNo}</span>
+              </div>
+              {payment.reference && (
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                  <span className="text-slate-400">Reference</span>
+                  <span className="font-mono">{payment.reference}</span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col gap-3">
-             <Button className="w-full h-14 rounded-2xl bg-[#25D366] hover:bg-[#20bd5c] text-white font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-3">
-              <Send className="h-5 w-5" /> Share on WhatsApp
-             </Button>
-             <Button variant="outline" className="w-full h-14 rounded-2xl border-slate-200 font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3">
-              <Download className="h-5 w-5" /> Download Receipt
-             </Button>
+
+          <div className="p-10 pt-0 flex flex-col gap-3">
+            <Button onClick={() => onShare(payment)} className="w-full h-14 rounded-2xl bg-[#25D366] hover:bg-[#20bd5c] text-white font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-3">
+              <Share2 className="h-5 w-5" /> Share on WhatsApp
+            </Button>
+            <Button variant="outline" onClick={onDownload} disabled={isGenerating} className="w-full h-14 rounded-2xl border-slate-200 text-slate-600 font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-slate-50">
+              {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+              {isGenerating ? "Processing..." : "Download Receipt"}
+            </Button>
           </div>
         </div>
       </div>
@@ -1061,7 +1031,3 @@ const PaymentReceiptModal = ({ isOpen, onClose, payment, subscriber }: any) => {
 };
 
 const Label = ({ children, className, ...props }: any) => <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70", className)} {...props}>{children}</label>;
-
-
-
-

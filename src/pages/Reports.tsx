@@ -470,11 +470,11 @@ export default function Reports() {
 
   if (hasTimedOut && billingLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 p-8 text-center glass-card border-destructive/20">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 p-8 text-center glass-card border-destructive/20 bg-slate-950">
         <AlertCircle className="h-12 w-12 text-destructive animate-bounce" />
         <div className="space-y-2">
-          <h2 className="text-xl font-black">Connection Timeout</h2>
-          <p className="text-muted-foreground max-w-md">The audit database is taking longer than expected to respond.</p>
+          <h2 className="text-xl font-black text-white">Connection Timeout</h2>
+          <p className="text-slate-400 max-w-md">The audit database is taking longer than expected to respond.</p>
         </div>
         <Button onClick={() => window.location.reload()} variant="destructive" className="rounded-xl px-8">Retry Connection</Button>
       </div>
@@ -483,298 +483,219 @@ export default function Reports() {
 
   const integrityScore = monthStats.revenue / (stats.pendingDues + monthStats.revenue || 1);
 
-
-
-
-
-
   return (
-    <div className="space-y-8 animate-fade-in pb-20">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-2xl"><BarChart3 className="h-8 w-8 text-primary" /></div>
-            Reports <span className="text-primary">&</span> Analytics
-          </h1>
-          <p className="text-muted-foreground font-medium mt-2 flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-emerald-500" /> Audit-ready financial records and performance tracking.
-          </p>
+    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-primary/30 selection:text-white pb-20">
+      {/* Background Decorative Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16">
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/10">
+                <BarChart3 className="h-6 w-6 text-primary" />
+              </div>
+              <div className="h-1 w-12 bg-slate-800 rounded-full" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Business Intelligence</span>
+            </div>
+            <h1 className="font-display text-5xl lg:text-7xl font-black tracking-tighter uppercase leading-none">
+              Reports <span className="text-primary italic">& Analytics</span>
+            </h1>
+            <p className="text-slate-400 max-w-md text-sm font-medium leading-relaxed">
+              Audit-ready financial records and performance tracking. Deep insights into your business growth.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-14 px-6 rounded-2xl border-slate-800 bg-slate-900/50 hover:bg-slate-900 hover:border-slate-700 text-slate-300 transition-all duration-300">
+              <Eye className="h-4 w-4 mr-2 text-primary" />
+              Preview Report
+            </Button>
+            <Button variant="outline" onClick={handleExportExcel} className="h-14 px-6 rounded-2xl border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 transition-all duration-300">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Excel Export
+            </Button>
+            <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+              {isGenerating ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Download className="h-5 w-5 mr-2" />}
+              Generate PDF
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-3 p-2 bg-secondary/30 rounded-2xl border border-border/40">
-          <div className="flex items-center gap-2 px-3">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <div className="flex flex-col">
-              <span className="text-[8px] font-black text-muted-foreground uppercase leading-none mb-1">From</span>
-              <div className="flex items-center gap-1">
-                <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="bg-transparent font-bold text-xs outline-none cursor-pointer hover:text-primary transition-colors">
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <option key={i} value={i} className="bg-background">{new Date(2000, i).toLocaleString('default', { month: 'short' })}</option>
-                  ))}
-                </select>
-                <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="bg-transparent font-bold text-xs outline-none cursor-pointer hover:text-primary transition-colors">
-                  {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-background">{y}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-          <div className="h-6 w-px bg-border/60" />
-          <div className="flex items-center gap-2 px-3">
-            <div className="flex flex-col">
-              <span className="text-[8px] font-black text-muted-foreground uppercase leading-none mb-1">To</span>
-              <div className="flex items-center gap-1">
-                <select value={selectedEndMonth} onChange={(e) => setSelectedEndMonth(parseInt(e.target.value))} className="bg-transparent font-bold text-xs outline-none cursor-pointer hover:text-primary transition-colors">
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <option key={i} value={i} className="bg-background">{new Date(2000, i).toLocaleString('default', { month: 'short' })}</option>
-                  ))}
-                </select>
-                <select value={selectedEndYear} onChange={(e) => setSelectedEndYear(parseInt(e.target.value))} className="bg-transparent font-bold text-xs outline-none cursor-pointer hover:text-primary transition-colors">
-                  {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-background">{y}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-          <div className="h-6 w-px bg-border/60" />
-          <div className="flex items-center gap-2 px-3">
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-            <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="bg-transparent font-bold text-sm outline-none cursor-pointer hover:text-primary transition-colors min-w-[100px]">
-              <option value="All Methods" className="bg-background">All Methods</option>
-              <option value="Cash" className="bg-background">Cash Only</option>
-              <option value="UPI" className="bg-background">UPI Only</option>
+
+        {/* Global Filter Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="relative group">
+            <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+            <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <option key={i} value={i} className="bg-slate-900">{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
+              ))}
             </select>
           </div>
-          <div className="h-6 w-px bg-border/60" />
-          <div className="flex items-center gap-2 px-3">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="bg-transparent font-bold text-sm outline-none cursor-pointer hover:text-primary transition-colors min-w-[100px]">
+          
+          <div className="relative">
+            <TrendingUp className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+              {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+            </select>
+          </div>
+
+          <div className="relative">
+            <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
               {(areas as string[]).map(area => (
-                <option key={String(area)} value={String(area)} className="bg-background">{String(area)}</option>
+                <option key={String(area)} value={String(area)} className="bg-slate-900">{String(area)}</option>
               ))}
             </select>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest px-4 border-primary/20 hover:bg-primary/5 text-primary" onClick={() => setIsPreviewOpen(true)}>
-              <Eye className="h-3 w-3 mr-2" /> Preview
-            </Button>
-            <Button variant="outline" className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest px-4 border-emerald-500/20 hover:bg-emerald-500/5 text-emerald-600" onClick={handleExportExcel}>
-              <BarChart3 className="h-3 w-3 mr-2" /> Excel
-            </Button>
-            <Button className="h-10 rounded-xl bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest px-6 shadow-lg shadow-primary/20" onClick={handleDownloadPremiumReport} disabled={isGenerating}>
-              {isGenerating ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Download className="h-3 w-3 mr-2" />}
-              PDF
-            </Button>
+          <div className="relative">
+            <Wallet className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="w-full h-14 pl-14 pr-6 bg-slate-900/50 border-slate-800 rounded-2xl text-white font-bold text-xs uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
+              <option value="All Methods" className="bg-slate-900">All Methods</option>
+              <option value="Cash" className="bg-slate-900">Cash Only</option>
+              <option value="UPI" className="bg-slate-900">UPI / Digital</option>
+            </select>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card p-6 border-t-4 border-t-primary hover:-translate-y-1 transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary"><ShieldCheck className="h-5 w-5" /></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Compliance</span>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-800 hover:border-primary/50 transition-all duration-500 group shadow-2xl shadow-black/20">
+            <div className="flex justify-between items-start mb-6">
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-primary transition-colors">Compliance</span>
+            </div>
+            <p className="text-4xl font-black tracking-tighter text-white">{(integrityScore * 100).toFixed(1)}%</p>
+            <div className="mt-4 flex items-center gap-2">
+              <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-primary animate-grow-x" style={{ width: `${integrityScore * 100}%` }} />
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Audit Integrity</p>
           </div>
-          <p className="text-3xl font-black tracking-tight">{(integrityScore * 100).toFixed(1)}%</p>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden"><div className="h-full bg-primary" style={{ width: `${integrityScore * 100}%` }} /></div>
-            <span className="text-[10px] font-bold text-primary">Score</span>
-          </div>
-        </div>
-        <div className="glass-card p-6 border-t-4 border-t-emerald-500 hover:-translate-y-1 transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500"><Wallet className="h-5 w-5" /></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Collections</span>
-          </div>
-          <p className="text-3xl font-black tracking-tight text-emerald-500">{formatCurrency(monthStats.revenue)}</p>
-          <p className="text-[10px] text-muted-foreground font-bold mt-2">Revenue for {new Date(2000, selectedMonth).toLocaleString('default', { month: 'short' })}</p>
-        </div>
-        <div className="glass-card p-6 border-t-4 border-t-amber-500 hover:-translate-y-1 transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500"><TrendingUp className="h-5 w-5" /></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Outstanding</span>
-          </div>
-          <p className="text-3xl font-black tracking-tight text-amber-500">{formatCurrency(stats.pendingDues)}</p>
-          <p className="text-[10px] text-muted-foreground font-bold mt-2">Global Dues</p>
-        </div>
-        <div className="glass-card p-6 border-t-4 border-t-indigo-500 hover:-translate-y-1 transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-500"><Receipt className="h-5 w-5" /></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Costs</span>
-          </div>
-          <p className="text-3xl font-black tracking-tight text-indigo-500">{formatCurrency(monthStats.expenses)}</p>
-          <p className="text-[10px] text-muted-foreground font-bold mt-2">Operational Spend</p>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-      <div className="hidden md:block bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden mb-8">
-        <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <h3 className="text-xl font-black tracking-tight text-slate-900">Collection Log</h3>
-          <span className="bg-primary/10 text-primary text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-primary/10">Showing {Math.min(filteredPayments.length, 50)} Trx</span>
+          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-800 hover:border-emerald-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
+            <div className="flex justify-between items-start mb-6">
+              <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-emerald-500 transition-colors">Revenue</span>
+            </div>
+            <p className="text-4xl font-black tracking-tighter text-white">{formatCurrency(monthStats.revenue)}</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Monthly Income</p>
+          </div>
+
+          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-800 hover:border-amber-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
+            <div className="flex justify-between items-start mb-6">
+              <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/5">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-amber-500 transition-colors">Outstanding</span>
+            </div>
+            <p className="text-4xl font-black tracking-tighter text-white">{formatCurrency(stats.pendingDues)}</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Pending Balance</p>
+          </div>
+
+          <div className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-800 hover:border-indigo-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
+            <div className="flex justify-between items-start mb-6">
+              <div className="h-12 w-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
+                <Users className="h-6 w-6" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-indigo-500 transition-colors">Base</span>
+            </div>
+            <p className="text-4xl font-black tracking-tighter text-white">{monthStats.activeSubs}</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Active Accounts</p>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="text-[9px] uppercase tracking-[0.2em] text-slate-400 font-black border-b border-slate-100">
-                <th className="px-8 py-5">Subscriber</th>
-                <th className="px-8 py-5">Date</th>
-                <th className="px-8 py-5">Area</th>
-                <th className="px-8 py-5">Method</th>
-                <th className="px-8 py-5 text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 text-sm">
-              {filteredPayments.slice(0, 50).map((p) => {
-                const sub = subscribers.find(s => s.id === p.subscriberId);
-                const isGujarati = /[\u0a80-\u0aff]/.test(sub?.name || '');
-                return (
-                  <tr key={p.id} className="hover:bg-slate-50/80 transition-all group">
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-xl bg-slate-100 flex items-center justify-center text-[11px] font-black text-slate-500 border border-slate-200 group-hover:scale-110 transition-transform">
-                          {sub?.customerNo || '?'}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className={`font-bold text-slate-900 group-hover:text-primary transition-colors ${isGujarati ? 'gujarati text-base' : ''}`}>
-                            {sub?.customerNo ? `#${sub.customerNo} ` : ''}{sub?.name || 'Unknown'}
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{customerIdLabel}: {sub?.customerId || 'N/A'}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 font-bold text-slate-600">{formatDate(p.date)}</td>
-                    <td className="px-8 py-5 text-slate-500 font-bold">
-                      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider"><MapPin className="h-3.5 w-3.5 text-slate-300" />{sub?.area || 'N/A'}</div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <span className={`text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-widest border shadow-sm ${p.method === 'UPI' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{p.method}</span>
-                    </td>
-                    <td className="px-8 py-5 text-right font-black tabular-nums text-slate-900">{formatCurrency(p.amount)}</td>
+
+        {/* Detailed Logs Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
+          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-[2.5rem] border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
+              <h3 className="font-display text-xl font-black uppercase tracking-tight text-white flex items-center gap-3">
+                <Receipt className="h-5 w-5 text-primary" />
+                Collection Log
+              </h3>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-950 px-3 py-1 rounded-full border border-slate-800">{filteredPayments.length} Records</span>
+            </div>
+            <div className="overflow-x-auto max-h-[500px] custom-scrollbar">
+              <table className="w-full text-left">
+                <thead className="sticky top-0 bg-slate-900 z-10">
+                  <tr className="text-[8px] uppercase tracking-[0.2em] text-slate-500 font-black border-b border-slate-800">
+                    <th className="px-8 py-4">Subscriber</th>
+                    <th className="px-8 py-4">Date</th>
+                    <th className="px-8 py-4 text-right">Amount</th>
                   </tr>
-                );
-              })}
-              {filteredPayments.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-8 py-24 text-center">
-                    <div className="flex flex-col items-center justify-center gap-4">
-                      <div className="p-5 bg-slate-50 rounded-full border border-slate-100"><Filter className="h-10 w-10 text-slate-200" /></div>
-                      <p className="text-slate-400 font-bold italic text-sm">No transactions match your current filters.</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-
-          <div className="bg-white rounded-[2rem] p-10 border border-slate-200 shadow-sm transition-all hover:shadow-md">
-            <h3 className="text-2xl font-black tracking-tight text-slate-900 mb-8 flex items-center gap-3">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              Performance Analytics
-            </h3>
-            <div className="space-y-10">
-              <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6 group hover:border-primary/20 transition-all">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-black mb-2">Net Period Profit</p>
-                  <p className="text-5xl font-black text-slate-900 tracking-tighter tabular-nums">{formatCurrency(monthStats.revenue - monthStats.expenses)}</p>
-                </div>
-                <div className="h-20 w-20 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-slate-200/50 group-hover:scale-110 transition-transform">
-                  <TrendingUp className="h-10 w-10 text-emerald-500" />
-                </div>
-              </div>
-              <div className="space-y-6">
-                <div className="flex justify-between items-end">
-                  <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.2em]">Profit Margin Efficiency</p>
-                  <span className="text-lg font-black text-primary tabular-nums">{monthStats.revenue > 0 ? `${Math.max(0, Math.round(((monthStats.revenue - monthStats.expenses) / monthStats.revenue) * 100))}%` : '0%'}</span>
-                </div>
-                <div className="h-6 w-full bg-slate-100 rounded-full overflow-hidden p-1.5 border border-slate-200/50 shadow-inner">
-                  <div className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.3)] transition-all duration-1000 ease-out" style={{ width: monthStats.revenue > 0 ? `${Math.max(0, ((monthStats.revenue - monthStats.expenses) / monthStats.revenue) * 100)}%` : '0%' }} />
-                </div>
-              </div>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {filteredPayments.map((p) => {
+                    const sub = subscribers.find(s => s.id === p.subscriberId);
+                    return (
+                      <tr key={p.id} className="hover:bg-slate-900/50 transition-colors group">
+                        <td className="px-8 py-4">
+                          <p className="text-sm font-black text-white group-hover:text-primary transition-colors">{sub?.name || "Unknown"}</p>
+                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{sub?.area || "Unspecified"}</p>
+                        </td>
+                        <td className="px-8 py-4 font-mono text-[10px] text-slate-400">{formatDate(p.date)}</td>
+                        <td className="px-8 py-4 text-right">
+                          <span className="font-mono-num font-black text-sm text-white">{formatCurrency(p.amount)}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
 
-        <div className="space-y-8">
-          <div className="bg-white rounded-[2rem] p-10 border border-slate-200 shadow-sm relative overflow-hidden group hover:border-primary/20 transition-all">
-            <div className="absolute -top-10 -right-10 p-10 opacity-[0.03] group-hover:rotate-12 transition-transform pointer-events-none text-primary"><ShieldCheck className="h-40 w-40" /></div>
-            <h3 className="text-xl font-black tracking-tight text-slate-900 mb-6 flex items-center gap-3">
-              <ShieldCheck className="h-5 w-5 text-emerald-500" /> 
-              Audit Actions
-            </h3>
-            <p className="text-[11px] text-slate-500 mb-10 leading-relaxed font-bold uppercase tracking-wider">
-              Verify and export financial records for {monthNameLong}.
-            </p>
-            <div className="flex flex-col gap-4">
-              <Button 
-                variant="outline"
-                className="w-full h-14 bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-sm transition-all flex items-center justify-center gap-3 active:scale-95" 
-                onClick={() => setIsPreviewOpen(true)}
-              >
-                <Eye className="h-4 w-4" /> Preview Audit
-              </Button>
-              <Button 
-                className="w-full h-14 bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-3 active:scale-95" 
-                onClick={handleDownloadPremiumReport} 
-                disabled={isGenerating}
-              >
-                {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                Export Audit PDF
-              </Button>
+          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-[2.5rem] border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
+              <h3 className="font-display text-xl font-black uppercase tracking-tight text-white flex items-center gap-3">
+                <BarChart3 className="h-5 w-5 text-amber-500" />
+                Operational Expenses
+              </h3>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-950 px-3 py-1 rounded-full border border-slate-800">{filteredExpenses.length} Records</span>
+            </div>
+            <div className="overflow-x-auto max-h-[500px] custom-scrollbar">
+              <table className="w-full text-left">
+                <thead className="sticky top-0 bg-slate-900 z-10">
+                  <tr className="text-[8px] uppercase tracking-[0.2em] text-slate-500 font-black border-b border-slate-800">
+                    <th className="px-8 py-4">Category</th>
+                    <th className="px-8 py-4">Description</th>
+                    <th className="px-8 py-4 text-right">Value</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {filteredExpenses.map((e) => (
+                    <tr key={e.id} className="hover:bg-slate-900/50 transition-colors group">
+                      <td className="px-8 py-4">
+                        <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[8px] font-black uppercase text-amber-500">{e.category}</span>
+                        <p className="text-[9px] font-bold text-slate-500 mt-1">{formatDate(e.date)}</p>
+                      </td>
+                      <td className="px-8 py-4">
+                        <p className="text-xs font-medium text-slate-300 line-clamp-1">{e.description}</p>
+                      </td>
+                      <td className="px-8 py-4 text-right">
+                        <span className="font-mono-num font-black text-sm text-rose-500">{formatCurrency(e.amount)}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── PREVIEW DIALOG ── */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[850px] max-h-[90vh] overflow-y-auto p-0 border-none bg-zinc-100/50 backdrop-blur-xl">
-          <DialogHeader className="p-6 bg-white border-b sticky top-0 z-20">
-            <DialogTitle className="text-2xl font-black tracking-tight flex items-center justify-between">
-              Audit Report Preview
-              <span className="text-xs font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-widest">{monthNameLong}</span>
-            </DialogTitle>
-          </DialogHeader>
-          <div ref={containerRef} className="p-4 sm:p-8 flex justify-center overflow-x-hidden">
-            <div 
-              ref={contentRef}
-              className="shadow-2xl ring-1 ring-black/5 rounded-sm overflow-hidden origin-top transition-transform duration-300"
-              style={{ 
-                transform: `scale(${scale})`, 
-                marginBottom: `${(scale - 1) * contentHeight}px`,
-                marginLeft: `${((scale - 1) * 794) / 2}px`,
-                marginRight: `${((scale - 1) * 794) / 2}px`
-              }}
-            >
-              <AuditReportTemplate 
-                monthName={monthNameLong}
-                selectedYear={selectedYear}
-                selectedMonth={selectedMonth}
-                selectedArea={selectedArea}
-                monthStats={monthStats}
-                filteredPayments={filteredPayments}
-                filteredExpenses={filteredExpenses}
-                integrityScore={integrityScore}
-                companySettings={companySettings}
-                subscribers={subscribers}
-                businessMode={currentBusinessMode}
-              />
-            </div>
-          </div>
-          <DialogFooter className="p-6 bg-white border-t sticky bottom-0 z-20">
-            <Button variant="outline" className="rounded-xl font-bold" onClick={() => setIsPreviewOpen(false)}>Close Preview</Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground font-black px-8 shadow-lg shadow-primary/20" onClick={() => { setIsPreviewOpen(false); handleDownloadPremiumReport(); }}>
-              <Download className="h-4 w-4 mr-2" /> Download Now
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── HIDDEN TEMPLATE FOR PDF CAPTURE ── */}
-      <div style={{ position: 'fixed', left: '-9999px', top: '0', width: '794px', zIndex: -1000 }}>
+      {/* Hidden Templates for PDF Generation */}
+      <div style={{ display: 'none' }}>
         <AuditReportTemplate 
           id="premium-report-template"
           monthName={monthNameLong}
@@ -787,11 +708,53 @@ export default function Reports() {
           integrityScore={integrityScore}
           companySettings={companySettings}
           subscribers={subscribers}
-          businessMode={currentBusinessMode}
+          businessMode={activeBusinessMode}
         />
       </div>
+
+      {/* Preview Modal */}
+      {isPreviewOpen && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-xl overflow-y-auto p-4 sm:p-8 animate-in fade-in duration-300">
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex items-center justify-between sticky top-0 z-10 py-4 bg-slate-950/80 backdrop-blur-md">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)} className="rounded-full hover:bg-slate-800"><Eye className="h-6 w-6" /></Button>
+                <div>
+                  <h2 className="text-xl font-black uppercase text-white">Audit Report Preview</h2>
+                  <p className="text-[10px] font-black text-primary uppercase tracking-widest">{monthNameLong} Collection</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" className="h-12 px-6 rounded-2xl border-slate-800 text-white" onClick={() => setIsPreviewOpen(false)}>Close Preview</Button>
+                <Button className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px]" onClick={handleDownloadPremiumReport}>
+                  <Download className="h-4 w-4 mr-2" /> Download PDF
+                </Button>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-[2rem] shadow-2xl shadow-black/50 overflow-hidden mx-auto" style={{ width: '794px' }}>
+              <AuditReportTemplate 
+                id="preview-template"
+                monthName={monthNameLong}
+                selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+                selectedArea={selectedArea}
+                monthStats={monthStats}
+                filteredPayments={filteredPayments}
+                filteredExpenses={filteredExpenses}
+                integrityScore={integrityScore}
+                companySettings={companySettings}
+                subscribers={subscribers}
+                businessMode={activeBusinessMode}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default Reports;
 
 

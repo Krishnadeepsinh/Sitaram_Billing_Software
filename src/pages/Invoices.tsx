@@ -581,7 +581,7 @@ export default function Invoices() {
                       onChange={(e) => setPlanMonths(Number(e.target.value))} 
                       className="w-full h-10 bg-slate-950 border border-white/10 rounded-lg px-3 text-sm text-white appearance-none"
                     >
-                      {[1,2,3,6,12].map(m => <option key={m} value={m}>{m} {m > 1 ? 'Months' : 'Month'}</option>)}
+                      {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m} {m > 1 ? 'Months' : 'Month'}</option>)}
                     </select>
                   </div>
                 ) : (

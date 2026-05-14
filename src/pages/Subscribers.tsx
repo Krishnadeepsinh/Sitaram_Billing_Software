@@ -627,7 +627,7 @@ export default function Subscribers() {
                       onChange={(e) => setPlanMonths(Number(e.target.value))}
                       className="h-10 w-full rounded-lg border border-white/10 bg-slate-950 text-slate-200 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
                     >
-                      {[1,2,3,6,12].map(m => (
+                      {Array.from({length: 12}, (_, i) => i + 1).map(m => (
                         <option key={m} value={m}>{m} {m > 1 ? 'Cycles' : 'Cycle'}</option>
                       ))}
                     </select>

@@ -550,6 +550,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // Don't revert immediately, just log it. 
         // If the user refreshes, they will see the real DB state.
         toast.error("Database update failed, but UI state updated locally.");
+      }
       // Optional: Refresh data to ensure consistency
       // await fetchData(); 
     } else {

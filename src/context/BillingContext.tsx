@@ -512,11 +512,20 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.log('Updating subscriber (DB):', id, updates);
       // Optimistic update
       setSubscribers(prev => {
-        console.log('Subscribers before update:', prev.length);
-        const next = prev.map(s => String(s.id) === String(id) ? { ...s, ...updates } : s);
-        const updatedCount = next.filter((s, i) => s.status !== prev[i].status).length;
-        console.log('Subscribers updated in local state:', updatedCount);
-        return next;
+        console.log('Searching for ID:', id, 'in', prev.length, 'subscribers');
+        const next = prev.map(s => {
+          if (String(s.id) === String(id)) {
+            console.log('MATCH FOUND for ID:', id, 'Old Status:', s.status, 'New Status:', updates.status);
+            return { ...s, ...updates };
+          }
+          return s;
+        });
+        const found = next.some(s => String(s.id) === String(id));
+        if (!found) {
+          console.error('CRITICAL: Subscriber ID not found in state:', id);
+          alert('Error: Subscriber not found in list. Please refresh.');
+        }
+        return [...next];
       });
       
       try {

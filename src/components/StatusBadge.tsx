@@ -10,17 +10,22 @@ const styles: Record<string, string> = {
 };
 
 export function StatusBadge({ status, onClick, className }: { status: string, onClick?: (e: React.MouseEvent) => void, className?: string }) {
+  const s = String(status || "").toLowerCase();
+  console.log('StatusBadge render:', status, '=>', s);
+
   const badgeStyles = cn(
     "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all",
     onClick && "cursor-pointer hover:scale-105 active:scale-95 hover:shadow-md",
-    styles[status.toLowerCase()] ?? "bg-secondary text-secondary-foreground border-border",
+    styles[s] ?? "bg-secondary text-secondary-foreground border-border",
     className
   );
+
+  const label = (s === 'expired' || s === 'inactive') ? 'Inactive' : status;
 
   const content = (
     <>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {status.toLowerCase() === 'expired' || status.toLowerCase() === 'inactive' ? 'Inactive' : status}
+      {label}
     </>
   );
 

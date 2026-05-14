@@ -514,7 +514,9 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setSubscribers(prev => {
         console.log('Searching for ID:', id, 'in', prev.length, 'subscribers');
         const next = prev.map(s => {
-          if (String(s.id) === String(id)) {
+          const sId = String(s.id || "").trim();
+          const targetId = String(id || "").trim();
+          if (sId === targetId && targetId !== "") {
             console.log('MATCH FOUND for ID:', id, 'Old Status:', s.status, 'New Status:', updates.status);
             return { ...s, ...updates };
           }
@@ -556,7 +558,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           sql: `UPDATE subscribers SET ${fields} WHERE id = ?`, 
           args: [...Object.values(mapped), id] 
         });
-        console.log('DB update successful');
+        console.log('DB update successful, refreshing data...');
+        // Refresh to ensure absolute consistency
+        await fetchData(); 
+        console.log('Data refreshed after status toggle');
       } catch (err) { 
         console.error('updateSubscriber DB error:', err);
         // Don't revert immediately, just log it. 

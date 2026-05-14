@@ -770,15 +770,16 @@ export default function Subscribers() {
                       <StatusBadge 
                         status={s.status} 
                         onClick={() => {
-                          const currentStatus = String(s.status || "").toLowerCase();
+                          const currentStatus = String(s.status || "").toLowerCase().trim();
                           const newStatus = (currentStatus === 'active') ? 'expired' : 'active';
                           
-                          console.log('Toggling status for', s.name, ':', currentStatus, '=>', newStatus);
+                          console.log('Toggling status for', s.name, 'ID:', s.id, ':', currentStatus, '=>', newStatus);
                           updateSubscriber(s.id, { status: newStatus });
-                          toast.success(`Marked ${s.name} as ${newStatus === 'active' ? 'Active' : 'Inactive'}`);
+                          toast.success(`Marking ${s.name} as ${newStatus === 'active' ? 'Active' : 'Inactive'}...`);
                         }}
                         className="shadow-sm"
                       />
+                      <div className="text-[8px] text-muted-foreground mt-1 opacity-20">ID: {s.id}</div>
                     </td>
                     <td className="px-4 py-4 text-right">
                       <div className="flex justify-end gap-1">

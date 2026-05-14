@@ -543,13 +543,15 @@ ${brand.name}`;
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">No. Of Months</label>
-                    <Input
-                      type="number"
-                      min={1}
+                    <select
                       value={planMonths}
-                      onChange={(e) => setPlanMonths(Math.max(1, Number(e.target.value) || 1))}
-                      className="w-full h-11 rounded-xl border border-border bg-secondary/50 px-3 font-bold text-foreground"
-                    />
+                      onChange={(e) => setPlanMonths(Number(e.target.value))}
+                      className="w-full h-11 rounded-xl border border-border bg-secondary/50 px-3 font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
+                        <option key={m} value={m}>{m} Month{m > 1 ? 's' : ''}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               )}

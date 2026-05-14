@@ -1,5 +1,5 @@
 import { StatCard } from "@/components/StatCard";
-import { Wallet, Users, AlertCircle, Activity, ArrowUpRight, FileText, Download, MapPin, Loader2, Calendar } from "lucide-react";
+import { Wallet, Users, AlertCircle, Activity, ArrowUpRight, FileText, Download, MapPin, Loader2, Calendar, BarChart3 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/mockData";
 import { useBilling } from "@/context/BillingContext";
 import { Button } from "@/components/ui/button";
@@ -202,6 +202,46 @@ export default function Dashboard() {
         <StatCard label="Month Revenue" value={formatCurrency(s.monthRevenue)} delta={`${payments.length} transactions`} icon={Activity} variant="accent" />
         <StatCard label="Pending Dues" value={formatCurrency(s.pendingDues)} delta={`${s.expired} total expired`} icon={AlertCircle} variant="warning" />
         <StatCard label="Expenses" value={formatCurrency(s.monthExpenses)} delta={`${expenses.length} records`} icon={FileText} variant="destructive" />
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Quick Actions</h2>
+          <div className="h-px flex-1 bg-border/40 ml-4" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link to="/subscribers" className="group glass-card p-4 rounded-2xl border-primary/20 hover:border-primary hover:shadow-[0_0_20px_-5px_hsl(var(--primary)/0.3)] transition-all duration-300 flex flex-col items-center justify-center gap-3 bg-primary/5">
+             <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+               <Users className="h-6 w-6" />
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest">New Subscriber</span>
+          </Link>
+
+          <Link to="/invoices" className="group glass-card p-4 rounded-2xl border-emerald-500/20 hover:border-emerald-500 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all duration-300 flex flex-col items-center justify-center gap-3 bg-emerald-500/5">
+             <div className="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+               <Wallet className="h-6 w-6" />
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest">Collect Payment</span>
+          </Link>
+
+          <Link to="/reports" className="group glass-card p-4 rounded-2xl border-accent/20 hover:border-accent hover:shadow-[0_0_20px_-5px_hsl(var(--accent)/0.3)] transition-all duration-300 flex flex-col items-center justify-center gap-3 bg-accent/5">
+             <div className="h-12 w-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all duration-300">
+               <BarChart3 className="h-6 w-6" />
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest">Growth Reports</span>
+          </Link>
+
+          <Button 
+            variant="ghost" 
+            onClick={handleDownloadReport}
+            className="group glass-card p-4 h-auto rounded-2xl border-amber-500/20 hover:border-amber-500 hover:bg-amber-500/5 hover:shadow-[0_0_20px_-5px_rgba(245,158,11,0.3)] transition-all duration-300 flex flex-col items-center justify-center gap-3"
+          >
+             <div className="h-12 w-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
+               {isGenerating ? <Loader2 className="h-6 w-6 animate-spin" /> : <Download className="h-6 w-6" />}
+             </div>
+             <span className="text-[10px] font-black uppercase tracking-widest">Export Operations</span>
+          </Button>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">

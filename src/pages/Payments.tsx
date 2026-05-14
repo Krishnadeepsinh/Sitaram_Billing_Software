@@ -566,43 +566,29 @@ Thank you!`;
     }
 
     setIsSubmitting(true);
-    const fileName = `${selectedPayment?.id || 'PAY'}.pdf`;
-
     try {
-      const html2pdf = await loadHtml2Pdf();
+      const html2pdf = (await import("html2pdf.js")).default;
       const opt = {
-        margin: 0,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true, 
-          logging: false,
+        margin: [0, 0],
+        filename: `Receipt_${selectedPayment.receiptNumber || selectedPayment.id || 'REC'}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
           letterRendering: true,
-          width: 794,
-          windowWidth: 794,
-          onclone: (doc: Document) => {
-            const clonedElement = doc.getElementById("receipt-content");
-            if (clonedElement) {
-              clonedElement.style.transform = "none";
-              clonedElement.style.height = "auto";
-              clonedElement.style.overflow = "visible";
-              clonedElement.style.margin = "0";
-              clonedElement.style.border = "none";
-              clonedElement.style.boxShadow = "none";
-              clonedElement.style.width = "794px";
-              clonedElement.style.maxWidth = "794px";
-            }
-          }
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: element.scrollWidth,
+          logging: false
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
 
       await html2pdf().set(opt).from(element).save();
-      toast.success("Receipt PDF downloaded successfully");
-    } catch (err) {
-      console.error("PDF generation error:", err);
-      toast.error("Could not generate PDF. Please try again.");
+      toast.success("Receipt downloaded successfully");
+    } catch (error) {
+      console.error("Receipt generation error:", error);
+      toast.error("Failed to generate PDF receipt");
     } finally {
       setIsSubmitting(false);
     }

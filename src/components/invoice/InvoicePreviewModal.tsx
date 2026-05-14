@@ -89,44 +89,34 @@ export default function InvoicePreviewModal({
   const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
 
   const handleDownloadPDF = async () => {
-    const element = document.getElementById("invoice-content");
-    if (!element) {
-      toast.error("Invoice document not ready. Please try again.");
-      return;
-    }
-
+    if (!invoiceRef.current) return;
+    
     setIsProcessing(true);
-    const fileName = `${invoice?.number || "INV"}.pdf`;
-
     try {
+      const element = invoiceRef.current;
       const html2pdf = (await import("html2pdf.js")).default;
+      
       const options = {
-        margin: 0,
-        filename: fileName,
-        image: { type: "jpeg", quality: 1.0 },
-        html2canvas: { 
-          scale: 2, 
+        margin: [0, 0],
+        filename: `Invoice_${invoice.invoiceNumber || 'INV'}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
           useCORS: true,
-          logging: false,
           letterRendering: true,
-          onclone: (doc: Document) => {
-            const clonedElement = doc.getElementById("invoice-content");
-            if (clonedElement) {
-              clonedElement.style.transform = "none";
-              clonedElement.style.margin = "0";
-              clonedElement.style.width = "794px";
-              clonedElement.style.height = "auto";
-            }
-          }
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: element.scrollWidth,
+          logging: false
         },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
 
       await html2pdf().set(options).from(element).save();
-      toast.success("Invoice PDF downloaded successfully");
+      toast.success("Invoice downloaded successfully");
     } catch (error) {
-      console.error("PDF generation error:", error);
-      toast.error("Could not generate PDF. Please try again.");
+      console.error("PDF Generation Error:", error);
+      toast.error("Failed to generate PDF");
     } finally {
       setIsProcessing(false);
     }

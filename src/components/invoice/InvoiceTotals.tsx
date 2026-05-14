@@ -23,12 +23,6 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
   const grossTotal = totalPayable + discount;
   const grandTotal = totalPayable + previousDues;
   
-  // No GST calculation needed as per user request (inclusive price)
-  const taxableValue = grossTotal;
-  const totalGst = 0;
-  const cgstAmount = 0;
-  const sgstAmount = 0;
-
   const linkedPayments = (payments || [])
     .filter((payment) => payment.invoiceId === invoice.id)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -64,9 +58,9 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
         {/* Right Side: Simple Financial Summary */}
         <div className="flex-1 pt-2">
           <div className="space-y-3">
-            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[11px] px-1 pt-1">
-              <span>Invoice Total (Incl. All)</span>
-              <span className="text-slate-900">₹{totalPayable.toFixed(2)}</span>
+            <div className="flex justify-between items-center text-slate-500 font-bold uppercase tracking-widest text-[11px] px-1 pt-1 border-t border-slate-100">
+              <span>Invoice Amount</span>
+              <span className="text-slate-900 font-black">₹{totalPayable.toFixed(2)}</span>
             </div>
 
             {previousDues > 0 && (
@@ -80,7 +74,7 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
               <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
               <div className="flex flex-col relative z-10">
                 <span className="font-black text-[10px] uppercase tracking-[0.3em] text-orange-300">Final Amount Payable</span>
-                <div className="mt-1.5 h-1 w-12 bg-orange-500 rounded-full" />
+                <div className="mt-1.5 h-1 w-12 bg-orange-50 rounded-full" />
               </div>
               <div className="text-right relative z-10">
                 <span className="font-black text-4xl text-white tracking-tighter">

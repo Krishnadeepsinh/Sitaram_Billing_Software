@@ -1056,10 +1056,11 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       isManualPlanCycle ? Number(plan.validityDays || 30) * numMonths : numMonths * 30
     );
     const finalPlanCharge = numMonths > 0 ? (plan.price * numMonths) : 0;
+    const finalPriceWithoutGst = numMonths > 0 ? (plan.priceWithoutGst || plan.price) * numMonths : 0;
     const finalPrevDue = numMonths === 0 ? prevDue : 0; // Only include legacy if months is 0
     
     const total = (finalPlanCharge + finalPrevDue) - discount;
-    const gst = 0;
+    const gst = numMonths > 0 ? (finalPlanCharge - finalPriceWithoutGst) : 0;
 
     const newExpiryDate = numMonths > 0 
       ? serviceEndDate.toISOString()
@@ -1704,7 +1705,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const dueDate = createInvoiceDueDate(billingDate).toISOString();
       
       const total = plan.price;
-      const gst = 0;
+      const gst = plan.priceWithoutGst ? (plan.price - plan.priceWithoutGst) : 0;
 
       const serviceEndDate = createServiceEndDate(billingDate, Number(plan.validityDays || 30));
       const newExpiryDate = serviceEndDate.toISOString();

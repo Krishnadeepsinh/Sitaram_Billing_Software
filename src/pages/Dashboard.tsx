@@ -236,7 +236,7 @@ export default function Dashboard() {
              <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Export</span>
           </Button>
         </div>
-      </div>>
+      </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="bg-slate-900/50 backdrop-blur-2xl rounded-2xl p-4 lg:col-span-2 border border-slate-800 shadow-2xl overflow-hidden">

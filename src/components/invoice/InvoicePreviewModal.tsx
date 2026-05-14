@@ -46,25 +46,33 @@ export default function InvoicePreviewModal({
 
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current && contentRef.current) {
-        const containerWidth = containerRef.current.offsetWidth - 32; // padding
-        const newScale = Math.min(1, containerWidth / 794);
-        setScale(newScale);
-        setContentHeight(contentRef.current.offsetHeight);
-      }
+      if (!containerRef.current || !contentRef.current) return;
+      
+      const containerWidth = containerRef.current.offsetWidth - 32;
+      const targetWidth = 794;
+      const newScale = Math.min(1, Math.max(0.3, containerWidth / targetWidth));
+      
+      setScale(newScale);
+      
+      // Update content height after a tiny delay to ensure render is complete
+      setTimeout(() => {
+        if (contentRef.current) {
+          setContentHeight(contentRef.current.offsetHeight);
+        }
+      }, 50);
     };
 
     handleResize();
-    
-    // Also observe the content height changes
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (contentRef.current) resizeObserver.observe(contentRef.current);
-    if (containerRef.current) resizeObserver.observe(containerRef.current);
-
     window.addEventListener("resize", handleResize);
+    
+    // Additional checks to ensure height is correct after images/QR load
+    const timer1 = setTimeout(handleResize, 500);
+    const timer2 = setTimeout(handleResize, 2000);
+
     return () => {
       window.removeEventListener("resize", handleResize);
-      resizeObserver.disconnect();
+      clearTimeout(timer1);
+      clearTimeout(timer2);
     };
   }, []);
 
@@ -225,7 +233,8 @@ Due Date: ${formatDate(invoice.dueDate)}`;
             style={{ 
               transform: `scale(${scale})`, 
               marginBottom: `${(scale - 1) * contentHeight}px`,
-              marginRight: `${(scale - 1) * 794}px` 
+              marginLeft: `${((scale - 1) * 794) / 2}px`,
+              marginRight: `${((scale - 1) * 794) / 2}px`
             }}
           >
             <InvoiceHeader brand={brand} invoiceLabel={invoiceLabel} />
@@ -302,17 +311,17 @@ Due Date: ${formatDate(invoice.dueDate)}`;
           </div>
         </div>
 
-        <div className="p-10 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-4">
+        <div className="p-4 sm:p-10 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Button
             variant="outline"
-            className="flex-1 h-16 rounded-[1.25rem] font-black text-sm uppercase tracking-widest text-slate-600 hover:bg-white border-slate-200 transition-all hover:shadow-md"
+            className="flex-1 h-12 sm:h-16 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest text-slate-600 hover:bg-white border-slate-200 transition-all hover:shadow-md"
             onClick={onClose}
           >
             Cancel Preview
           </Button>
           <Button
             onClick={handleSharePDF}
-            className="flex-1 h-16 bg-emerald-600 text-white hover:bg-emerald-700 rounded-[1.25rem] font-black text-sm uppercase tracking-widest shadow-2xl shadow-emerald-100 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
+            className="flex-1 h-12 sm:h-16 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-emerald-100 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
           >
             <Send className="h-5 w-5" />
             WhatsApp Bill
@@ -320,7 +329,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
           <Button
             onClick={handleDownloadPDF}
             disabled={isProcessing}
-            className="flex-1 h-16 bg-slate-900 text-white hover:bg-black rounded-[1.25rem] font-black text-sm uppercase tracking-widest shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
+            className="flex-1 h-12 sm:h-16 bg-slate-900 text-white hover:bg-black rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
           >
             {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             Download PDF Record

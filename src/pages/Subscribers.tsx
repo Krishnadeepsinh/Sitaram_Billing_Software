@@ -192,7 +192,7 @@ export default function Subscribers() {
       } else {
         await addSubscriber({
           ...submissionData,
-          status: 'active',
+          status: formData.status || 'active',
           balance: 0,
           unpaidMonths: [],
           autoBilling: true,
@@ -352,22 +352,43 @@ export default function Subscribers() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-4 custom-scrollbar">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <label className="text-xs text-muted-foreground uppercase mb-1 block">Customer Name</label>
-                  <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Customer name" />
+              <div className="space-y-5 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Customer Name</label>
+                  <Input 
+                    className="h-11 sm:h-10 text-base sm:text-sm"
+                    value={formData.name} 
+                    onChange={e => setFormData({...formData, name: e.target.value})} 
+                    placeholder="Full name of customer" 
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase mb-1 block">Customer Mobile</label>
-                  <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="9876543210" />
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Customer Mobile</label>
+                  <Input 
+                    className="h-11 sm:h-10 text-base sm:text-sm"
+                    value={formData.phone} 
+                    onChange={e => setFormData({...formData, phone: e.target.value})} 
+                    placeholder="10-digit mobile number" 
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase mb-1 block">{customerIdLabel}</label>
-                  <Input value={formData.customerId} onChange={e => setFormData({...formData, customerId: e.target.value})} placeholder={customerIdLabel} />
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">{customerIdLabel}</label>
+                  <Input 
+                    className="h-11 sm:h-10 text-base sm:text-sm"
+                    value={formData.customerId} 
+                    onChange={e => setFormData({...formData, customerId: e.target.value})} 
+                    placeholder={customerIdLabel} 
+                  />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-xs text-muted-foreground uppercase mb-1 block">{addressLabel}</label>
-                  <Input value={formData.area} onChange={e => setFormData({...formData, area: e.target.value})} placeholder={isCableMode ? "Select or type area" : "Full customer address"} list="areas-list" />
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">{addressLabel}</label>
+                  <Input 
+                    className="h-11 sm:h-10 text-base sm:text-sm"
+                    value={formData.area} 
+                    onChange={e => setFormData({...formData, area: e.target.value})} 
+                    placeholder={isCableMode ? "Select or type area" : "Full customer address"} 
+                    list="areas-list" 
+                  />
                   <datalist id="areas-list">
                     {areas.filter(a => a !== 'all').map(a => <option key={a} value={a} />)}
                   </datalist>
@@ -375,41 +396,58 @@ export default function Subscribers() {
                 {!isCableMode && (
                   <>
                     <div>
-                      <label className="text-xs text-muted-foreground uppercase mb-1 block text-[10px] font-bold">Username</label>
-                      <Input value={formData.customerUsername} onChange={e => setFormData({...formData, customerUsername: e.target.value})} placeholder="PPPoE / customer username" />
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Username</label>
+                      <Input 
+                        className="h-11 sm:h-10 text-base sm:text-sm"
+                        value={formData.customerUsername} 
+                        onChange={e => setFormData({...formData, customerUsername: e.target.value})} 
+                        placeholder="PPPoE / customer username" 
+                      />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground uppercase mb-1 block text-[10px] font-bold">Password</label>
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Password</label>
                       <div className="space-y-2">
                         <Input
+                          className="h-11 sm:h-10 text-base sm:text-sm"
                           type={showPassword ? "text" : "password"}
                           value={formData.customerPassword}
                           onChange={e => setFormData({...formData, customerPassword: e.target.value})}
                           placeholder="Connection password"
                         />
-                        <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <label className="flex items-center gap-2 text-[11px] text-muted-foreground font-bold">
                           <input
                             type="checkbox"
                             checked={showPassword}
                             onChange={(e) => setShowPassword(e.target.checked)}
-                            className="h-3.5 w-3.5 rounded border-border"
+                            className="h-4 w-4 rounded border-border"
                           />
                           Show password
                         </label>
                       </div>
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="text-xs text-muted-foreground uppercase mb-1 block text-[10px] font-bold">Customer Email</label>
-                      <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="customer@example.com" />
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Customer Email</label>
+                      <Input 
+                        className="h-11 sm:h-10 text-base sm:text-sm"
+                        type="email" 
+                        value={formData.email} 
+                        onChange={e => setFormData({...formData, email: e.target.value})} 
+                        placeholder="customer@example.com" 
+                      />
                     </div>
                   </>
                 )}
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase mb-1 block text-[10px] font-bold">Installation Date</label>
-                  <Input type="date" value={formData.installationDate} onChange={e => setFormData({...formData, installationDate: e.target.value})} />
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Installation Date</label>
+                  <Input 
+                    className="h-11 sm:h-10 text-base sm:text-sm"
+                    type="date" 
+                    value={formData.installationDate} 
+                    onChange={e => setFormData({...formData, installationDate: e.target.value})} 
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase mb-1 block text-[10px] font-bold">Plan</label>
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Select Plan</label>
                   <select 
                     className="w-full bg-secondary/50 border border-border rounded-lg p-2 outline-none text-sm h-10"
                     value={formData.planId}
@@ -422,11 +460,11 @@ export default function Subscribers() {
                     ))}
                   </select>
                 </div>
-                <div className="sm:col-span-2 rounded-xl border border-border/50 bg-secondary/30 px-3 py-2 text-xs text-muted-foreground">
-                  Expiry date will be set from installation date plus the selected plan validity.
+                <div className="sm:col-span-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-[11px] text-muted-foreground leading-relaxed italic">
+                  Note: Expiry date is automatically calculated during bill generation based on the plan's validity days.
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-xs text-muted-foreground uppercase mb-1 block text-[10px] font-bold">Opening Balance</label>
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Opening Balance</label>
                   <div className="flex gap-2">
                     <Input 
                       type="number" 
@@ -446,7 +484,7 @@ export default function Subscribers() {
                   </div>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-xs text-muted-foreground uppercase mb-1 block text-[10px] font-bold">Account Status</label>
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Account Status</label>
                   <div className="flex gap-2">
                     <button 
                       type="button"

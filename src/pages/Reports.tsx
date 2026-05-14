@@ -228,24 +228,34 @@ export default function Reports() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current && contentRef.current) {
-        const containerWidth = containerRef.current.offsetWidth - 64; 
-        const newScale = Math.min(1, containerWidth / 794);
-        setScale(newScale);
-        setContentHeight(contentRef.current.offsetHeight);
-      }
+      if (!containerRef.current || !contentRef.current) return;
+      
+      const containerWidth = containerRef.current.offsetWidth - 32;
+      const targetWidth = 794;
+      const newScale = Math.min(1, Math.max(0.3, containerWidth / targetWidth));
+      
+      setScale(newScale);
+      
+      // Update content height after a tiny delay to ensure render is complete
+      setTimeout(() => {
+        if (contentRef.current) {
+          setContentHeight(contentRef.current.offsetHeight);
+        }
+      }, 50);
     };
-    
+
     if (isPreviewOpen) {
       handleResize();
-      const resizeObserver = new ResizeObserver(handleResize);
-      if (contentRef.current) resizeObserver.observe(contentRef.current);
-      if (containerRef.current) resizeObserver.observe(containerRef.current);
       window.addEventListener("resize", handleResize);
       
+      // Additional checks to ensure height is correct after images/content load
+      const timer1 = setTimeout(handleResize, 500);
+      const timer2 = setTimeout(handleResize, 2000);
+
       return () => {
         window.removeEventListener("resize", handleResize);
-        resizeObserver.disconnect();
+        clearTimeout(timer1);
+        clearTimeout(timer2);
       };
     }
   }, [isPreviewOpen]);
@@ -708,7 +718,8 @@ export default function Reports() {
               style={{ 
                 transform: `scale(${scale})`, 
                 marginBottom: `${(scale - 1) * contentHeight}px`,
-                marginRight: `${(scale - 1) * 794}px`
+                marginLeft: `${((scale - 1) * 794) / 2}px`,
+                marginRight: `${((scale - 1) * 794) / 2}px`
               }}
             >
               <AuditReportTemplate 

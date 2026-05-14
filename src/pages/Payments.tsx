@@ -48,24 +48,34 @@ export default function Payments() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current && contentRef.current) {
-        const containerWidth = containerRef.current.offsetWidth - 32;
-        const newScale = Math.min(1, containerWidth / 794);
-        setScale(newScale);
-        setContentHeight(contentRef.current.offsetHeight);
-      }
+      if (!containerRef.current || !contentRef.current) return;
+      
+      const containerWidth = containerRef.current.offsetWidth - 32;
+      const targetWidth = 794;
+      const newScale = Math.min(1, Math.max(0.3, containerWidth / targetWidth));
+      
+      setScale(newScale);
+      
+      // Update content height after a tiny delay to ensure render is complete
+      setTimeout(() => {
+        if (contentRef.current) {
+          setContentHeight(contentRef.current.offsetHeight);
+        }
+      }, 50);
     };
-    
+
     if (showReceipt) {
       handleResize();
-      const resizeObserver = new ResizeObserver(handleResize);
-      if (contentRef.current) resizeObserver.observe(contentRef.current);
-      if (containerRef.current) resizeObserver.observe(containerRef.current);
       window.addEventListener("resize", handleResize);
       
+      // Additional checks to ensure height is correct after images/QR load
+      const timer1 = setTimeout(handleResize, 500);
+      const timer2 = setTimeout(handleResize, 2000);
+
       return () => {
         window.removeEventListener("resize", handleResize);
-        resizeObserver.disconnect();
+        clearTimeout(timer1);
+        clearTimeout(timer2);
       };
     }
   }, [showReceipt]);
@@ -961,7 +971,8 @@ Thank you!`;
                 style={{ 
                   transform: `scale(${scale})`, 
                   marginBottom: `${(scale - 1) * contentHeight}px`,
-                  marginRight: `${(scale - 1) * 794}px`
+                  marginLeft: `${((scale - 1) * 794) / 2}px`,
+                  marginRight: `${((scale - 1) * 794) / 2}px`
                 }}
               >
                 {/* Receipt Header */}
@@ -994,97 +1005,99 @@ Thank you!`;
 
                 <div className="p-8 sm:p-12 flex-1 flex flex-col">
                   {/* Success Banner */}
-                  <div className="flex items-center gap-6 mb-12 p-8 bg-emerald-50 rounded-3xl border-2 border-emerald-100">
-                    <div className="h-20 w-20 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-200">
-                      <Check className="h-10 w-10 stroke-[3px]" />
+                  <div className="flex items-center gap-4 sm:gap-6 mb-8 sm:mb-12 p-4 sm:p-8 bg-emerald-50 rounded-2xl sm:rounded-3xl border-2 border-emerald-100">
+                    <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-200">
+                      <Check className="h-7 w-7 sm:h-10 sm:w-10 stroke-[3px]" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-emerald-900">Payment Received</h2>
-                      <p className="text-emerald-700 font-medium mt-1">Thank you for your payment. Your account has been updated.</p>
+                      <h2 className="text-xl sm:text-2xl font-bold text-emerald-900 leading-tight">Payment Received</h2>
+                      <p className="text-emerald-700 font-medium mt-1 text-xs sm:text-base">Thank you for your payment. Your account has been updated.</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-12 mb-12">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-12 mb-12">
+                    <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 sm:bg-transparent sm:p-0 sm:border-0">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Paid By</p>
                       <p className="text-xl font-bold text-slate-900">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.name || "Customer"}</p>
-                      <p className="text-sm text-slate-600 mt-1"><span className="font-bold">Subscriber ID:</span> {subscribers.find(s => s.id === selectedPayment.subscriberId)?.customerNo || selectedPayment.subscriberId || "N/A"}</p>
-                      <p className="text-sm text-slate-600"><span className="font-bold">Area:</span> {subscribers.find(s => s.id === selectedPayment.subscriberId)?.area || "N/A"}</p>
+                      <p className="text-sm text-slate-600 mt-1"><span className="font-bold text-slate-400">Subscriber ID:</span> {subscribers.find(s => s.id === selectedPayment.subscriberId)?.customerNo || selectedPayment.subscriberId || "N/A"}</p>
+                      <p className="text-sm text-slate-600"><span className="font-bold text-slate-400">Area:</span> {subscribers.find(s => s.id === selectedPayment.subscriberId)?.area || "N/A"}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="sm:text-right bg-slate-50/50 p-4 rounded-2xl border border-slate-100 sm:bg-transparent sm:p-0 sm:border-0">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Payment Details</p>
-                      <p className="text-sm text-slate-600 mt-1"><span className="font-bold">Method:</span> {selectedPayment.method || "Cash"}</p>
-                      <p className="text-sm text-slate-600"><span className="font-bold">Payment Date:</span> {formatDate(selectedPayment.date)}</p>
+                      <p className="text-sm text-slate-600 mt-1"><span className="font-bold text-slate-400">Method:</span> {selectedPayment.method || "Cash"}</p>
+                      <p className="text-sm text-slate-600"><span className="font-bold text-slate-400">Payment Date:</span> {formatDate(selectedPayment.date)}</p>
                       {selectedPaymentServiceDates.rechargeDate && (
-                        <p className="text-sm text-slate-600"><span className="font-bold">Recharge Date:</span> {formatDate(selectedPaymentServiceDates.rechargeDate)}</p>
+                        <p className="text-sm text-slate-600"><span className="font-bold text-slate-400">Recharge Date:</span> {formatDate(selectedPaymentServiceDates.rechargeDate)}</p>
                       )}
                       {paymentReceiptInvoice?.billingPeriod && (
-                        <p className="text-sm text-slate-600"><span className="font-bold">Service Period:</span> {paymentReceiptInvoice.billingPeriod}</p>
+                        <p className="text-sm text-slate-600"><span className="font-bold text-slate-400">Service Period:</span> {paymentReceiptInvoice.billingPeriod}</p>
                       )}
                       {selectedPaymentServiceDates.expiryDate && (
-                        <p className="text-sm text-slate-600"><span className="font-bold">Expiry Date:</span> {formatDate(selectedPaymentServiceDates.expiryDate)}</p>
+                        <p className="text-sm text-slate-600"><span className="font-bold text-slate-400">Expiry Date:</span> {formatDate(selectedPaymentServiceDates.expiryDate)}</p>
                       )}
                       {selectedPayment.createdAt && formatDate(selectedPayment.createdAt) !== formatDate(selectedPayment.date) && (
-                        <p className="text-sm text-rose-500"><span className="font-bold">Recorded At:</span> {formatDate(selectedPayment.createdAt)}</p>
+                        <p className="text-sm text-rose-500 font-bold mt-1 tracking-tight italic">Recorded: {formatDate(selectedPayment.createdAt)}</p>
                       )}
-                      <p className="text-sm text-slate-600"><span className="font-bold">Agent:</span> {selectedPayment.agent || "Office"}</p>
+                      <p className="text-sm text-slate-600"><span className="font-bold text-slate-400">Agent:</span> {selectedPayment.agent || "Office"}</p>
                     </div>
                   </div>
 
                   {/* Transaction Table */}
                   <div className="flex-1">
-                    <table className="w-full mb-8">
-                      <thead>
-                        <tr className="border-b-2 border-slate-200 bg-slate-50">
-                          <th className="text-left py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</th>
-                          <th className="text-center py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
-                          <th className="text-center py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Qty</th>
-                          <th className="text-right py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Due</th>
-                          <th className="text-right py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {selectedPaymentItems.map((item, idx) => (
-                            <tr key={idx}>
-                              <td className="py-6 px-4">
-                                <p className="font-bold text-slate-900">{item.desc}</p>
-                                <p className="text-[10px] text-slate-500 mt-1 font-medium italic">{item.subDesc}</p>
-                              </td>
-                              <td className="py-6 px-4 text-center text-slate-600 font-bold whitespace-nowrap text-xs">{item.date}</td>
-                              <td className="py-6 px-4 text-center text-slate-600 font-bold text-xs">{item.qty}</td>
-                              <td className="py-6 px-4 text-right font-bold text-slate-400 line-through text-xs">{formatCurrency(item.dueAmount || item.total)}</td>
-                              <td className="py-6 px-4 text-right font-black text-slate-900">{formatCurrency(item.total)}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
+                    <div className="overflow-x-auto -mx-4 px-4">
+                      <table className="w-full mb-8 min-w-[500px] sm:min-w-0">
+                        <thead>
+                          <tr className="border-b-2 border-slate-200 bg-slate-50">
+                            <th className="text-left py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</th>
+                            <th className="text-center py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                            <th className="text-center py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Qty</th>
+                            <th className="text-right py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Due</th>
+                            <th className="text-right py-4 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {selectedPaymentItems.map((item, idx) => (
+                              <tr key={idx}>
+                                <td className="py-6 px-4">
+                                  <p className="font-bold text-slate-900">{item.desc}</p>
+                                  <p className="text-[10px] text-slate-500 mt-1 font-medium italic">{item.subDesc}</p>
+                                </td>
+                                <td className="py-6 px-4 text-center text-slate-600 font-bold whitespace-nowrap text-xs">{item.date}</td>
+                                <td className="py-6 px-4 text-center text-slate-600 font-bold text-xs">{item.qty}</td>
+                                <td className="py-6 px-4 text-right font-bold text-slate-400 line-through text-xs">{formatCurrency(item.dueAmount || item.total)}</td>
+                                <td className="py-6 px-4 text-right font-black text-slate-900">{formatCurrency(item.total)}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
 
-                    <div className="flex justify-end mb-12">
-                      <div className="w-64 bg-slate-50 rounded-2xl p-6">
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Total Dues (Before Payment)</span>
-                          <span className={`${(selectedPayment.balanceAtPayment !== undefined ? selectedPayment.balanceAtPayment : (subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0)) - Number(selectedPayment.amount) - Number(selectedPayment.discount || 0) < 0 ? 'text-rose-500' : 'text-emerald-500'} font-bold text-xs`}>
+                    <div className="flex justify-end mb-8 sm:mb-12">
+                      <div className="w-full sm:w-80 bg-slate-50 rounded-2xl p-6 sm:p-8 border border-slate-100">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Old Dues</span>
+                          <span className={`${(selectedPayment.balanceAtPayment !== undefined ? selectedPayment.balanceAtPayment : (subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0)) - Number(selectedPayment.amount) - Number(selectedPayment.discount || 0) < 0 ? 'text-rose-500' : 'text-emerald-500'} font-bold text-sm`}>
                             {formatCurrency((selectedPayment.balanceAtPayment !== undefined ? selectedPayment.balanceAtPayment : (subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0)) - Number(selectedPayment.amount) - Number(selectedPayment.discount || 0))}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center mb-3 pt-3 border-t border-slate-200">
-                          <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Amount Applied</span>
-                          <span className="text-slate-900 font-bold">{formatCurrency(Number(selectedPayment.amount) + Number(selectedPayment.discount || 0))}</span>
+                        <div className="flex justify-between items-center mb-4 pt-4 border-t border-slate-200">
+                          <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Total Applied</span>
+                          <span className="text-slate-900 font-bold text-sm">{formatCurrency(Number(selectedPayment.amount) + Number(selectedPayment.discount || 0))}</span>
                         </div>
                         {selectedPayment.discount > 0 && (
-                          <div className="flex justify-between items-center mb-3">
-                            <span className="text-rose-500 text-[10px] font-black uppercase tracking-widest">Discount Applied</span>
-                            <span className="text-rose-600 font-bold">-{formatCurrency(selectedPayment.discount)}</span>
+                          <div className="flex justify-between items-center mb-4">
+                            <span className="text-rose-500 text-[10px] font-black uppercase tracking-widest">Discount</span>
+                            <span className="text-rose-600 font-bold text-sm">-{formatCurrency(selectedPayment.discount)}</span>
                           </div>
                         )}
-                        <div className="flex justify-between items-center mb-3 pt-3 border-t border-slate-200">
-                          <span className="text-emerald-600 text-[10px] font-black uppercase tracking-widest">Net Payment Received</span>
-                          <span className="text-emerald-700 font-black text-xl">{formatCurrency(selectedPayment.amount)}</span>
+                        <div className="flex justify-between items-center mb-4 pt-4 border-t-2 border-slate-200">
+                          <span className="text-emerald-600 text-[10px] font-black uppercase tracking-widest">Amount Paid</span>
+                          <span className="text-emerald-700 font-black text-2xl tracking-tighter">{formatCurrency(selectedPayment.amount)}</span>
                         </div>
                         <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
                           <div className="flex flex-col">
                             <span className="text-slate-900 font-black text-[10px] uppercase">New Balance</span>
-                            <span className="text-[8px] text-slate-400 font-bold leading-tight uppercase">Outstanding</span>
+                            <span className="text-[8px] text-slate-400 font-bold leading-tight uppercase">Current Due</span>
                           </div>
                           <span className={`text-xl font-black ${ (selectedPayment.balanceAtPayment !== undefined ? selectedPayment.balanceAtPayment : (subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0)) < 0 ? 'text-rose-500' : 'text-emerald-500' }`}>
                             {formatCurrency(selectedPayment.balanceAtPayment !== undefined ? selectedPayment.balanceAtPayment : (subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0))}

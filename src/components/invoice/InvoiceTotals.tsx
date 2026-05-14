@@ -23,11 +23,11 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
   const grossTotal = totalPayable + discount;
   const grandTotal = totalPayable + previousDues;
   
-  // Inclusive GST Calculation (18% total)
+  // Inclusive GST Calculation (18% total: 9% CGST + 9% SGST)
   const taxableValue = grossTotal / 1.18;
-  const gstAmountTotal = grossTotal - taxableValue;
-  const cgstAmount = gstAmountTotal / 2;
-  const sgstAmount = gstAmountTotal / 2;
+  const totalGst = grossTotal - taxableValue;
+  const cgstAmount = totalGst / 2;
+  const sgstAmount = totalGst / 2;
 
   const linkedPayments = (payments || [])
     .filter((payment) => payment.invoiceId === invoice.id)
@@ -38,14 +38,14 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
     <div className="space-y-4">
       <div className="flex gap-10 mt-2 items-start">
         {/* Left Side: QR */}
-        <div className="w-[160px] shrink-0">
-          <div className="bg-slate-50 p-4 rounded-2xl text-center border border-slate-100 flex flex-col items-center shadow-sm">
-            <p className="text-[9px] font-black text-[#1e3a5f] mb-3 uppercase tracking-[0.2em]">Scan to Pay (UPI)</p>
+        <div className="w-[180px] shrink-0">
+          <div className="bg-slate-50 p-5 rounded-3xl text-center border border-slate-100 flex flex-col items-center shadow-md">
+            <p className="text-[10px] font-black text-[#1e3a5f] mb-4 uppercase tracking-[0.2em]">Scan to Pay (UPI)</p>
             {hasUpiId ? (
-              <div className="p-2 bg-white rounded-xl shadow-inner border border-slate-100">
+              <div className="p-3 bg-white rounded-2xl shadow-inner border border-slate-100">
                 <QRCodeCanvas
-                  value={`upi://pay?pa=${brand.upiId}&pn=${encodeURIComponent(brand.name)}&am=${invoice.amount}&cu=INR`}
-                  size={100}
+                  value={`upi://pay?pa=${brand.upiId}&pn=${encodeURIComponent(brand.name)}&am=${grandTotal.toFixed(2)}&cu=INR`}
+                  size={120}
                   bgColor="#ffffff"
                   fgColor="#1e3a5f"
                   level="H"
@@ -53,11 +53,11 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
                 />
               </div>
             ) : (
-              <div className="flex h-[100px] w-[100px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-400 italic">
+              <div className="flex h-[120px] w-[120px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-400 italic">
                 UPI ID Not Available
               </div>
             )}
-            <p className="text-[9px] font-black text-slate-400 mt-3 font-mono tracking-tighter truncate w-full px-1">{brand.upiId}</p>
+            <p className="text-[10px] font-black text-slate-500 mt-4 font-mono tracking-tighter truncate w-full px-1">{brand.upiId}</p>
           </div>
         </div>
 

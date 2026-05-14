@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import * as XLSX from 'xlsx';
 import { formatCurrency, formatDate } from "@/lib/mockData";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
@@ -216,6 +217,41 @@ export default function Subscribers() {
     setShowHistory(true);
   };
 
+  const handleExportExcel = () => {
+    try {
+      const exportData = filtered.map(s => {
+        const plan = dbPlans.find(p => p.id === s.planId);
+        const balance = effectiveBalances[s.id] || 0;
+        return {
+          'No': s.customerNo || '',
+          'Name': s.name,
+          'Phone': s.phone,
+          'Area': s.area,
+          [customerIdLabel]: s.customerId,
+          'Username': s.customerUsername || '',
+          'Email': s.email || '',
+          'Plan': plan?.name || 'Unassigned',
+          'Price': plan?.price || 0,
+          'Status': s.status,
+          'Balance': balance,
+          'Expiry Date': s.expiryDate || '',
+          'Installation Date': s.installationDate || '',
+          'House No': s.houseNo || '',
+          'Landmark': s.landmark || ''
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Subscribers");
+      XLSX.writeFile(wb, `Subscribers_${activeBusinessMode}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success("Excel Report Downloaded");
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.error("Failed to export Excel");
+    }
+  };
+
   const subPayments = useMemo(() => {
     if (!historySub) return [];
     return payments.filter(p => p.subscriberId === historySub.id)
@@ -259,6 +295,13 @@ export default function Subscribers() {
           >
             <Loader2 className={cn("mr-2 h-4 w-4", isGlobalRefreshing && "animate-spin")} />
             Sync
+          </Button>
+          <Button 
+            variant="outline"
+            className="flex-1 md:flex-none h-10 border-white/10 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors"
+            onClick={handleExportExcel}
+          >
+            <Download className="mr-2 h-4 w-4" /> Export
           </Button>
           <Button 
             onClick={handleOpenAdd}

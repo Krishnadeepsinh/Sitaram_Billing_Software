@@ -574,7 +574,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
       } catch (err) { 
         console.error('updateSubscriber DB error:', err);
-        toast.error("Database update failed. Please try again.");
+        throw err;
       }
     } else {
       console.log('Updating subscriber (Local):', id, updates);
@@ -596,7 +596,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           { sql: 'DELETE FROM invoices WHERE subscriber_id = ?', args: [id] },
           { sql: 'DELETE FROM payments WHERE subscriber_id = ?', args: [id] }
         ]);
-      } catch (err) { console.error('deleteSubscriber DB error:', err); }
+      } catch (err) { 
+        console.error('deleteSubscriber DB error:', err);
+        throw err;
+      }
       await fetchData();
     } else {
       const updated = subscribers.filter(s => s.id !== id);

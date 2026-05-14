@@ -16,6 +16,7 @@ import { getBrandSettings } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 import { useBusinessMode } from "@/lib/turso";
 import { Logo } from "@/components/Logo";
+import * as XLSX from 'xlsx';
 
 export default function Payments() {
   const activeBusinessMode = useBusinessMode();
@@ -204,6 +205,32 @@ export default function Payments() {
     } catch (e) { toast.error("Export failed"); } finally { setIsSubmitting(false); }
   };
 
+  const handleExportExcel = () => {
+    try {
+      const exportData = sorted.map(p => {
+        const sub = subscribers.find(s => s.id === p.subscriberId);
+        return {
+          'Receipt ID': p.id,
+          'Date': formatDate(p.date),
+          'Subscriber': sub?.name || 'Unknown',
+          [isCableMode ? 'STB No' : 'CID']: sub?.customerId || '',
+          'Amount': p.amount,
+          'Method': p.method,
+          'Agent': p.agent || 'Direct'
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Payments");
+      XLSX.writeFile(wb, `Payments_${activeBusinessMode}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success("Payments Exported to Excel");
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.error("Failed to export Excel");
+    }
+  };
+
   const cashTotal = filtered.filter(p => p.method === 'Cash').reduce((s, p) => s + Number(p.amount), 0);
   const upiTotal = filtered.filter(p => p.method !== 'Cash').reduce((s, p) => s + Number(p.amount), 0);
 
@@ -245,7 +272,14 @@ export default function Payments() {
             className="h-10 rounded-lg border-white/10 bg-slate-900 px-4 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
           >
             <Activity className={cn("mr-2 h-4 w-4", isGlobalRefreshing && "animate-spin")} />
-            Sync Ledger
+            Sync
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleExportExcel}
+            className="h-10 rounded-lg border-white/10 bg-slate-900 px-4 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
+          >
+            <Download className="mr-2 h-4 w-4" /> Export
           </Button>
           <Button 
             onClick={() => setIsAddOpen(true)}

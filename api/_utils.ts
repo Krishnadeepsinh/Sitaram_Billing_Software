@@ -52,22 +52,14 @@ export const getDb = (mode: BusinessMode) => {
     throw new Error(`${mode} database is not configured.`);
   }
 
-  // In Vercel serverless, embedded replicas download the entire DB to /tmp/ on cold starts,
-  // taking huge amounts of time. We MUST use direct HTTP remote connection for Vercel.
-  if (process.env.VERCEL === "1") {
-    dbInstances[mode] = createClient({
-      url: config.url,
-      authToken: config.authToken,
-    });
-  } else {
-    // For local development, use embedded replica for ultra-fast local reads
-    dbInstances[mode] = createClient({ 
-      url: `file:./${mode}_local.db`, 
-      syncUrl: config.url, 
-      authToken: config.authToken,
-      syncInterval: 2 // Automatically sync every 2 seconds in the background
-    });
-  }
+  // We explicitly DO NOT use embedded replicas (syncUrl, local file) because 
+  // it forces a massive, blocking database replication on startup which causes 
+  // severe performance degradation and "infinite loading" loops.
+  // Directly querying Turso via HTTP is incredibly fast and lightweight.
+  dbInstances[mode] = createClient({
+    url: config.url,
+    authToken: config.authToken,
+  });
 
   return dbInstances[mode];
 };

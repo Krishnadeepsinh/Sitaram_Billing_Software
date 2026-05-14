@@ -536,74 +536,117 @@ export default function Payments() {
 
             <div className="flex-1 overflow-auto p-4 md:p-8 bg-slate-950 flex justify-center">
               <div ref={containerRef} className="w-full max-w-[800px] h-fit">
-                 <div id="receipt-content" ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }} className="bg-white text-slate-900 p-12 shadow-sm rounded-sm w-[794px] mx-auto relative border border-slate-200">
-                    
-                    <div className="flex justify-between items-start mb-12 border-b border-slate-200 pb-8">
-                      <div>
-                        <h2 className="text-3xl font-bold text-slate-900 mb-1">{brand.name}</h2>
-                        <p className="text-sm text-slate-500">Payment Receipt</p>
+                 <div id="receipt-content" ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }} className="bg-white text-slate-900 shadow-sm w-[794px] mx-auto relative overflow-hidden">
+                    {/* Professional Header */}
+                    <div className="bg-[#162f4f] px-10 py-8 flex justify-between items-center text-white">
+                      <div className="flex gap-5 items-center">
+                        <div className="bg-white rounded-xl p-2 shadow-inner">
+                          <Logo size="lg" showText={false} iconClassName="h-12 w-12 rounded-lg" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-orange-300">Official Receipt</p>
+                          <h1 className="text-2xl font-black tracking-tight mt-0.5 leading-tight">{brand.name}</h1>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-slate-500 mb-1">Receipt No.</p>
-                        <p className="text-xl font-mono font-medium text-slate-900">#{selectedPayment.id.slice(-8).toUpperCase()}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-12 mb-12">
-                      <div>
-                        <p className="text-xs font-semibold uppercase text-slate-500 mb-2">Billed To</p>
-                        <div className="text-base font-semibold text-slate-900 mb-1">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.name}</div>
-                        <div className="text-sm text-slate-600 mb-1">Customer ID: {subscribers.find(s => s.id === selectedPayment.subscriberId)?.customerNo}</div>
-                        <div className="text-sm text-slate-600">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.area}</div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs font-semibold uppercase text-slate-500 mb-2">Payment Details</p>
-                        <div className="text-sm text-slate-600 mb-1">Date: <span className="text-slate-900 font-medium">{formatDate(selectedPayment.date)}</span></div>
-                        <div className="text-sm text-slate-600">Method: <span className="text-slate-900 font-medium">{selectedPayment.method}</span></div>
+                      <div className="text-right text-xs space-y-1">
+                        <p className="font-black uppercase tracking-[0.14em] text-orange-200">Payment Voucher</p>
+                        <p className="text-xl font-black tracking-tight text-white leading-none mb-2">#{selectedPayment.id.slice(-8).toUpperCase()}</p>
+                        <p className="whitespace-pre-line leading-tight text-blue-50 opacity-90 max-w-[200px] ml-auto">{brand.address}</p>
+                        <p className="font-bold text-[11px] text-orange-50 mt-1">Support: {brand.phone}</p>
                       </div>
                     </div>
+                    <div className="h-2 bg-orange-500" />
 
-                    <table className="w-full text-left mb-12">
-                      <thead className="border-y border-slate-200 bg-slate-50">
-                        <tr>
-                          <th className="py-3 px-4 text-xs font-semibold text-slate-600 uppercase">Description</th>
-                          <th className="py-3 px-4 text-xs font-semibold text-slate-600 uppercase text-center">Date</th>
-                          <th className="py-3 px-4 text-xs font-semibold text-slate-600 uppercase text-right">Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {selectedPaymentItems.map((item, i) => (
-                          <tr key={i}>
-                            <td className="py-4 px-4">
-                              <div className="font-medium text-slate-900">{item.desc}</div>
-                              <div className="text-xs text-slate-500 mt-0.5">{item.subDesc}</div>
-                            </td>
-                            <td className="py-4 px-4 text-sm text-slate-600 text-center">{item.date}</td>
-                            <td className="py-4 px-4 text-sm font-medium text-slate-900 text-right">₹{Number(item.total).toLocaleString()}</td>
+                    <div className="p-10">
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-2 gap-10 mb-10 pb-10 border-b border-slate-100">
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Subscriber Identity</p>
+                            <p className="text-lg font-black text-slate-900 leading-tight">
+                              {subscribers.find(s => s.id === selectedPayment.subscriberId)?.name}
+                            </p>
+                            <div className="flex gap-6 mt-3">
+                              <div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Customer ID</p>
+                                <p className="text-sm font-black text-slate-700">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.customerNo}</p>
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Area</p>
+                                <p className="text-sm font-black text-slate-700">{subscribers.find(s => s.id === selectedPayment.subscriberId)?.area || 'General'}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right space-y-4">
+                          <div className="inline-block text-right">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Transaction Data</p>
+                            <div className="space-y-1.5">
+                              <p className="text-sm font-bold text-slate-700">Date: <span className="font-black">{formatDate(selectedPayment.date)}</span></p>
+                              <p className="text-sm font-bold text-slate-700">Method: <span className="font-black">{selectedPayment.method}</span></p>
+                              <p className="text-sm font-bold text-slate-700">Status: <span className="font-black text-emerald-600 px-1.5 py-0.5 bg-emerald-50 rounded">PAID</span></p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Items Table */}
+                      <table className="w-full mb-10">
+                        <thead>
+                          <tr className="border-b-2 border-slate-900 text-left">
+                            <th className="py-3 px-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Service Description</th>
+                            <th className="py-3 px-2 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Reference Date</th>
+                            <th className="py-3 px-2 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Settled Amount</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {selectedPaymentItems.map((item, i) => (
+                            <tr key={i} className="group">
+                              <td className="py-5 px-2">
+                                <p className="font-black text-slate-900 text-sm">{item.desc}</p>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mt-1">{item.subDesc}</p>
+                              </td>
+                              <td className="py-5 px-2 text-sm font-bold text-slate-600 text-center">{item.date}</td>
+                              <td className="py-5 px-2 text-sm font-black text-slate-900 text-right">₹{Number(item.total).toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
 
-                    <div className="flex justify-end pt-8 border-t border-slate-200">
-                      <div className="w-72 space-y-4">
-                        <div className="flex justify-between items-center text-lg font-bold">
-                          <span className="text-slate-900">Total Paid</span>
-                          <span className="text-slate-900">₹{Number(selectedPayment.amount).toLocaleString()}</span>
+                      {/* Totals */}
+                      <div className="flex justify-between items-start pt-8 border-t-2 border-slate-100">
+                        <div className="max-w-[300px]">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Important Notice</p>
+                          <p className="text-[10px] leading-relaxed text-slate-500 italic">
+                            This document serves as formal acknowledgement of payment received. Please retain for your records. 
+                            In case of discrepancies, contact support immediately.
+                          </p>
                         </div>
-                        <div className="bg-slate-50 p-4 rounded-md flex justify-between items-center">
-                          <span className="text-sm text-slate-600">Current Balance</span>
-                          <span className="text-base font-medium text-slate-900">₹{subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0}</span>
+                        <div className="w-64 space-y-3">
+                          <div className="flex justify-between items-center py-2.5 px-4 bg-slate-50 rounded-lg border border-slate-100">
+                            <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Net Received</span>
+                            <span className="text-2xl font-black text-indigo-600">₹{Number(selectedPayment.amount).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center px-4">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Account Balance</span>
+                            <span className="text-sm font-black text-slate-700">₹{subscribers.find(s => s.id === selectedPayment.subscriberId)?.balance || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="mt-20 pt-8 border-t border-slate-100 flex justify-between items-end">
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{brand.name}</p>
+                          <p className="text-[10px] font-bold text-slate-500">Digital Authentication Record</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="w-32 h-px bg-slate-300 mb-2 ml-auto" />
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Authorized Signatory</p>
                         </div>
                       </div>
                     </div>
-
-                    <div className="mt-20 pt-4 border-t border-slate-200 text-center">
-                       <p className="text-xs text-slate-500">
-                         This is a computer generated receipt and does not require a physical signature.
-                       </p>
-                    </div>
-                 </div>
+                  </div>
               </div>
             </div>
           </div>

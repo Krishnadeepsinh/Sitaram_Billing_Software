@@ -287,17 +287,29 @@ export default function Reports() {
       const collectionData = filteredPayments.map((p, idx) => {
         const sub = subscribers.find(s => s.id === p.subscriberId);
         return {
-          "ID": sub?.customerNo || idx + 1,
+          "Serial No": sub?.customerNo || idx + 1,
           "Date": formatDate(p.date),
-          "Name": sub?.name || 'Unknown',
-          "Area": sub?.area || 'N/A',
-          "Method": p.method,
-          "Amount": Number(p.amount) || 0
+          "Subscriber Name": sub?.name || 'Unknown',
+          [customerIdLabel]: sub?.customerId || '—',
+          "Phone Number": sub?.phone || '—',
+          "Area/Address": sub?.area || '—',
+          "Plan Details": sub?.planId || '—',
+          "Payment Method": p.method,
+          "Amount Paid": Number(p.amount) || 0,
+          "Transaction ID": p.id.slice(-8).toUpperCase()
         };
       });
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(collectionData), "Collections");
-      XLSX.writeFile(wb, `Audit_${monthNameLong.replace(/ /g, '_')}.xlsx`);
+      const ws = XLSX.utils.json_to_sheet(collectionData);
+      
+      // Auto-size columns
+      const colWidths = Object.keys(collectionData[0] || {}).map(key => ({
+        wch: Math.max(key.length, ...collectionData.map(row => String(row[key as keyof typeof row]).length)) + 2
+      }));
+      ws['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(wb, ws, "Collection Details");
+      XLSX.writeFile(wb, `Collection_Report_${monthNameLong.replace(/ /g, '_')}.xlsx`);
       toast.success("Excel file exported");
     } catch (error) {
       toast.error("Export Failed");
@@ -342,6 +354,9 @@ export default function Reports() {
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-9 rounded-lg border-slate-700 bg-slate-900/60 px-3 text-xs font-medium text-slate-300 hover:bg-slate-800">
             <Eye className="mr-2 h-3.5 w-3.5" /> Preview
+          </Button>
+          <Button variant="outline" onClick={handleExportExcel} className="h-9 rounded-lg border-emerald-600/30 bg-emerald-600/10 px-3 text-xs font-medium text-emerald-400 hover:bg-emerald-600/20">
+            <Download className="mr-2 h-3.5 w-3.5" /> Export Excel
           </Button>
           <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-9 rounded-lg bg-indigo-600 px-4 text-xs font-medium text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-700">
             {isGenerating ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}

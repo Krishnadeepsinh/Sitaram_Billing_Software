@@ -516,7 +516,12 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const updateSubscriber = async (id: string, updates: Partial<Subscriber>) => {
     const existingSub = subscribers.find((sub) => sub.id === id);
     if (!existingSub) throw new Error('Subscriber not found.');
-    validateSubscriberInput({ candidate: { ...existingSub, ...updates }, subscribers, editingId: id, businessMode });
+    
+    // Skip full validation if only status is being updated to avoid blocking toggles on legacy records
+    const isStatusOnly = Object.keys(updates).length === 1 && updates.status !== undefined;
+    if (!isStatusOnly) {
+      validateSubscriberInput({ candidate: { ...existingSub, ...updates }, subscribers, editingId: id, businessMode });
+    }
 
     if (db) {
       console.log('Updating subscriber (DB):', id, updates);

@@ -1,29 +1,20 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { formatCurrency, formatDate, formatMonthRanges } from "@/lib/mockData";
+import { formatCurrency, formatDate } from "@/lib/mockData";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
-  Search, Plus, Phone, MapPin, Filter, AlertCircle, Loader2, Edit2, 
-  Trash2, History, FileText, Wifi, MoreVertical, ChevronRight, Download,
-  Activity, Edit, Wallet
+  Search, Plus, Phone, MapPin, Loader2, Edit2, 
+  Trash2, History, FileText, Wifi, ChevronRight,
+  Activity, Wallet, X, User, Shield, CreditCard
 } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
 import { useBusinessMode } from "@/lib/turso";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
 
 const Highlight = ({ text, query }: { text: string; query: string }) => {
   if (!query || !text) return <>{text || ""}</>;
@@ -38,7 +29,7 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
     <>
       {parts.map((part, i) => 
         regex.test(part) ? (
-          <mark key={i} className="bg-amber-200 text-amber-900 px-0.5 rounded-sm font-bold">{part}</mark>
+          <mark key={i} className="bg-blue-500/20 text-blue-400 px-0.5 rounded-sm font-black">{part}</mark>
         ) : (
           part
         )
@@ -51,7 +42,6 @@ export default function Subscribers() {
   const activeBusinessMode = useBusinessMode();
   const isCableMode = activeBusinessMode === "cable";
   const customerIdLabel = isCableMode ? "STB Number" : "Customer ID";
-  const addressLabel = isCableMode ? "Area" : "Customer Address";
   const { subscribers, plans: dbPlans, invoices, payments, addSubscriber, updateSubscriber, deleteSubscriber, generateInvoice, refreshData } = useBilling();
   const [q, setQ] = useState("");
   const debouncedQ = useDebouncedValue(q, 180);
@@ -69,39 +59,28 @@ export default function Subscribers() {
     openingBalanceType: 'debit' as 'debit' | 'credit'
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
    const [confirmModal, setConfirmModal] = useState<{type: 'delete', id: string} | null>(null);
    const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({});
    const [isGlobalRefreshing, setIsGlobalRefreshing] = useState(false);
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [invoiceSub, setInvoiceSub] = useState<any>(null);
-  const [billingMonth, setBillingMonth] = useState(new Date().getMonth());
-  const [billingYear, setBillingYear] = useState(new Date().getFullYear());
   const [rechargeDate, setRechargeDate] = useState(new Date().toISOString().slice(0, 10));
   const [planMonths, setPlanMonths] = useState(1);
-  const [endMonth, setEndMonth] = useState(new Date().getMonth());
-  const [endYear, setEndYear] = useState(new Date().getFullYear());
-
-  const [includePreviousDue, setIncludePreviousDue] = useState(false);
   const [billingType, setBillingType] = useState<"plan" | "legacy">("plan");
 
-  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const years = [2026, 2027, 2028, 2029];
-  const selectedPlanForRecharge = dbPlans.find(p => p.id === invoiceSub?.planId);
   const isValidRechargeDate = /^\d{4}-\d{2}-\d{2}$/.test(rechargeDate) && !Number.isNaN(new Date(`${rechargeDate}T12:00:00`).getTime());
   const projectedExpiryDate = useMemo(() => {
-    if (billingType !== "plan" || !isValidRechargeDate || !selectedPlanForRecharge) return "";
+    if (billingType !== "plan" || !isValidRechargeDate) return "";
+    const selectedPlanForRecharge = dbPlans.find(p => p.id === invoiceSub?.planId);
+    if (!selectedPlanForRecharge) return "";
     const start = new Date(`${rechargeDate}T12:00:00`);
     start.setDate(start.getDate() + Math.max(1, Number(selectedPlanForRecharge.validityDays || 30) * planMonths) - 1);
     return start.toISOString();
-  }, [billingType, isValidRechargeDate, rechargeDate, selectedPlanForRecharge, planMonths]);
+  }, [billingType, isValidRechargeDate, rechargeDate, invoiceSub, planMonths, dbPlans]);
 
   const areas = useMemo(() => ["all", ...new Set(subscribers.map(s => s.area || "Unknown"))], [subscribers]);
 
-  // Compute REAL balance from actual invoice and payment records.
-  // This avoids showing orphan "Due" amounts from old subscribers created
-  // with balance=-plan.price but no corresponding invoice records.
   const effectiveBalances = useMemo(() => {
     const map: Record<string, number> = {};
     for (const sub of subscribers) {
@@ -111,7 +90,7 @@ export default function Subscribers() {
       const totalPaid = payments
         .filter(p => p.subscriberId === sub.id)
         .reduce((s, p) => s + Number(p.amount || 0), 0);
-      map[sub.id] = totalPaid - totalInvoiced - Number(sub.openingBalance || 0); // negative = owes money
+      map[sub.id] = totalPaid - totalInvoiced - Number(sub.openingBalance || 0);
     }
     return map;
   }, [subscribers, invoices, payments]);
@@ -119,7 +98,6 @@ export default function Subscribers() {
   const filtered = useMemo(() => {
     return subscribers.filter((s) => {
       const tokens = debouncedQ.toLowerCase().split(/\s+/).filter(Boolean);
-
       const matchQ = tokens.length === 0 || tokens.every(token => {
         return (
           (s.name || "").toLowerCase().includes(token) ||
@@ -127,7 +105,6 @@ export default function Subscribers() {
           (s.phone || "").includes(token) ||
           (s.customerId || "").toLowerCase().includes(token) ||
           (s.customerUsername || "").toLowerCase().includes(token) ||
-          (s.email || "").toLowerCase().includes(token) ||
           (s.area || "").toLowerCase().includes(token)
         );
       });
@@ -153,7 +130,6 @@ export default function Subscribers() {
       openingBalance: 0,
       openingBalanceType: 'debit'
     });
-    setShowPassword(false);
     setShowModal(true);
   };
 
@@ -166,21 +142,17 @@ export default function Subscribers() {
       openingBalance: Math.abs(ob),
       openingBalanceType: ob < 0 ? 'credit' : 'debit'
     });
-    setShowPassword(false);
     setShowModal(true);
   };
 
   const handleSave = async () => {
     if (isSaving) return;
-
-    // Mobile is now optional
     if (formData.phone && !/^\d{10}$/.test(formData.phone)) {
-      toast.error("Please enter a valid 10-digit mobile number or leave blank");
+      toast.error("Please enter a 10-digit mobile number");
       return;
     }
-    
     if (!formData.name.trim()) {
-      toast.error("Subscriber name is required");
+      toast.error("Name is required");
       return;
     }
 
@@ -190,73 +162,35 @@ export default function Subscribers() {
       ? -Math.abs(formData.openingBalance) 
       : Math.abs(formData.openingBalance);
 
-    const submissionData = {
-      ...rest,
-      name: rest.name.trim(),
-      phone: rest.phone.trim(),
-      area: rest.area.trim(),
-      customerId: rest.customerId.trim(),
-      customerUsername: rest.customerUsername.trim(),
-      customerPassword: rest.customerPassword.trim(),
-      email: rest.email.trim(),
-      openingBalance: finalOpeningBalance,
-      expiryDate: editingSub?.expiryDate || ""
-    };
-
     try {
       if (editingSub) {
-        await updateSubscriber(editingSub.id, submissionData);
+        await updateSubscriber(editingSub.id, { ...rest, openingBalance: finalOpeningBalance });
       } else {
-        await addSubscriber({
-          ...submissionData,
-          status: formData.status || 'active',
-          balance: 0,
-          unpaidMonths: [],
-          autoBilling: true,
-          expiryDate: submissionData.expiryDate
-        });
+        await addSubscriber({ ...rest, openingBalance: finalOpeningBalance, status: formData.status || 'active' });
       }
       await refreshData();
-      toast.success(editingSub ? "Subscriber updated" : "Subscriber added successfully");
+      toast.success(editingSub ? "Profile Updated" : "Account Created");
       setShowModal(false);
     } catch (e: any) {
-      toast.error(e.message || "Failed to save subscriber");
+      toast.error(e.message || "Operation failed");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setConfirmModal({ type: 'delete', id });
-  };
-
   const executeDelete = async (id: string) => {
     try {
       await deleteSubscriber(id);
+      toast.success("Account Terminated");
     } catch (e) {
-      console.error("Failed to delete subscriber", e);
+      toast.error("Deletion failed");
     }
   };
 
-  const [selectedInvoiceMonths, setSelectedInvoiceMonths] = useState<string[]>([]);
-  const availableMonthsToSelect = useMemo(() => {
-    const list = [];
-    const d = new Date();
-    for (let i = 0; i < 12; i++) {
-      const dCopy = new Date(d.getFullYear(), d.getMonth() + i, 1);
-      list.push(dCopy.toLocaleString('default', { month: 'long', year: 'numeric' }));
-    }
-    return list;
-  }, []);
-
   const handleOpenInvoice = (sub: any) => {
     setInvoiceSub(sub);
-    setBillingMonth(new Date().getMonth());
-    setBillingYear(new Date().getFullYear());
     setRechargeDate(new Date().toISOString().slice(0, 10));
     setPlanMonths(1);
-    setEndMonth(new Date().getMonth());
-    setEndYear(new Date().getFullYear());
     setBillingType("plan");
     setShowInvoiceModal(true);
   };
@@ -266,15 +200,10 @@ export default function Subscribers() {
     setIsSaving(true);
     try {
       const isLegacy = billingType === "legacy";
-      if (!isLegacy && !isValidRechargeDate) {
-        toast.error("Please select a valid recharge date");
-        return;
-      }
       const startDate = rechargeDate ? new Date(`${rechargeDate}T12:00:00`) : new Date();
       await generateInvoice(invoiceSub.id, isLegacy ? 0 : planMonths, false, startDate, isLegacy);
-      toast.success(isLegacy ? "Legacy invoice generated" : "Recharge invoice generated");
+      toast.success(isLegacy ? "Legacy Protocol Issued" : "Recharge Protocol Issued");
       setShowInvoiceModal(false);
-      setBillingType("plan");
     } catch (err: any) {
       toast.error(err.message || "Failed to generate invoice");
     } finally {
@@ -291,216 +220,161 @@ export default function Subscribers() {
       .sort((a, b) => +new Date(b.date) - +new Date(a.date));
   }, [historySub, payments]);
 
-  const handleOpenHistory = (sub: any) => {
-    setHistorySub(sub);
-    setShowHistory(true);
-  };
-
   return (
-    <div className="space-y-6 animate-fade-in relative pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+    <div className="space-y-4 animate-fade-in relative pb-10">
+      {/* INDUSTRIAL HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-black mb-2 flex items-center gap-2">
-            <Activity className="h-3 w-3" />
-            Network Management · Global
+          <p className="text-[8px] uppercase tracking-[0.4em] text-slate-500 font-black mb-1 flex items-center gap-2">
+            <Shield className="h-3 w-3 text-blue-500" />
+            {activeBusinessMode === "cable" ? "CABLE" : "BROADBAND"} · NETWORK REGISTRY
           </p>
-          <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tighter text-white uppercase leading-none">
-            Active <span className="text-primary italic">Subscribers</span>
+          <h1 className="font-display text-2xl font-black tracking-tighter text-white uppercase leading-none">
+            Subscriber <span className="text-blue-600 italic">Protocol</span>
           </h1>
-          <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] mt-4 flex items-center gap-2">
-            Manage your {activeBusinessMode === "cable" ? "Cable" : "Broadband"} network accounts.
-          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button 
             variant="outline"
-            className="h-11 px-5 rounded-xl font-black text-[10px] uppercase tracking-widest border-slate-800 bg-slate-900/50 hover:bg-slate-900 active:scale-95 transition-all flex items-center gap-2.5 text-slate-300" 
+            className="h-8 px-3 rounded-md font-black text-[9px] uppercase tracking-widest border-slate-800 bg-slate-950/50 hover:bg-slate-900 active:scale-95 transition-all flex items-center gap-2 text-slate-500 hover:text-white" 
             onClick={async () => {
               setIsGlobalRefreshing(true);
               try {
                 await refreshData();
-                toast.success("Database Synchronized");
+                toast.success("Registry Synced");
               } finally {
                 setIsGlobalRefreshing(false);
               }
             }}
           >
-            <Loader2 className={cn("h-3.5 w-3.5", isGlobalRefreshing && "animate-spin")} />
+            <Loader2 className={cn("h-3 w-3", isGlobalRefreshing && "animate-spin")} />
             Sync
           </Button>
           <Button 
             onClick={handleOpenAdd}
-            className="h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center gap-2.5"
+            className="h-8 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-md font-black text-[9px] uppercase tracking-widest shadow-lg shadow-blue-600/20 active:scale-95 transition-all flex items-center gap-2"
           >
-            <Plus className="h-4 w-4" /> Add Subscriber
+            <Plus className="h-3.5 w-3.5" /> Register Account
           </Button>
         </div>
       </div>
 
-      <div className="bg-slate-900/50 backdrop-blur-2xl p-2 rounded-2xl border border-slate-800 shadow-2xl space-y-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-2">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-primary transition-all duration-300" />
-            <Input
-              placeholder={`Search name, phone, area, or ${customerIdLabel}...`}
-              className="pl-10 bg-slate-950 border-slate-800 rounded-xl h-11 focus:bg-slate-900 focus:ring-primary/10 transition-all text-[11px] font-bold placeholder:text-slate-600 text-white"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-            {q && (
-              <button 
-                onClick={() => setQ("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 transition-all"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            )}
+      {/* COMPACT FILTERS */}
+      <div className="bg-slate-900/60 backdrop-blur-xl p-1.5 rounded-xl border border-slate-800/50 shadow-2xl flex flex-col lg:flex-row gap-2">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-all" />
+          <Input
+            placeholder="Search by name, ID, or phone..."
+            className="pl-9 bg-slate-950/80 border-slate-800 rounded-lg h-9 focus:bg-slate-950 focus:ring-0 focus:border-blue-600/50 transition-all text-[10px] font-bold placeholder:text-slate-700 text-white"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          {q && (
+            <button 
+              onClick={() => setQ("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 flex items-center justify-center rounded-md bg-slate-800 hover:bg-slate-700 text-slate-400 transition-all"
+            >
+              <X className="h-2.5 w-2.5" />
+            </button>
+          )}
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex items-center gap-1 bg-slate-950/80 p-0.5 rounded-lg border border-slate-800">
+            <select 
+              className="bg-transparent border-none rounded-md h-7.5 px-2 text-[8px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[90px] cursor-pointer text-slate-500 hover:text-white"
+              value={statusF}
+              onChange={(e: any) => setStatusF(e.target.value)}
+            >
+              <option value="all" className="bg-slate-900 text-white">All Status</option>
+              <option value="active" className="bg-slate-900 text-white">Active</option>
+              <option value="inactive" className="bg-slate-900 text-white">Inactive</option>
+            </select>
+            <div className="w-px h-2.5 bg-slate-800" />
+            <select 
+              className="bg-transparent border-none rounded-md h-7.5 px-2 text-[8px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[90px] cursor-pointer text-slate-500 hover:text-white"
+              value={areaF}
+              onChange={(e) => setAreaF(e.target.value)}
+            >
+              <option value="all" className="bg-slate-900 text-white">All Areas</option>
+              {areas.map(a => <option key={a} value={a} className="bg-slate-900 text-white">{a}</option>)}
+            </select>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
-              <select 
-                className="bg-transparent border-none rounded-lg h-9 px-3 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[110px] cursor-pointer text-slate-400"
-                value={statusF}
-                onChange={(e: any) => setStatusF(e.target.value)}
-              >
-                <option value="all" className="bg-slate-900">All Status</option>
-                <option value="active" className="bg-slate-900">Active</option>
-                <option value="inactive" className="bg-slate-900">Inactive</option>
-              </select>
-              <div className="w-px h-3 bg-slate-800" />
-              <select 
-                className="bg-transparent border-none rounded-lg h-9 px-3 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[110px] cursor-pointer text-slate-400"
-                value={areaF}
-                onChange={(e) => setAreaF(e.target.value)}
-              >
-                <option value="all" className="bg-slate-900">All Areas</option>
-                {areas.map(a => <option key={a} value={a} className="bg-slate-900">{a}</option>)}
-              </select>
-              <div className="w-px h-3 bg-slate-800" />
-              <select 
-                className="bg-transparent border-none rounded-lg h-9 px-3 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[110px] cursor-pointer text-slate-400"
-                value={planF}
-                onChange={(e) => setPlanF(e.target.value)}
-              >
-                <option value="all" className="bg-slate-900">All Plans</option>
-                {dbPlans.map(p => <option key={p.id} value={p.id} className="bg-slate-900">{p.name}</option>)}
-              </select>
-            </div>
 
-            <div className="flex items-center gap-3 bg-slate-950 px-4 h-11 rounded-xl border border-slate-800">
-              <Switch 
-                id="dues-only" 
-                checked={showDuesOnly} 
-                onCheckedChange={setShowDuesOnly}
-                className="scale-75 data-[state=checked]:bg-rose-500 shadow-sm"
-              />
-              <Label htmlFor="dues-only" className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-pointer select-none">Overdue Only</Label>
-            </div>
+          <div className="flex items-center gap-2 bg-slate-950/80 px-3 h-8.5 rounded-lg border border-slate-800">
+            <Switch 
+              id="dues-only" 
+              checked={showDuesOnly} 
+              onCheckedChange={setShowDuesOnly}
+              className="scale-75 data-[state=checked]:bg-blue-600"
+            />
+            <Label htmlFor="dues-only" className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600 cursor-pointer select-none">Overdue Only</Label>
           </div>
         </div>
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden md:block bg-slate-900/50 backdrop-blur-2xl rounded-2xl border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden mb-20">
+      {/* HIGH-DENSITY REGISTRY TABLE */}
+      <div className="hidden md:block bg-slate-900/60 backdrop-blur-xl rounded-xl border border-slate-800/50 shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-900 border-b border-slate-800">
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Subscriber</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">{customerIdLabel}</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Plan & Price</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Balance</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Status</th>
-                <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">Actions</th>
+              <tr className="bg-slate-950/80 border-b border-slate-800">
+                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">ID</th>
+                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">Subscriber Details</th>
+                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">Network / Area</th>
+                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">Financial Balance</th>
+                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500">Status</th>
+                <th className="px-4 py-2.5 text-[7px] font-black uppercase tracking-[0.3em] text-slate-500 text-right">Ops</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-800/50">
               {filtered.map((s) => {
                 const plan = dbPlans.find(p => p.id === s.planId);
                 const balance = effectiveBalances[s.id] || 0;
                 
                 return (
-                  <tr key={s.id} className="hover:bg-slate-800/50 transition-colors group">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "h-9 w-9 rounded-xl flex items-center justify-center font-display font-black text-[11px] text-white shadow-inner border border-white/5 transition-transform group-hover:scale-105",
-                          balance >= 0 ? "bg-emerald-600" : "bg-rose-600"
-                        )}>
-                          {s.customerNo || '?'}
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm tracking-tight text-white"><Highlight text={s.name} query={q} /></p>
-                          <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
-                            <Phone className="h-3 w-3" /> {s.phone || 'No phone'}
-                          </p>
-                        </div>
+                  <tr key={s.id} className="hover:bg-blue-600/[0.03] transition-colors group">
+                    <td className="px-4 py-2.5">
+                      <div className={cn(
+                        "h-6 w-6 rounded flex items-center justify-center font-display font-black text-[9px] text-white border border-white/5 shadow-inner",
+                        balance >= 0 ? "bg-slate-800" : "bg-blue-600 shadow-blue-600/20"
+                      )}>
+                        {s.customerNo || '?'}
                       </div>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-2.5">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary"><Highlight text={s.customerId || "N/A"} query={q} /></span>
-                        <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-1">
-                          <MapPin className="h-2.5 w-2.5" /> <Highlight text={s.area} query={q} />
+                        <span className="font-bold text-xs tracking-tight text-white leading-none"><Highlight text={s.name} query={q} /></span>
+                        <span className="text-[9px] font-black text-slate-500 flex items-center gap-1 mt-1">
+                          <Phone className="h-2.5 w-2.5 text-slate-700" /> {s.phone || '—'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
-                      <div className="space-y-1">
-                        <p className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                          <Wifi className="h-3 w-3 text-primary" />
-                          {plan?.name || "No Plan"}
-                        </p>
-                        <p className="text-[10px] font-black text-slate-500">{formatCurrency(plan?.price || 0)}/mo</p>
+                    <td className="px-4 py-2.5">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-blue-500 leading-none"><Highlight text={s.customerId || "N/A"} query={q} /></span>
+                        <span className="text-[8px] font-black text-slate-600 flex items-center gap-1 mt-1">
+                          <MapPin className="h-2.5 w-2.5 opacity-50" /> <Highlight text={s.area} query={q} />
+                        </span>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
-                      <div className="relative group/balance">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-3">
                         <div className={cn(
-                          "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-mono-num font-black text-xs border transition-all",
+                          "px-2 py-0.5 rounded-md font-mono font-black text-[9px] border",
                           balance >= 0 
-                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shadow-inner" 
-                            : "bg-rose-500/10 text-rose-500 border-rose-500/20 shadow-inner"
+                            ? "bg-blue-600/10 text-blue-500 border-blue-600/20" 
+                            : "bg-rose-500/10 text-rose-500 border-rose-500/20 shadow-lg shadow-rose-500/5"
                         )}>
                           {formatCurrency(balance)}
                         </div>
-                        
-                        {/* Statement Analysis Tooltip */}
-                        <div className="absolute bottom-full left-0 mb-2 invisible group-hover/balance:visible opacity-0 group-hover/balance:opacity-100 transition-all z-50 pointer-events-none">
-                          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-2xl min-w-[220px]">
-                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
-                              <div className="h-5 w-1.5 bg-emerald-500 rounded-full" />
-                              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Statement Analysis</p>
-                            </div>
-                            <div className="space-y-3 font-mono-num text-[11px]">
-                              <div className="flex justify-between items-center gap-6">
-                                <span className="text-slate-400 font-bold uppercase tracking-tighter">Invoiced Total</span>
-                                <span className="text-rose-500 font-black bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20">-{formatCurrency(invoices.filter(inv => inv.subscriberId === s.id).reduce((sum, inv) => sum + Number(inv.amount || 0), 0))}</span>
-                              </div>
-                              <div className="flex justify-between items-center gap-6">
-                                <span className="text-slate-400 font-bold uppercase tracking-tighter">Opening Balance</span>
-                                <span className={Number(s.openingBalance || 0) >= 0 ? "text-rose-500 font-black bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20" : "text-emerald-500 font-black bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20"}>
-                                  {Number(s.openingBalance || 0) >= 0 ? "-" : "+"}{formatCurrency(Math.abs(Number(s.openingBalance || 0)))}
-                                </span>
-                              </div>
-                              <div className="flex justify-between items-center gap-6 pb-3 border-b border-slate-800 border-dashed">
-                                <span className="text-slate-400 font-bold uppercase tracking-tighter">Total Received</span>
-                                <span className="text-emerald-500 font-black bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">+{formatCurrency(payments.filter(p => p.subscriberId === s.id).reduce((sum, p) => sum + Number(p.amount || 0), 0))}</span>
-                              </div>
-                              <div className="flex justify-between items-center gap-6 pt-1">
-                                <span className="text-white font-black uppercase text-[10px] tracking-[0.15em]">Net Balance</span>
-                                <div className={`px-3 py-2 rounded-xl border-2 ${(effectiveBalances[s.id] || 0) >= 0 ? "bg-emerald-600 text-white border-emerald-500" : "bg-rose-600 text-white border-rose-500"}`}>
-                                  <span className="font-black text-xs">{formatCurrency(effectiveBalances[s.id] || 0)}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="absolute -bottom-1.5 left-8 w-4 h-4 bg-slate-900 rotate-45 border-r border-b border-slate-800" />
-                          </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] font-black text-slate-600 uppercase tracking-tighter">{plan?.name || "No Plan"}</span>
+                          <span className="text-[8px] font-black text-slate-400">{formatCurrency(plan?.price || 0)}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-2.5">
                       <StatusBadge 
                         status={s.status} 
                         isLoading={updatingStatus[s.id]}
@@ -512,64 +386,45 @@ export default function Subscribers() {
                             await updateSubscriber(s.id, { status: newStatus });
                             toast.success(`${s.name} is now ${newStatus}`);
                           } catch (err) {
-                            toast.error("Failed to update status");
+                            toast.error("Status update failed");
                           } finally {
                             setUpdatingStatus(prev => ({ ...prev, [s.id]: false }));
                           }
                         }}
-                        className="shadow-sm"
+                        className="h-5 px-2 text-[7px] uppercase tracking-widest"
                       />
                     </td>
-                    <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                    <td className="px-4 py-2.5 text-right">
+                      <div className="flex items-center justify-end gap-0.5">
                         <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-primary transition-all"
+                          variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-800 text-slate-600 hover:text-blue-500 transition-all"
                           onClick={() => handleOpenHistory(s)}
-                          title="Payment History"
                         >
-                          <History className="h-4 w-4" />
+                          <History className="h-3 w-3" />
                         </Button>
                         <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-lg hover:bg-emerald-500/10 text-slate-500 hover:text-emerald-500 transition-all"
+                          variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-blue-600/10 text-slate-600 hover:text-blue-600 transition-all"
                           onClick={() => handleOpenInvoice(s)}
-                          title="Generate Invoice"
                         >
-                          <FileText className="h-4 w-4" />
+                          <FileText className="h-3 w-3" />
                         </Button>
                         <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-white transition-all"
+                          variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-800 text-slate-600 hover:text-white transition-all"
                           onClick={() => handleOpenEdit(s)}
-                          title="Edit Account"
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-3 w-3" />
                         </Button>
                         <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-lg hover:bg-rose-500/10 text-slate-500 hover:text-rose-500 transition-all"
-                          onClick={() => handleDelete(s.id)}
-                          title="Delete Account"
+                          variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-rose-500/10 text-slate-600 hover:text-rose-500 transition-all"
+                          onClick={() => setConfirmModal({ type: 'delete', id: s.id })}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </td>
                   </tr>
                 );
               })}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-slate-400 text-sm italic">
-                    No subscribers found matching your search criteria.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
@@ -577,89 +432,90 @@ export default function Subscribers() {
 
       {/* MODALS SECTION */}
       {showHistory && historySub && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card bg-slate-900 w-full max-w-4xl p-6 sm:p-8 rounded-[2.5rem] shadow-2xl border border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-2xl font-black text-white">{historySub.name}</h2>
-                <p className="text-sm text-slate-400 font-medium">Payment & Billing History</p>
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 w-full max-w-4xl p-8 rounded-[3rem] shadow-2xl border border-slate-800 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-blue-600/10 flex items-center justify-center text-blue-500 border border-blue-600/20 shadow-inner">
+                  <History className="h-6 w-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{historySub.name}</h2>
+                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1.5">Ledger Transaction History</p>
+                </div>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setShowHistory(false)}>
-                <X className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-slate-800" onClick={() => setShowHistory(false)}>
+                <X className="h-6 w-6 text-slate-500" />
               </Button>
             </div>
             
-            <div className="flex-1 overflow-y-auto pr-2 no-scrollbar">
-              <div className="space-y-4">
-                {subPayments.length === 0 ? (
-                  <div className="py-12 flex flex-col items-center justify-center text-slate-500 bg-slate-950/50 rounded-3xl border-2 border-dashed border-slate-800">
-                    <History className="h-12 w-12 mb-3 opacity-20" />
-                    <p className="font-bold">No payment history found</p>
-                  </div>
-                ) : (
-                  subPayments.map(p => (
-                    <div key={p.id} className="p-5 rounded-2xl border border-slate-800 bg-slate-950/50 flex items-center justify-between hover:bg-slate-950 transition-all">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                          <Wallet className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-white">₹{p.amount}</p>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                            {new Date(p.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} • {p.method}
-                          </p>
-                        </div>
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+              {subPayments.length === 0 ? (
+                <div className="py-20 flex flex-col items-center justify-center text-slate-600 bg-slate-950/40 rounded-[2.5rem] border-2 border-dashed border-slate-800/50">
+                  <Wallet className="h-12 w-12 mb-4 opacity-10" />
+                  <p className="text-xs font-black uppercase tracking-widest">No transactions logged</p>
+                </div>
+              ) : (
+                subPayments.map(p => (
+                  <div key={p.id} className="p-4 rounded-2xl border border-slate-800/50 bg-slate-950/30 flex items-center justify-between hover:bg-slate-950 transition-all group">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-blue-500 shadow-inner group-hover:scale-105 transition-transform">
+                        <Wallet className="h-4 w-4" />
                       </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Receipt</p>
-                        <p className="text-xs font-mono font-bold text-slate-300">{p.id}</p>
+                      <div>
+                        <p className="font-mono font-black text-white text-base leading-none tracking-tighter">{formatCurrency(p.amount)}</p>
+                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 mt-1.5 flex items-center gap-2">
+                          <span className="text-blue-500">{new Date(p.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                          <span className="w-1 h-1 rounded-full bg-slate-800" />
+                          <span>{p.method}</span>
+                        </p>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                    <div className="text-right">
+                      <p className="text-[8px] font-black uppercase tracking-widest text-slate-600 mb-1">Receipt Hash</p>
+                      <p className="text-[10px] font-mono font-bold text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 uppercase">{p.id.slice(0, 12)}</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
       )}
 
       {showInvoiceModal && invoiceSub && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card bg-slate-900 w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl border border-slate-800 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 w-full max-w-md p-8 rounded-[3.5rem] shadow-2xl border border-slate-800 animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-4 mb-8">
-              <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-500/20">
+              <div className="h-12 w-12 rounded-2xl bg-blue-600/10 flex items-center justify-center text-blue-500 border border-blue-600/20 shadow-inner">
                 <FileText className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-white">Generate Invoice</h2>
-                <p className="text-sm text-slate-400 font-medium">{invoiceSub.name}</p>
+                <h2 className="text-xl font-black text-white uppercase tracking-tighter">Billing Protocol</h2>
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1.5">{invoiceSub.name}</p>
               </div>
             </div>
             
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-3 p-1 bg-slate-950/50 rounded-2xl border border-slate-800">
+              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 border border-slate-800 rounded-2xl">
                 <button
-                  type="button"
                   onClick={() => setBillingType("plan")}
-                  className={`flex items-center justify-center gap-2 h-11 rounded-xl transition-all font-black uppercase text-[10px] tracking-widest ${
-                    billingType === "plan" 
-                      ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                      : "text-slate-500 hover:text-white"
-                  }`}
+                  className={cn(
+                    "flex items-center justify-center gap-2 h-11 rounded-xl transition-all font-black uppercase text-[9px] tracking-widest",
+                    billingType === "plan" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-slate-600 hover:text-white"
+                  )}
                 >
-                  <Wifi className="h-4 w-4" /> Plan Recharge
+                  <Wifi className="h-3.5 w-3.5" /> Plan Recharge
                 </button>
                 <button
-                  type="button"
                   disabled={!(invoiceSub.openingBalance && Number(invoiceSub.openingBalance) > 0)}
                   onClick={() => setBillingType("legacy")}
-                  className={`flex items-center justify-center gap-2 h-11 rounded-xl transition-all font-black uppercase text-[10px] tracking-widest disabled:opacity-30 disabled:cursor-not-allowed ${
-                    billingType === "legacy" 
-                      ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20" 
-                      : "text-slate-500 hover:text-white"
-                  }`}
+                  className={cn(
+                    "flex items-center justify-center gap-2 h-11 rounded-xl transition-all font-black uppercase text-[9px] tracking-widest disabled:opacity-20",
+                    billingType === "legacy" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-600 hover:text-white"
+                  )}
                 >
-                  <History className="h-4 w-4" /> Legacy Due
+                  <History className="h-3.5 w-3.5" /> Legacy Due
                 </button>
               </div>
 
@@ -667,71 +523,67 @@ export default function Subscribers() {
                 <div className="space-y-5">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">Start Date</Label>
+                      <Label className="text-[9px] font-black uppercase text-slate-600 tracking-widest ml-1">Start Date</Label>
                       <Input
                          type="date"
                          value={rechargeDate}
                          onChange={(e) => setRechargeDate(e.target.value)}
-                         className="h-12 rounded-2xl border-slate-800 bg-slate-950 text-white font-bold focus:ring-primary/20"
+                         className="h-10 rounded-xl border-slate-800 bg-slate-950 text-white font-black text-xs focus:border-blue-600/50"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">Months</Label>
+                      <Label className="text-[9px] font-black uppercase text-slate-600 tracking-widest ml-1">Validity Months</Label>
                       <select
                         value={planMonths}
                         onChange={(e) => setPlanMonths(Number(e.target.value))}
-                        className="h-12 w-full rounded-2xl border border-slate-800 bg-slate-950 text-white font-black px-4 appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                        className="h-10 w-full rounded-xl border border-slate-800 bg-slate-950 text-white font-black px-3 outline-none focus:border-blue-600/50 text-xs"
                       >
-                        {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => (
+                        {[1,2,3,6,12].map(m => (
                           <option key={m} value={m} className="bg-slate-900">{m} {m === 1 ? 'Month' : 'Months'}</option>
                         ))}
                       </select>
                     </div>
                   </div>
-                  <div className="p-5 rounded-[1.5rem] bg-slate-950/50 border border-slate-800 space-y-3">
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
-                      <span>Selected Plan</span>
-                      <span className="text-white">{dbPlans.find(p => p.id === invoiceSub.planId)?.name.toUpperCase()}</span>
+                  <div className="p-5 rounded-3xl bg-slate-950/60 border border-slate-800/50 space-y-3 shadow-inner">
+                    <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+                      <span>Selected Network Plan</span>
+                      <span className="text-white">{dbPlans.find(p => p.id === invoiceSub.planId)?.name}</span>
                     </div>
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
-                      <span>Start Date</span>
-                      <span className="text-white">{formatDate(rechargeDate)}</span>
+                    <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+                      <span>Cycle Termination</span>
+                      <span className="text-blue-500 font-mono">{formatDate(projectedExpiryDate || "")}</span>
                     </div>
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
-                      <span>Expiry After</span>
-                      <span className="text-white">{formatDate(projectedExpiryDate || "")}</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-black text-white pt-3 border-t border-slate-800">
-                      <span>Total Amount</span>
-                      <span className="text-primary">{formatCurrency((dbPlans.find(p => p.id === invoiceSub.planId)?.price || 0) * planMonths)}</span>
+                    <div className="flex justify-between items-center text-xl font-black text-white pt-4 border-t border-slate-800">
+                      <span className="text-xs uppercase tracking-widest text-slate-500">Total Billing</span>
+                      <span className="font-mono">{formatCurrency((dbPlans.find(p => p.id === invoiceSub.planId)?.price || 0) * planMonths)}</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="p-6 rounded-[1.5rem] bg-amber-500/10 border border-amber-500/20 space-y-4">
-                  <div className="flex items-center gap-3 text-amber-500 font-black text-xs uppercase tracking-widest">
-                    <AlertCircle className="h-5 w-5" /> Legacy Due Billing
+                <div className="p-6 rounded-3xl bg-indigo-600/5 border border-indigo-600/10 space-y-4">
+                  <div className="flex items-center gap-3 text-indigo-500 font-black text-[10px] uppercase tracking-widest">
+                    <Shield className="h-4 w-4" /> System Recovery Invoice
                   </div>
-                  <p className="text-xs font-medium text-amber-200/60 leading-relaxed">
-                    This will formalize the opening balance debt into a trackable invoice.
+                  <p className="text-[10px] font-black text-slate-600 uppercase tracking-wide leading-relaxed">
+                    Generating protocol to formalize existing opening debt.
                   </p>
-                  <div className="flex justify-between text-xl font-black text-white pt-2 border-t border-amber-500/20">
-                    <span>Total Due</span>
-                    <span className="text-amber-500">{formatCurrency(invoiceSub.openingBalance)}</span>
+                  <div className="flex justify-between items-center text-xl font-black text-white pt-4 border-t border-indigo-600/20">
+                    <span className="text-xs uppercase tracking-widest text-slate-500">Outstanding</span>
+                    <span className="text-indigo-500 font-mono">{formatCurrency(invoiceSub.openingBalance)}</span>
                   </div>
                 </div>
               )}
             </div>
 
             <div className="flex gap-3 mt-10">
-              <Button variant="ghost" className="flex-1 h-12 rounded-2xl font-bold text-slate-400 hover:text-white hover:bg-slate-800" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
+              <Button variant="ghost" className="flex-1 h-11 rounded-xl font-black text-[9px] uppercase tracking-widest text-slate-600 hover:text-white" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
               <Button 
                 onClick={handleGenerateInvoice} 
                 disabled={isSaving} 
-                className="flex-1 h-12 rounded-2xl bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 font-black uppercase tracking-widest"
+                className="flex-1 h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20 font-black uppercase tracking-widest text-[9px]"
               >
-                {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <FileText className="h-5 w-5 mr-2" />}
-                Generate
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />}
+                Execute Protocol
               </Button>
             </div>
           </div>
@@ -739,188 +591,169 @@ export default function Subscribers() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="glass-card bg-slate-900 w-full max-w-2xl p-8 sm:p-10 rounded-[2.5rem] shadow-2xl border border-slate-800 animate-in zoom-in-95 duration-300 my-8">
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 w-full max-w-3xl p-10 rounded-[4rem] shadow-2xl border border-slate-800 animate-in zoom-in-95 duration-300 my-8">
             <div className="flex justify-between items-center mb-10">
               <div className="flex items-center gap-5">
-                <div className="h-14 w-14 rounded-[1.25rem] bg-primary/10 flex items-center justify-center text-primary shadow-inner border border-primary/20">
-                  {editingSub ? <Edit className="h-7 w-7" /> : <Plus className="h-7 w-7" />}
+                <div className="h-14 w-14 rounded-2xl bg-blue-600/10 flex items-center justify-center text-blue-500 border border-blue-600/20 shadow-inner">
+                  {editingSub ? <User className="h-7 w-7" /> : <Plus className="h-7 w-7" />}
                 </div>
                 <div>
-                  <h2 className="text-3xl font-black tracking-tight text-white">{editingSub ? "Edit Subscriber" : "New Account"}</h2>
-                  <p className="text-sm text-muted-foreground font-medium">Configure customer profile and services</p>
+                  <h2 className="text-2xl font-black tracking-tighter text-white uppercase leading-none">{editingSub ? "Update Profile" : "Network Registry"}</h2>
+                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] mt-2">Registry & Authentication Identity</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-secondary" onClick={() => setShowModal(false)}>
-                <X className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl hover:bg-slate-800" onClick={() => setShowModal(false)}>
+                <X className="h-7 w-7 text-slate-600" />
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
               <div className="space-y-6">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-2">Customer Info</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-2 flex items-center gap-2">
+                   <User className="h-3 w-3" /> Personal Identity
+                </h3>
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Full Name</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Full Subscriber Name</Label>
                   <Input 
-                    id="name"
-                    placeholder="Enter full name" 
-                    className="h-12 rounded-2xl bg-secondary/30 border-border/40 focus:ring-primary/20 font-bold"
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
+                    placeholder="Legal name as per registry" 
+                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-black text-xs text-white"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Mobile (Optional)</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Contact Terminal</Label>
                   <Input 
-                    id="phone"
-                    placeholder="10-digit mobile" 
-                    className="h-12 rounded-2xl bg-secondary/30 border-border/40 focus:ring-primary/20 font-mono-num font-bold"
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
+                    placeholder="10-digit mobile number" 
+                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-mono font-black text-xs text-white"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="area" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Village / Area</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Service Area Code</Label>
                   <Input 
-                    id="area"
-                    placeholder="Area name" 
-                    className="h-12 rounded-2xl bg-secondary/30 border-border/40 focus:ring-primary/20 font-bold"
                     value={formData.area}
                     onChange={e => setFormData({...formData, area: e.target.value})}
+                    placeholder="Sector / Zone / Area" 
+                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-black text-xs text-white uppercase"
                   />
                 </div>
               </div>
 
               <div className="space-y-6">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-2">Service Plan</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-2 flex items-center gap-2">
+                   <Shield className="h-3 w-3" /> Network Config
+                </h3>
                 <div className="space-y-2">
-                  <Label htmlFor="customerId" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Service ID / MAC (Optional)</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">{customerIdLabel} / MAC</Label>
                   <Input 
-                    id="customerId"
-                    placeholder="Unique ID" 
-                    className="h-12 rounded-2xl bg-secondary/30 border-border/40 focus:ring-primary/20 font-mono-num uppercase font-bold"
                     value={formData.customerId}
                     onChange={e => setFormData({...formData, customerId: e.target.value})}
+                    placeholder="Hardware identifier" 
+                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-black text-xs text-white uppercase"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="plan" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Plan Selection</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">System Provisioning</Label>
                   <select 
-                    id="plan"
-                    className="w-full h-12 rounded-2xl bg-secondary/30 border border-border/40 px-4 text-sm font-black focus:ring-2 focus:ring-primary/20 outline-none appearance-none"
                     value={formData.planId}
                     onChange={e => setFormData({...formData, planId: e.target.value})}
+                    className="h-11 w-full rounded-xl bg-slate-950 border border-slate-800 text-white font-black text-xs px-4 outline-none focus:border-blue-600/50 transition-all"
                   >
-                    {dbPlans.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()} — ₹{p.price}</option>)}
+                    {dbPlans.map(p => <option key={p.id} value={p.id} className="bg-slate-900">{p.name.toUpperCase()} — {formatCurrency(p.price)}</option>)}
                   </select>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Opening Bal</Label>
+                <div className="space-y-2">
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Activation Status</Label>
+                  <select 
+                    value={formData.status}
+                    onChange={e => setFormData({...formData, status: e.target.value as any})}
+                    className="h-11 w-full rounded-xl bg-slate-950 border border-slate-800 text-white font-black text-xs px-4 outline-none focus:border-blue-600/50 transition-all"
+                  >
+                    <option value="active" className="bg-slate-900">OPERATIONAL</option>
+                    <option value="inactive" className="bg-slate-900">TERMINATED</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-950/40 p-8 rounded-[2.5rem] border border-slate-800/50 mb-10">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-6 flex items-center gap-2">
+                <CreditCard className="h-3 w-3" /> Financial Initializer
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Opening Statement</Label>
+                  <div className="flex gap-2">
                     <Input 
                       type="number"
-                      placeholder="0.00"
-                      className="h-12 rounded-2xl bg-secondary/30 border-border/40 font-mono-num font-bold"
-                      value={formData.openingBalance}
+                      value={formData.openingBalance || ''}
                       onChange={e => setFormData({...formData, openingBalance: Number(e.target.value)})}
+                      placeholder="0.00" 
+                      className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-mono font-black text-xs text-white flex-1"
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Type</Label>
                     <select
-                      className="w-full h-12 rounded-2xl bg-secondary/30 border border-border/40 px-3 text-[10px] font-black uppercase tracking-tighter outline-none focus:ring-2 focus:ring-primary/20"
                       value={formData.openingBalanceType}
                       onChange={e => setFormData({...formData, openingBalanceType: e.target.value as any})}
+                      className="h-11 rounded-xl bg-slate-900 border border-slate-800 text-[9px] font-black uppercase tracking-widest text-white px-3 outline-none focus:border-blue-600/50"
                     >
-                      <option value="debit">DEBIT (+)</option>
-                      <option value="credit">CREDIT (-)</option>
+                      <option value="debit">DUE (DR)</option>
+                      <option value="credit">ADV (CR)</option>
                     </select>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 mb-10 pt-8 border-t border-border/10">
-              <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-2">Network Credentials</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Username</Label>
-                    <Input 
-                      placeholder="PPPoE User"
-                      className="h-11 rounded-xl bg-secondary/20 border-border/40 font-bold"
-                      value={formData.customerUsername}
-                      onChange={e => setFormData({...formData, customerUsername: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
-                    <Input 
-                      placeholder="Password"
-                      className="h-11 rounded-xl bg-secondary/20 border-border/40 font-bold"
-                      value={formData.customerPassword}
-                      onChange={e => setFormData({...formData, customerPassword: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-2">Account Dates</h3>
                 <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Installation Date</Label>
+                  <Label className="text-[9px] font-black uppercase tracking-widest text-slate-600 ml-1">Installation Timestamp</Label>
                   <Input 
                     type="date"
-                    className="h-11 rounded-xl bg-secondary/20 border-border/40 font-bold"
                     value={formData.installationDate}
                     onChange={e => setFormData({...formData, installationDate: e.target.value})}
+                    className="h-11 rounded-xl bg-slate-950 border-slate-800 focus:border-blue-600/50 font-black text-xs text-white"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 justify-end">
+              <Button variant="ghost" className="h-12 px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:text-white" onClick={() => setShowModal(false)}>Discard</Button>
               <Button 
-                variant="secondary" 
-                className="flex-1 h-12 rounded-2xl font-black uppercase tracking-widest transition-all"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                className="flex-1 h-12 rounded-2xl bg-gradient-primary text-primary-foreground font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-[0.98]"
-                onClick={handleSave}
+                onClick={handleSave} 
                 disabled={isSaving}
+                className="h-12 px-10 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white shadow-xl shadow-blue-600/20 font-black text-[10px] uppercase tracking-widest"
               >
-                {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Plus className="mr-2 h-5 w-5" />}
-                {editingSub ? "Save Changes" : "Create Account"}
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Activity className="h-4 w-4 mr-2" />}
+                {editingSub ? "Sync Profile" : "Establish Account"}
               </Button>
             </div>
           </div>
         </div>
       )}
 
-
-      {/* Confirmation Modal */}
+      {/* TERMINATION CONFIRMATION */}
       {confirmModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-          <div className="bg-white text-black w-full max-w-md p-6 rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-200">
-            <h2 className="text-xl font-bold mb-2">Delete Subscriber</h2>
-            <p className="text-slate-600 mb-6 font-medium">
-              Are you sure you want to delete this subscriber? All associated data will be removed. This action is irreversible.
+        <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
+          <div className="bg-slate-900 text-white w-full max-w-md p-10 rounded-[3.5rem] shadow-2xl border border-slate-800 animate-in zoom-in-95 duration-200 text-center">
+            <div className="h-16 w-16 rounded-3xl bg-rose-500/10 flex items-center justify-center text-rose-500 border border-rose-500/20 shadow-inner mx-auto mb-6">
+              <Trash2 className="h-8 w-8" />
+            </div>
+            <h2 className="text-2xl font-black mb-3 uppercase tracking-tighter">Terminate Account?</h2>
+            <p className="text-slate-500 mb-8 font-black text-[10px] uppercase tracking-widest leading-relaxed">
+              Permanent registry erasure initiated. All associated financial and network logs will be purged.
             </p>
-            <div className="flex justify-end gap-3">
-              <Button variant="secondary" className="rounded-xl font-bold" onClick={() => setConfirmModal(null)}>Cancel</Button>
+            <div className="flex flex-col gap-2">
               <Button 
                 variant="destructive" 
-                className="rounded-xl"
+                className="h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-rose-600 hover:bg-rose-500 shadow-xl shadow-rose-600/20"
                 onClick={() => {
                   executeDelete(confirmModal.id);
                   setConfirmModal(null);
                 }}
               >
-                Delete
+                Execute Termination
               </Button>
+              <Button variant="ghost" className="h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:text-white" onClick={() => setConfirmModal(null)}>Abort Command</Button>
             </div>
           </div>
         </div>
@@ -928,4 +761,3 @@ export default function Subscribers() {
     </div>
   );
 }
-

@@ -1,21 +1,14 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { formatCurrency, formatDate } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
-import { Download, Calendar, BarChart3, PieChart, TrendingUp, Wallet, Receipt, Users, Filter, Loader2, ShieldCheck, MapPin, Check, Eye, AlertCircle, Wifi, Phone, Mail } from "lucide-react";
+import { Download, Calendar, BarChart3, TrendingUp, Wallet, Receipt, Users, Loader2, ShieldCheck, MapPin, Eye, AlertCircle, Phone, X, ChevronRight, Shield } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 import { GUJARATI_FONT } from "@/lib/fonts/gujarati";
 import { useBusinessMode } from "@/lib/turso";
 import { getBrandSettings } from "@/lib/branding";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 // ── REUSABLE AUDIT REPORT TEMPLATE ──
 const AuditReportTemplate = ({ 
@@ -45,17 +38,16 @@ const AuditReportTemplate = ({
       padding: '0',
       boxShadow: '0 0 40px rgba(0,0,0,0.1)'
     }}>
-      {/* Custom Font Styles */}
       <style dangerouslySetInnerHTML={{ __html: `
         @font-face {
           font-family: 'Gujarati';
           src: url(data:font/ttf;base64,${GUJARATI_FONT});
         }
         .gujarati { font-family: 'Gujarati', system-ui, sans-serif !important; font-size: 14px !important; line-height: 1.2; }
-        .report-header { background-color: #0f172a; color: #fff; padding: 42px; border-bottom: 6px solid #f97316; page-break-inside: avoid; }
+        .report-header { background-color: #020617; color: #fff; padding: 42px; border-bottom: 6px solid #2563eb; page-break-inside: avoid; }
         .logo-box { width: 104px; height: 104px; background: #fff; border-radius: 18px; padding: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 18px 35px rgb(0 0 0 / 0.24); }
-        .badge { background: #f97316; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: 900; letter-spacing: 0.1em; display: inline-block; }
-        .mode-badge { margin-top: 10px; background: rgb(249 115 22 / 0.16); color: #fed7aa; border: 1px solid rgb(253 186 116 / 0.4); padding: 5px 12px; border-radius: 999px; font-size: 9px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; display: inline-block; }
+        .badge { background: #2563eb; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: 900; letter-spacing: 0.1em; display: inline-block; }
+        .mode-badge { margin-top: 10px; background: rgb(37 99 235 / 0.1); color: #60a5fa; border: 1px solid rgb(59 130 246 / 0.3); padding: 5px 12px; border-radius: 999px; font-size: 9px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; display: inline-block; }
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 30px 40px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; page-break-inside: avoid; }
         .stat-box { border-left: 3px solid #cbd5e1; padding-left: 15px; }
         .stat-label { font-size: 8px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 4px; }
@@ -77,7 +69,7 @@ const AuditReportTemplate = ({
               <Logo size="xl" showText={false} iconClassName="h-full w-full rounded-2xl border-0 p-0 shadow-none" />
             </div>
             <div>
-              <p style={{ fontSize: '10px', fontWeight: '900', margin: 0, letterSpacing: '0.26em', color: '#fdba74', textTransform: 'uppercase' }}>Sitaram Cable & Broadband</p>
+              <p style={{ fontSize: '10px', fontWeight: '900', margin: 0, letterSpacing: '0.26em', color: '#94a3b8', textTransform: 'uppercase' }}>Sitaram Network Infrastructure</p>
               <h1 style={{ fontSize: '30px', fontWeight: '900', margin: '4px 0 0 0', letterSpacing: '-0.02em' }}>{brand.name}</h1>
               <span className="mode-badge">{businessModeLabel}</span>
               <p style={{ fontSize: '11px', opacity: 0.8, marginTop: '6px', maxWidth: '320px', lineHeight: '1.5' }}>{brand.address}</p>
@@ -88,49 +80,49 @@ const AuditReportTemplate = ({
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="badge">MONTHLY AUDIT SUMMARY</div>
-            <h2 style={{ fontSize: '20px', fontWeight: '900', margin: '10px 0 0 0', color: '#f97316' }}>{monthName}</h2>
-            <p style={{ fontSize: '10px', fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', marginTop: '5px' }}>
-              Billing Month: {new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+            <div className="badge">AUDIT RECONCILIATION</div>
+            <h2 style={{ fontSize: '20px', fontWeight: '900', margin: '10px 0 0 0', color: '#2563eb' }}>{monthName}</h2>
+            <p style={{ fontSize: '10px', fontWeight: '900', color: '#64748b', textTransform: 'uppercase', marginTop: '5px' }}>
+              Cycle: {new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
             </p>
           </div>
         </div>
       </div>
 
       <div className="stat-grid">
-        <div className="stat-box" style={{ borderLeftColor: '#10b981' }}>
+        <div className="stat-box" style={{ borderLeftColor: '#2563eb' }}>
           <div className="stat-label">Total Collections</div>
-          <div className="stat-value" style={{ color: '#059669' }}>{formatCurrency(monthStats.revenue)}</div>
+          <div className="stat-value" style={{ color: '#1e40af' }}>{formatCurrency(monthStats.revenue)}</div>
         </div>
         <div className="stat-box" style={{ borderLeftColor: '#ef4444' }}>
-          <div className="stat-label">Operational Expenses</div>
+          <div className="stat-label">Expenditure</div>
           <div className="stat-value" style={{ color: '#dc2626' }}>{formatCurrency(monthStats.expenses)}</div>
         </div>
-        <div className="stat-box" style={{ borderLeftColor: '#3b82f6' }}>
-          <div className="stat-label">Net Monthly Profit</div>
+        <div className="stat-box" style={{ borderLeftColor: '#2563eb' }}>
+          <div className="stat-label">Net Yield</div>
           <div className="stat-value" style={{ color: '#1d4ed8' }}>{formatCurrency(monthStats.revenue - monthStats.expenses)}</div>
         </div>
-        <div className="stat-box" style={{ borderLeftColor: '#f59e0b' }}>
+        <div className="stat-box" style={{ borderLeftColor: '#64748b' }}>
           <div className="stat-label">Transactions</div>
-          <div className="stat-value">{filteredPayments.length} Recieved</div>
+          <div className="stat-value">{filteredPayments.length} LOGGED</div>
         </div>
       </div>
 
       <div className="report-body">
         <div className="table-title">
-          <div style={{ width: '4px', height: '18px', background: '#f97316', borderRadius: '2px' }}></div>
-          Detailed Collection Log — {selectedArea} — {new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+          <div style={{ width: '4px', height: '18px', background: '#2563eb', borderRadius: '2px' }}></div>
+          Collection Protocol Ledger — {selectedArea}
         </div>
 
         <table className="audit-table">
           <thead>
             <tr>
-              <th style={{ width: '45px' }}># No.</th>
+              <th style={{ width: '45px' }}>ID</th>
               <th style={{ width: '85px' }}>Date</th>
-              <th>Customer / Contact</th>
+              <th>Subscriber Identity</th>
               <th style={{ width: '130px' }}>{customerIdLabel}</th>
               <th>Area</th>
-              <th style={{ width: '60px' }}>Method</th>
+              <th style={{ width: '60px' }}>Type</th>
               <th style={{ textAlign: 'right', width: '100px' }}>Amount</th>
             </tr>
           </thead>
@@ -145,13 +137,13 @@ const AuditReportTemplate = ({
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span className={isGujarati ? 'gujarati' : ''} style={{ fontWeight: '800', color: '#0f172a', fontSize: isGujarati ? '13px' : '11px' }}>
-                        {sub?.customerNo ? `#${sub.customerNo} ` : ''}{sub?.name || 'Unknown'}
+                        {sub?.name || 'Unknown'}
                       </span>
-                      <span style={{ fontSize: '9px', color: '#94a3b8' }}>{sub?.phone || 'No Contact'}</span>
+                      <span style={{ fontSize: '9px', color: '#94a3b8' }}>{sub?.phone || '—'}</span>
                     </div>
                   </td>
                   <td style={{ fontFamily: 'monospace', fontSize: '9px', fontWeight: '700', letterSpacing: '0.05em' }}>
-                    {sub?.customerId || '---'}
+                    {sub?.customerId || '—'}
                   </td>
                   <td style={{ fontWeight: '600', color: '#475569' }}>{sub?.area || 'General'}</td>
                   <td>
@@ -160,8 +152,8 @@ const AuditReportTemplate = ({
                       fontWeight: '900', 
                       padding: '2px 6px', 
                       borderRadius: '4px',
-                      background: p.method === 'UPI' ? '#e0e7ff' : '#ffedd5',
-                      color: p.method === 'UPI' ? '#4338ca' : '#9a3412'
+                      background: '#f1f5f9',
+                      color: '#475569'
                     }}>{p.method}</span>
                   </td>
                   <td style={{ textAlign: 'right', fontWeight: '900', color: '#0f172a', fontSize: '11px' }}>{formatCurrency(p.amount)}</td>
@@ -169,29 +161,26 @@ const AuditReportTemplate = ({
               );
             })}
             <tr style={{ background: '#f8fafc' }}>
-              <td colSpan={6} style={{ textAlign: 'right', padding: '15px', fontWeight: '900', fontSize: '11px', textTransform: 'uppercase', color: '#64748b' }}>Total Period Collection</td>
-              <td style={{ textAlign: 'right', padding: '15px', fontWeight: '900', fontSize: '13px', color: '#f97316' }}>{formatCurrency(monthStats.revenue)}</td>
+              <td colSpan={6} style={{ textAlign: 'right', padding: '15px', fontWeight: '900', fontSize: '11px', textTransform: 'uppercase', color: '#64748b' }}>Total Periodic Collection</td>
+              <td style={{ textAlign: 'right', padding: '15px', fontWeight: '900', fontSize: '13px', color: '#2563eb' }}>{formatCurrency(monthStats.revenue)}</td>
             </tr>
           </tbody>
         </table>
 
         <div className="footer">
           <div>
-            <p style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', marginBottom: '4px' }}>Notes & Compliance</p>
-            <p style={{ fontSize: '9px', color: '#94a3b8', maxWidth: '300px', lineHeight: '1.4' }}>This is a computer-generated audit report. All transactions listed above have been verified against the secure billing ledger.</p>
-            <div style={{ marginTop: '20px', border: '2px solid #10b981', color: '#10b981', padding: '6px 15px', borderRadius: '8px', display: 'inline-block', fontWeight: '900', fontSize: '11px', transform: 'rotate(-2deg)' }}>VERIFIED AUDIT RECORD</div>
+            <p style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', marginBottom: '4px' }}>Security & Audit Protocol</p>
+            <p style={{ fontSize: '9px', color: '#94a3b8', maxWidth: '300px', lineHeight: '1.4' }}>Automated reconciliation report. Verified against decentralized billing records.</p>
+            <div style={{ marginTop: '20px', border: '2px solid #2563eb', color: '#2563eb', padding: '6px 15px', borderRadius: '8px', display: 'inline-block', fontWeight: '900', fontSize: '11px' }}>CERTIFIED AUDIT RECORD</div>
           </div>
           <div style={{ display: 'flex', gap: '40px' }}>
             <div className="sign-box"><p style={{ fontSize: '9px', fontWeight: '800', textTransform: 'uppercase', color: '#64748b' }}>Accountant</p></div>
             <div className="sign-box">
-              <p style={{ fontSize: '9px', fontWeight: '800', textTransform: 'uppercase', color: '#64748b' }}>Managing Director</p>
+              <p style={{ fontSize: '9px', fontWeight: '800', textTransform: 'uppercase', color: '#64748b' }}>Network Director</p>
               <p style={{ fontSize: '11px', fontWeight: '900', marginTop: '15px', color: '#0f172a' }}>{brand.name}</p>
             </div>
           </div>
         </div>
-      </div>
-      <div style={{ background: '#0f172a', padding: '15px', textAlign: 'center' }}>
-        <p style={{ color: '#fff', fontSize: '8px', fontWeight: '800', letterSpacing: '0.4em', textTransform: 'uppercase', opacity: 0.6 }}>Powered by Sitaram Cable & Broadband — Secure Financial Infrastructure</p>
       </div>
     </div>
   );
@@ -202,7 +191,6 @@ export default function Reports() {
   const customerIdLabel = currentBusinessMode === "cable" ? "STB Number" : "Customer ID";
   const billing = useBilling();
   
-  // Destructure with fallbacks
   const { 
     stats: s = {}, 
     payments = [], 
@@ -223,123 +211,68 @@ export default function Reports() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState(1122);
 
   useEffect(() => {
     const handleResize = () => {
-      if (!containerRef.current || !contentRef.current) return;
-      
+      if (!containerRef.current) return;
       const containerWidth = containerRef.current.offsetWidth - 32;
       const targetWidth = 794;
-      const newScale = Math.min(1, Math.max(0.3, containerWidth / targetWidth));
-      
-      setScale(newScale);
-      
-      // Update content height after a tiny delay to ensure render is complete
-      setTimeout(() => {
-        if (contentRef.current) {
-          setContentHeight(contentRef.current.offsetHeight);
-        }
-      }, 50);
+      setScale(Math.min(1, Math.max(0.3, containerWidth / targetWidth)));
     };
 
     if (isPreviewOpen) {
       handleResize();
       window.addEventListener("resize", handleResize);
-      
-      // Additional checks to ensure height is correct after images/content load
-      const timer1 = setTimeout(handleResize, 500);
-      const timer2 = setTimeout(handleResize, 2000);
-
-      return () => {
-        window.removeEventListener("resize", handleResize);
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-      };
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, [isPreviewOpen]);
   
-  // Filter validation
-  useEffect(() => {
-    const start = selectedYear * 12 + selectedMonth;
-    const end = selectedEndYear * 12 + selectedEndMonth;
-    if (end < start) {
-      setSelectedEndMonth(selectedMonth);
-      setSelectedEndYear(selectedYear);
-      toast.error("End period cannot be before start period");
-    }
-  }, [selectedMonth, selectedYear, selectedEndMonth, selectedEndYear]);
-
-  // Safety check for stats
   const stats = useMemo(() => ({ 
     monthRevenue: s.monthRevenue || 0, 
     monthExpenses: s.monthExpenses || 0, 
     pendingDues: s.pendingDues || 0,
-    collectedToday: s.collectedToday || 0,
-    totalSubscribers: s.totalSubscribers || 0,
     active: s.active || 0,
-    expired: s.expired || 0
   }), [s]);
 
   const areas = useMemo(() => {
-    try {
-      const uniqueAreas = Array.from(new Set(subscribers.map(sub => sub.area).filter(Boolean)));
-      return ["All Addresses", ...uniqueAreas];
-    } catch (e) {
-      return ["All Addresses"];
-    }
+    const uniqueAreas = Array.from(new Set(subscribers.map(sub => sub.area).filter(Boolean)));
+    return ["All Addresses", ...uniqueAreas];
   }, [subscribers]);
 
   const filteredPayments = useMemo(() => {
-    try {
-      const filtered = payments.filter(p => {
-        if (!p || !p.date) return false;
-        const d = new Date(p.date);
-        const payTime = d.getFullYear() * 12 + d.getMonth();
-        const startTime = selectedYear * 12 + selectedMonth;
-        const endTime = selectedEndYear * 12 + selectedEndMonth;
-
-        const isCorrectPeriod = payTime >= startTime && payTime <= endTime;
-        if (!isCorrectPeriod) return false;
-        const isCorrectMethod = selectedMethod === "All Methods" || p.method === selectedMethod;
-        if (!isCorrectMethod) return false;
-        if (selectedArea === "All Addresses") return true;
-        const sub = subscribers.find(sub => sub.id === p.subscriberId);
-        return sub?.area === selectedArea;
-      });
-      return [...filtered].sort((a, b) => {
-        const subA = subscribers.find(s => s.id === a.subscriberId);
-        const subB = subscribers.find(s => s.id === b.subscriberId);
-        const numA = subA?.customerNo || 0;
-        const numB = subB?.customerNo || 0;
-        if (numA !== numB) return numA - numB;
-        return (subA?.name || "").localeCompare(subB?.name || "");
-      });
-    } catch (e) {
-      return [];
-    }
-  }, [payments, selectedMonth, selectedYear, selectedArea, selectedMethod, subscribers]);
+    return payments.filter(p => {
+      if (!p || !p.date) return false;
+      const d = new Date(p.date);
+      const payTime = d.getFullYear() * 12 + d.getMonth();
+      const startTime = selectedYear * 12 + selectedMonth;
+      const endTime = selectedEndYear * 12 + selectedEndMonth;
+      if (!(payTime >= startTime && payTime <= endTime)) return false;
+      if (selectedMethod !== "All Methods" && p.method !== selectedMethod) return false;
+      if (selectedArea === "All Addresses") return true;
+      const sub = subscribers.find(sub => sub.id === p.subscriberId);
+      return sub?.area === selectedArea;
+    }).sort((a, b) => {
+      const subA = subscribers.find(s => s.id === a.subscriberId);
+      const subB = subscribers.find(s => s.id === b.subscriberId);
+      return (subA?.customerNo || 0) - (subB?.customerNo || 0);
+    });
+  }, [payments, selectedMonth, selectedYear, selectedEndMonth, selectedEndYear, selectedArea, selectedMethod, subscribers]);
 
   const filteredExpenses = useMemo(() => {
-    try {
-      return expenses.filter(e => {
-        if (!e || !e.date) return false;
-        const d = new Date(e.date);
-        const expTime = d.getFullYear() * 12 + d.getMonth();
-        const startTime = selectedYear * 12 + selectedMonth;
-        const endTime = selectedEndYear * 12 + selectedEndMonth;
-        return expTime >= startTime && expTime <= endTime;
-      });
-    } catch (e) {
-      return [];
-    }
-  }, [expenses, selectedMonth, selectedYear]);
+    return expenses.filter(e => {
+      if (!e || !e.date) return false;
+      const d = new Date(e.date);
+      const expTime = d.getFullYear() * 12 + d.getMonth();
+      const startTime = selectedYear * 12 + selectedMonth;
+      const endTime = selectedEndYear * 12 + selectedEndMonth;
+      return expTime >= startTime && expTime <= endTime;
+    });
+  }, [expenses, selectedMonth, selectedYear, selectedEndMonth, selectedEndYear]);
 
   const monthNameLong = useMemo(() => {
     const start = new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
     const end = new Date(selectedEndYear, selectedEndMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
-    return start === end ? start : `${start} - ${end}`;
+    return start === end ? start : `${start} — ${end}`;
   }, [selectedMonth, selectedYear, selectedEndMonth, selectedEndYear]);
 
   const monthStats = useMemo(() => {
@@ -348,342 +281,179 @@ export default function Reports() {
     return { revenue, expenses: expensesTotal };
   }, [filteredPayments, filteredExpenses]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (billingLoading) setHasTimedOut(true);
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [billingLoading]);
-
   const handleExportExcel = async () => {
     try {
       const XLSX = await import("xlsx");
       const collectionData = filteredPayments.map((p, idx) => {
         const sub = subscribers.find(s => s.id === p.subscriberId);
         return {
-          "Sr No": sub?.customerNo || idx + 1,
+          "ID": sub?.customerNo || idx + 1,
           "Date": formatDate(p.date),
-          "Subscriber Name": sub?.name || 'Unknown',
-          "Phone": sub?.phone || 'N/A',
+          "Name": sub?.name || 'Unknown',
           "Area": sub?.area || 'N/A',
-          [customerIdLabel]: sub?.customerId || 'N/A',
           "Method": p.method,
           "Amount": Number(p.amount) || 0
         };
       });
-
-      const expenseData = filteredExpenses.map((e, idx) => ({
-        "Sr No": idx + 1,
-        "Date": formatDate(e.date),
-        "Category": e.category,
-        "Description": e.description,
-        "Amount": Number(e.amount) || 0
-      }));
-
       const wb = XLSX.utils.book_new();
-      
-      const wsPayments = XLSX.utils.json_to_sheet(collectionData);
-      XLSX.utils.book_append_sheet(wb, wsPayments, "Collections");
-
-      const wsExpenses = XLSX.utils.json_to_sheet(expenseData);
-      XLSX.utils.book_append_sheet(wb, wsExpenses, "Expenses");
-
-      // Summary sheet
-      const summaryData = [
-        ["Report Summary", monthNameLong],
-        ["Filter Area", selectedArea],
-        ["Filter Method", selectedMethod],
-        [],
-        ["Total Collections", monthStats.revenue],
-        ["Total Expenses", monthStats.expenses],
-        ["Net Profit", monthStats.revenue - monthStats.expenses],
-        ["Transactions", filteredPayments.length]
-      ];
-      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-      XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
-
-      XLSX.writeFile(wb, `Audit_Report_${monthNameLong.replace(/ /g, '_')}.xlsx`);
-      toast.success("Excel report exported successfully");
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(collectionData), "Collections");
+      XLSX.writeFile(wb, `Audit_${monthNameLong.replace(/ /g, '_')}.xlsx`);
+      toast.success("Excel Protocol Exported");
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to export Excel report");
+      toast.error("Export Failed");
     }
   };
 
   const handleDownloadPremiumReport = async () => {
     const element = document.getElementById("premium-report-template");
-    if (!element) {
-      toast.error("Report template error");
-      return;
-    }
-
+    if (!element) return;
     setIsGenerating(true);
-    const monthName = new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
-    const fileName = `AuditReport_${monthName.replace(' ', '_')}.pdf`;
-
     try {
       const html2pdf = (await import("html2pdf.js")).default;
       const opt = {
         margin: 10,
-        filename: fileName,
+        filename: `Audit_${monthNameLong.replace(' ', '_')}.pdf`,
         image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true, 
-          logging: false,
-          letterRendering: true,
-          width: 794,
-          onclone: (doc: Document) => {
-            const cloned = doc.getElementById("premium-report-template");
-            if (cloned) {
-              cloned.style.visibility = "visible";
-              cloned.style.display = "block";
-              cloned.style.height = "auto";
-              cloned.style.position = "relative";
-            }
-          }
-        },
+        html2canvas: { scale: 2, useCORS: true, width: 794 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
-
       await html2pdf().set(opt).from(element).save();
-      toast.success("Audit report generated successfully");
+      toast.success("PDF Protocol Issued");
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to generate report");
+      toast.error("Generation Failed");
     } finally {
       setIsGenerating(false);
     }
   };
 
-  if (billingLoading && !hasTimedOut) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <div className="relative">
-          <div className="h-16 w-16 rounded-full border-4 border-primary/10 border-t-primary animate-spin" />
-          <BarChart3 className="h-6 w-6 text-primary absolute inset-0 m-auto animate-pulse" />
-        </div>
-        <p className="text-muted-foreground font-display font-bold tracking-tight animate-pulse">Syncing Audit Records...</p>
-      </div>
-    );
-  }
-
-  if (hasTimedOut && billingLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 p-8 text-center glass-card border-destructive/20 bg-slate-950">
-        <AlertCircle className="h-12 w-12 text-destructive animate-bounce" />
-        <div className="space-y-2">
-          <h2 className="text-xl font-black text-white">Connection Timeout</h2>
-          <p className="text-slate-400 max-w-md">The audit database is taking longer than expected to respond.</p>
-        </div>
-        <Button onClick={() => window.location.reload()} variant="destructive" className="rounded-xl px-8">Retry Connection</Button>
-      </div>
-    );
-  }
-
   const integrityScore = monthStats.revenue / (stats.pendingDues + monthStats.revenue || 1);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-primary/30 selection:text-white pb-20">
-      {/* Background Decorative Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+    <div className="space-y-4 animate-fade-in pb-12">
+      {/* INDUSTRIAL HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-[8px] uppercase tracking-[0.4em] text-slate-500 font-black mb-1 flex items-center gap-2">
+            <Shield className="h-3 w-3 text-blue-500" />
+            ANALYTICS · AUDIT INFRASTRUCTURE
+          </p>
+          <h1 className="font-display text-2xl font-black tracking-tighter text-white uppercase leading-none">
+            Business <span className="text-blue-600 italic">Intelligence</span>
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-8 px-3 rounded-md border-slate-800 bg-slate-950/50 hover:bg-slate-900 text-slate-500 text-[9px] uppercase font-black tracking-widest transition-all">
+            <Eye className="h-3.5 w-3.5 mr-2" /> Preview
+          </Button>
+          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-8 px-4 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[9px] shadow-lg shadow-blue-600/20 transition-all">
+            {isGenerating ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-2" />}
+            PDF Protocol
+          </Button>
+        </div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 lg:pt-16">
-        {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/10">
-                <BarChart3 className="h-6 w-6 text-primary" />
-              </div>
-              <div className="h-1 w-12 bg-slate-800 rounded-full" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Business Intelligence</span>
-            </div>
-            <h1 className="font-display text-4xl lg:text-5xl font-black tracking-tighter uppercase leading-none">
-              Reports <span className="text-primary italic">& Analytics</span>
-            </h1>
-            <p className="text-slate-400 max-w-sm text-xs font-medium leading-relaxed">
-              Audit-ready financial records and performance tracking. Deep insights into your business growth.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-12 px-5 rounded-xl border-slate-800 bg-slate-900/50 hover:bg-slate-900 hover:border-slate-700 text-slate-300 transition-all duration-300">
-              <Eye className="h-4 w-4 mr-2 text-primary" />
-              Preview Report
-            </Button>
-            <Button variant="outline" onClick={handleExportExcel} className="h-12 px-5 rounded-xl border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 transition-all duration-300">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Excel Export
-            </Button>
-            <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-12 px-6 rounded-xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-              {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-              Generate PDF
-            </Button>
-          </div>
+      {/* COMPACT FILTERS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+        <div className="relative group">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
+          <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="w-full h-8 pl-9 pr-6 bg-slate-900/60 border-slate-800 rounded-lg text-white font-black text-[9px] uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-blue-600/50 appearance-none transition-all">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <option key={i} value={i} className="bg-slate-900">{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
+            ))}
+          </select>
         </div>
-
-        {/* Global Filter Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="relative group">
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
-            <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="w-full h-12 pl-12 pr-6 bg-slate-900/50 border-slate-800 rounded-xl text-white font-bold text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <option key={i} value={i} className="bg-slate-900">{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="relative group">
-            <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
-            <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="w-full h-12 pl-12 pr-6 bg-slate-900/50 border-slate-800 rounded-xl text-white font-bold text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
-              {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
-            </select>
-          </div>
-
-          <div className="relative group">
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
-            <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="w-full h-12 pl-12 pr-6 bg-slate-900/50 border-slate-800 rounded-xl text-white font-bold text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
-              {(areas as string[]).map(area => (
-                <option key={String(area)} value={String(area)} className="bg-slate-900">{String(area)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="relative group">
-            <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
-            <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="w-full h-12 pl-12 pr-6 bg-slate-900/50 border-slate-800 rounded-xl text-white font-bold text-[10px] uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all hover:bg-slate-900">
-              <option value="All Methods" className="bg-slate-900">All Methods</option>
-              <option value="Cash" className="bg-slate-900">Cash Only</option>
-              <option value="UPI" className="bg-slate-900">UPI / Digital</option>
-            </select>
-          </div>
+        <div className="relative group">
+          <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
+          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="w-full h-8 pl-9 pr-6 bg-slate-900/60 border-slate-800 rounded-lg text-white font-black text-[9px] uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-blue-600/50 appearance-none transition-all">
+            {[2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+          </select>
         </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 hover:border-primary/50 transition-all duration-500 group shadow-2xl shadow-black/20">
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-primary transition-colors">Compliance</span>
-            </div>
-            <p className="text-3xl font-black tracking-tighter text-white">{(integrityScore * 100).toFixed(1)}%</p>
-            <div className="mt-4 flex items-center gap-2">
-              <div className="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-primary animate-grow-x" style={{ width: `${integrityScore * 100}%` }} />
-              </div>
-            </div>
-            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-4">Audit Integrity</p>
-          </div>
-
-          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 hover:border-emerald-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-                <TrendingUp className="h-5 w-5" />
-              </div>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-emerald-500 transition-colors">Revenue</span>
-            </div>
-            <p className="text-3xl font-black tracking-tighter text-white">{formatCurrency(monthStats.revenue)}</p>
-            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-4">Monthly Income</p>
-          </div>
-
-          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 hover:border-amber-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/5">
-                <AlertCircle className="h-5 w-5" />
-              </div>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-amber-500 transition-colors">Outstanding</span>
-            </div>
-            <p className="text-3xl font-black tracking-tighter text-white">{formatCurrency(stats.pendingDues)}</p>
-            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-4">Pending Balance</p>
-          </div>
-
-          <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/50 transition-all duration-500 group shadow-2xl shadow-black/20">
-            <div className="flex justify-between items-start mb-4">
-              <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
-                <Users className="h-5 w-5" />
-              </div>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-indigo-500 transition-colors">Base</span>
-            </div>
-            <p className="text-3xl font-black tracking-tighter text-white">{stats.active}</p>
-            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-4">Active Accounts</p>
-          </div>
+        <div className="relative group">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
+          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="w-full h-8 pl-9 pr-6 bg-slate-900/60 border-slate-800 rounded-lg text-white font-black text-[9px] uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-blue-600/50 appearance-none transition-all">
+            {areas.map(area => (
+              <option key={area} value={area} className="bg-slate-900">{area}</option>
+            ))}
+          </select>
         </div>
+        <div className="relative group">
+          <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-blue-500 transition-colors" />
+          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="w-full h-8 pl-9 pr-6 bg-slate-900/60 border-slate-800 rounded-lg text-white font-black text-[9px] uppercase tracking-widest focus:outline-none focus:ring-0 focus:border-blue-600/50 appearance-none transition-all">
+            <option value="All Methods" className="bg-slate-900">All Methods</option>
+            <option value="Cash" className="bg-slate-900">Cash</option>
+            <option value="UPI" className="bg-slate-900">UPI / Digital</option>
+          </select>
+        </div>
+      </div>
 
-        {/* Detailed Logs Panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
-          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-3xl border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
-            <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="font-display text-xl font-black uppercase tracking-tight text-white flex items-center gap-3">
-                <Receipt className="h-5 w-5 text-primary" />
-                Collection Log
+      {/* STATS INFRASTRUCTURE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { label: "Audit Integrity", value: `${(integrityScore * 100).toFixed(1)}%`, icon: ShieldCheck, color: "blue" },
+          { label: "Net Revenue", value: formatCurrency(monthStats.revenue), icon: TrendingUp, color: "blue" },
+          { label: "Total Dues", value: formatCurrency(stats.pendingDues), icon: AlertCircle, color: "rose" },
+          { label: "Active Nodes", value: stats.active, icon: Users, color: "indigo" }
+        ].map((item, idx) => (
+          <div key={idx} className="bg-slate-900/40 backdrop-blur-xl p-4 rounded-xl border border-slate-800/50 shadow-xl group hover:border-blue-600/30 transition-all">
+            <div className="flex justify-between items-center mb-3">
+              <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center border", 
+                item.color === "blue" ? "bg-blue-600/10 text-blue-500 border-blue-600/20" : 
+                item.color === "rose" ? "bg-rose-600/10 text-rose-500 border-rose-600/20" : 
+                "bg-indigo-600/10 text-indigo-400 border-indigo-600/20"
+              )}>
+                <item.icon className="h-4 w-4" />
+              </div>
+              <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500">{item.label}</span>
+            </div>
+            <p className="text-xl font-black text-white tracking-tighter tabular-nums leading-none">{item.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* DUAL LEDGER PANEL */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {[
+          { title: "Collection Ledger", icon: Receipt, data: filteredPayments, type: "collection" },
+          { title: "Expenditure Ledger", icon: BarChart3, data: filteredExpenses, type: "expense" }
+        ].map((ledger, idx) => (
+          <div key={idx} className="bg-slate-900/40 backdrop-blur-2xl rounded-xl border border-slate-800/50 shadow-2xl overflow-hidden flex flex-col h-[500px]">
+            <div className="px-5 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.1em] text-white flex items-center gap-2">
+                <ledger.icon className="h-3.5 w-3.5 text-blue-600" />
+                {ledger.title}
               </h3>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-950 px-3 py-1 rounded-full border border-slate-800">{filteredPayments.length} Records</span>
+              <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest bg-slate-900 px-2 py-0.5 rounded border border-slate-800">{ledger.data.length} Entries</span>
             </div>
-            <div className="overflow-x-auto max-h-[500px] custom-scrollbar">
-              <table className="w-full text-left">
-                <thead className="sticky top-0 bg-slate-900 z-10">
-                  <tr className="text-[8px] uppercase tracking-[0.2em] text-slate-500 font-black border-b border-slate-800">
-                    <th className="px-8 py-4">Subscriber</th>
-                    <th className="px-8 py-4">Date</th>
-                    <th className="px-8 py-4 text-right">Amount</th>
+            <div className="overflow-auto flex-1 custom-scrollbar">
+              <table className="w-full text-left border-collapse">
+                <thead className="sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10 border-b border-slate-800">
+                  <tr className="text-[7px] uppercase tracking-[0.2em] text-slate-600 font-black">
+                    <th className="px-5 py-2.5">{ledger.type === "collection" ? "Subscriber" : "Category"}</th>
+                    <th className="px-5 py-2.5">Date</th>
+                    <th className="px-5 py-2.5 text-right">Value</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/50">
-                  {filteredPayments.map((p) => {
-                    const sub = subscribers.find(s => s.id === p.subscriberId);
-                    return (
-                      <tr key={p.id} className="hover:bg-slate-900/50 transition-colors group">
-                        <td className="px-8 py-4">
-                          <p className="text-sm font-black text-white group-hover:text-primary transition-colors">{sub?.name || "Unknown"}</p>
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{sub?.area || "Unspecified"}</p>
-                        </td>
-                        <td className="px-8 py-4 font-mono text-[10px] text-slate-400">{formatDate(p.date)}</td>
-                        <td className="px-8 py-4 text-right">
-                          <span className="font-mono-num font-black text-sm text-white">{formatCurrency(p.amount)}</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-3xl border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
-            <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="font-display text-xl font-black uppercase tracking-tight text-white flex items-center gap-3">
-                <BarChart3 className="h-5 w-5 text-amber-500" />
-                Operational Expenses
-              </h3>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-950 px-3 py-1 rounded-full border border-slate-800">{filteredExpenses.length} Records</span>
-            </div>
-            <div className="overflow-x-auto max-h-[500px] custom-scrollbar">
-              <table className="w-full text-left">
-                <thead className="sticky top-0 bg-slate-900 z-10">
-                  <tr className="text-[8px] uppercase tracking-[0.2em] text-slate-500 font-black border-b border-slate-800">
-                    <th className="px-8 py-4">Category</th>
-                    <th className="px-8 py-4">Description</th>
-                    <th className="px-8 py-4 text-right">Value</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/50">
-                  {filteredExpenses.map((e) => (
-                    <tr key={e.id} className="hover:bg-slate-900/50 transition-colors group">
-                      <td className="px-8 py-4">
-                        <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[8px] font-black uppercase text-amber-500">{e.category}</span>
-                        <p className="text-[9px] font-bold text-slate-500 mt-1">{formatDate(e.date)}</p>
+                  {ledger.data.map((item: any) => (
+                    <tr key={item.id} className="hover:bg-blue-600/[0.03] transition-colors group">
+                      <td className="px-5 py-2.5">
+                        {ledger.type === "collection" ? (
+                          <>
+                            <p className="text-[10px] font-black text-white group-hover:text-blue-500 transition-colors">{subscribers.find(s => s.id === item.subscriberId)?.name || "Unknown"}</p>
+                            <p className="text-[7px] font-black text-slate-600 uppercase tracking-tighter">{subscribers.find(s => s.id === item.subscriberId)?.area || "General"}</p>
+                          </>
+                        ) : (
+                          <>
+                            <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[7px] font-black uppercase text-blue-500">{item.category}</span>
+                            <p className="text-[7px] font-black text-slate-600 mt-1 uppercase truncate max-w-[120px]">{item.description}</p>
+                          </>
+                        )}
                       </td>
-                      <td className="px-8 py-4">
-                        <p className="text-xs font-medium text-slate-300 line-clamp-1">{e.description}</p>
+                      <td className="px-5 py-2.5">
+                        <span className="text-[8px] font-black text-slate-500 uppercase">{formatDate(item.date)}</span>
                       </td>
-                      <td className="px-8 py-4 text-right">
-                        <span className="font-mono-num font-black text-sm text-rose-500">{formatCurrency(e.amount)}</span>
+                      <td className="px-5 py-2.5 text-right">
+                        <span className="font-mono font-black text-[10px] text-white">{formatCurrency(item.amount)}</span>
                       </td>
                     </tr>
                   ))}
@@ -691,10 +461,10 @@ export default function Reports() {
               </table>
             </div>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Hidden Templates for PDF Generation */}
+      {/* HIDDEN REPORT PROTOCOL TEMPLATE */}
       <div style={{ display: 'none' }}>
         <AuditReportTemplate 
           id="premium-report-template"
@@ -712,41 +482,48 @@ export default function Reports() {
         />
       </div>
 
-      {/* Preview Modal */}
+      {/* PREVIEW PROTOCOL MODAL */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-xl overflow-y-auto p-4 sm:p-8 animate-in fade-in duration-300">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-center justify-between sticky top-0 z-10 py-4 bg-slate-950/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-xl flex flex-col p-4 animate-in fade-in duration-300">
+           <div className="max-w-5xl mx-auto w-full flex flex-col h-full">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)} className="rounded-full hover:bg-slate-800"><Eye className="h-6 w-6" /></Button>
+                <div className="h-10 w-10 rounded-xl bg-blue-600/10 flex items-center justify-center border border-blue-600/20 shadow-lg shadow-blue-600/10">
+                  <Eye className="h-5 w-5 text-blue-500" />
+                </div>
                 <div>
-                  <h2 className="text-xl font-black uppercase text-white">Audit Report Preview</h2>
-                  <p className="text-[10px] font-black text-primary uppercase tracking-widest">{monthNameLong} Collection</p>
+                  <h2 className="text-xl font-black text-white uppercase tracking-tighter">Audit Protocol Preview</h2>
+                  <p className="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em]">{monthNameLong}</p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" className="h-12 px-6 rounded-2xl border-slate-800 text-white" onClick={() => setIsPreviewOpen(false)}>Close Preview</Button>
-                <Button className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px]" onClick={handleDownloadPremiumReport}>
-                  <Download className="h-4 w-4 mr-2" /> Download PDF
+              <div className="flex gap-2">
+                <Button variant="ghost" className="h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-white" onClick={() => setIsPreviewOpen(false)}>
+                  Dismiss
+                </Button>
+                <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-10 px-8 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[10px] shadow-xl shadow-blue-600/20">
+                  {isGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+                  Export PDF Protocol
                 </Button>
               </div>
             </div>
             
-            <div className="bg-white rounded-2xl shadow-2xl shadow-black/50 overflow-hidden mx-auto" style={{ width: '794px' }}>
-              <AuditReportTemplate 
-                id="preview-template"
-                monthName={monthNameLong}
-                selectedYear={selectedYear}
-                selectedMonth={selectedMonth}
-                selectedArea={selectedArea}
-                monthStats={monthStats}
-                filteredPayments={filteredPayments}
-                filteredExpenses={filteredExpenses}
-                integrityScore={integrityScore}
-                companySettings={companySettings}
-                subscribers={subscribers}
-                businessMode={currentBusinessMode}
-              />
+            <div ref={containerRef} className="flex-1 overflow-auto custom-scrollbar flex justify-center bg-slate-950/50 rounded-[3rem] border border-slate-800/50 p-12">
+              <div className="shadow-[0_0_100px_rgba(0,0,0,0.5)] origin-top transition-transform duration-500" style={{ transform: `scale(${scale})` }}>
+                <AuditReportTemplate 
+                  id="preview-template"
+                  monthName={monthNameLong}
+                  selectedYear={selectedYear}
+                  selectedMonth={selectedMonth}
+                  selectedArea={selectedArea}
+                  monthStats={monthStats}
+                  filteredPayments={filteredPayments}
+                  filteredExpenses={filteredExpenses}
+                  integrityScore={integrityScore}
+                  companySettings={companySettings}
+                  subscribers={subscribers}
+                  businessMode={currentBusinessMode}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -754,5 +531,3 @@ export default function Reports() {
     </div>
   );
 }
-
-

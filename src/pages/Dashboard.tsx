@@ -151,154 +151,147 @@ export default function Dashboard() {
 
 
   return (
-    <div className="space-y-6 animate-fade-in pb-8">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+    <div className="space-y-4 animate-fade-in pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-1.5 flex items-center gap-2">
-            <Activity className="h-3 w-3 text-primary" />
-            {companySettings?.name || 'SITARAM CABLE & BROADBAND'} · HUB
+          <p className="text-[8px] uppercase tracking-[0.3em] text-slate-500 font-black mb-1 flex items-center gap-2">
+            <Activity className="h-3 w-3 text-blue-500" />
+            {companySettings?.name || 'SITARAM CABLE & BROADBAND'} · OPS HUB
           </p>
-          <h1 className="font-display text-4xl font-black tracking-tighter uppercase leading-none text-white">
-            Operational <span className="text-primary italic">Overview</span>
+          <h1 className="font-display text-2xl font-black tracking-tighter uppercase leading-none text-white">
+            Operational <span className="text-blue-500 italic">Overview</span>
           </h1>
-          <div className="flex items-center gap-2.5 mt-4 px-3 py-1.5 rounded-xl bg-slate-900/50 border border-slate-800 w-fit shadow-inner">
-            <Calendar className="h-3.5 w-3.5 text-slate-500" />
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
-              Cycle: <span className="text-white">{months[dashboardDate.getMonth()]} {dashboardDate.getFullYear()}</span>
-            </p>
-          </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex items-center gap-1 bg-slate-900/50 p-1 rounded-md border border-slate-800 shadow-inner">
             <Select value={months[dashboardDate.getMonth()]} onValueChange={handleMonthChange}>
-              <SelectTrigger className="w-[115px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <SelectTrigger className="w-[85px] h-7 border-none bg-transparent focus:ring-0 text-[8px] font-black uppercase tracking-wider text-slate-400">
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 rounded-xl">
-                {months.map(m => <SelectItem key={m} value={m} className="text-[10px] font-bold uppercase tracking-wider text-white">{m}</SelectItem>)}
+              <SelectContent className="bg-slate-900 border-slate-800 rounded-lg">
+                {months.map(m => <SelectItem key={m} value={m} className="text-[8px] font-black uppercase tracking-wider text-white">{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="w-px h-4 bg-slate-800" />
+            <div className="w-px h-2.5 bg-slate-800" />
             <Select value={dashboardDate.getFullYear().toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="w-[85px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <SelectTrigger className="w-[65px] h-7 border-none bg-transparent focus:ring-0 text-[8px] font-black uppercase tracking-wider text-slate-400">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 rounded-xl">
-                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-[10px] font-bold uppercase tracking-wider text-white">{y}</SelectItem>)}
+              <SelectContent className="bg-slate-900 border-slate-800 rounded-lg">
+                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-[8px] font-black uppercase tracking-wider text-white">{y}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
-          <Button size="sm" asChild className="bg-primary text-white hover:bg-primary/90 rounded-xl px-5 h-12 font-bold uppercase tracking-widest text-[10px] transition-all active:scale-95 shadow-lg shadow-primary/20">
+          <Button size="sm" asChild className="bg-blue-600 text-white hover:bg-blue-500 rounded-md px-3 h-8 font-black uppercase tracking-widest text-[9px] transition-all active:scale-95 shadow-lg shadow-blue-600/20">
             <Link to="/invoices">
-              <Wallet className="mr-2 h-4 w-4" /> Payments Console
+              <Wallet className="mr-1.5 h-3.5 w-3.5" /> Billing Console
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Today's Collection" value={formatCurrency(s.collectedToday)} delta="+12.5% vs yesterday" icon={Activity} variant="primary" />
-        <StatCard label="Month Revenue" value={formatCurrency(s.monthRevenue)} delta={`${payments.length} transactions`} icon={Activity} variant="accent" />
-        <StatCard label="Pending Dues" value={formatCurrency(s.pendingDues)} delta={`${s.expired} total expired`} icon={AlertCircle} variant="warning" />
-        <StatCard label="Expenses" value={formatCurrency(s.monthExpenses)} delta={`${expenses.length} records`} icon={FileText} variant="destructive" />
+        <StatCard label="Month Revenue" value={formatCurrency(s.monthRevenue)} delta={`${payments.length} txn`} icon={Activity} variant="primary" />
+        <StatCard label="Pending Dues" value={formatCurrency(s.pendingDues)} delta={`${s.expired} expired`} icon={AlertCircle} variant="warning" />
+        <StatCard label="Expenses" value={formatCurrency(s.monthExpenses)} delta={`${expenses.length} logs`} icon={FileText} variant="destructive" />
       </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 px-1">Control Panel</h2>
-          <div className="h-px flex-1 bg-slate-800 ml-6" />
-        </div>        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          <Link to="/subscribers" className="group bg-slate-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-800 hover:border-primary/50 hover:bg-slate-900 transition-all duration-300 flex flex-col items-center justify-center gap-4">
-             <div className="h-14 w-14 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-inner border border-white/5">
-               <Users className="h-7 w-7" />
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Quick Operations</h2>
+          <div className="h-px flex-1 bg-slate-800/50 ml-4" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Link to="/subscribers" className="group bg-slate-900/40 backdrop-blur-xl p-3.5 rounded-xl border border-slate-800 hover:border-blue-600/50 hover:bg-slate-900 transition-all flex flex-col items-center justify-center gap-2">
+             <div className="h-10 w-10 rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+               <Users className="h-5 w-5" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">Registry</span>
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Registry</span>
           </Link>
 
-          <Link to="/invoices" className="group bg-slate-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-900 transition-all duration-300 flex flex-col items-center justify-center gap-4">
-             <div className="h-14 w-14 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-inner border border-white/5">
-               <Wallet className="h-7 w-7" />
+          <Link to="/invoices" className="group bg-slate-900/40 backdrop-blur-xl p-3.5 rounded-xl border border-slate-800 hover:border-blue-600/50 hover:bg-slate-900 transition-all flex flex-col items-center justify-center gap-2">
+             <div className="h-10 w-10 rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+               <Wallet className="h-5 w-5" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">Invoicing</span>
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Billing</span>
           </Link>
 
-          <Link to="/reports" className="group bg-slate-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-900 transition-all duration-300 flex flex-col items-center justify-center gap-4">
-             <div className="h-14 w-14 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300 shadow-inner border border-white/5">
-               <BarChart3 className="h-7 w-7" />
+          <Link to="/reports" className="group bg-slate-900/40 backdrop-blur-xl p-3.5 rounded-xl border border-slate-800 hover:border-blue-600/50 hover:bg-slate-900 transition-all flex flex-col items-center justify-center gap-2">
+             <div className="h-10 w-10 rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+               <BarChart3 className="h-5 w-5" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">Intelligence</span>
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Analytics</span>
           </Link>
 
           <Button 
             variant="ghost" 
             onClick={handleDownloadReport}
-            className="group bg-slate-900/50 backdrop-blur-xl p-6 h-auto rounded-[2rem] border border-slate-800 hover:border-amber-500/50 hover:bg-slate-900 transition-all duration-300 flex flex-col items-center justify-center gap-4"
+            className="group bg-slate-900/40 backdrop-blur-xl p-3.5 h-auto rounded-xl border border-slate-800 hover:border-blue-600/50 hover:bg-slate-900 transition-all flex flex-col items-center justify-center gap-2"
           >
-             <div className="h-14 w-14 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-inner border border-white/5">
-               {isGenerating ? <Loader2 className="h-7 w-7 animate-spin" /> : <Download className="h-7 w-7" />}
+             <div className="h-10 w-10 rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
+               {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">Export PDF</span>
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Export</span>
           </Button>
         </div>
+      </div>>
 
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="bg-slate-900/50 backdrop-blur-2xl rounded-[2.5rem] p-8 lg:col-span-2 border border-slate-800 shadow-2xl shadow-black/20 overflow-hidden">
-          <div className="flex items-center justify-between mb-8">
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="bg-slate-900/50 backdrop-blur-2xl rounded-2xl p-4 lg:col-span-2 border border-slate-800 shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="font-display text-xl font-black uppercase tracking-tight text-white">Recent Collections</h2>
-              <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold mt-1">Cashflow Monitoring</p>
+              <h2 className="font-display text-sm font-black uppercase tracking-tight text-white">Recent Collections</h2>
+              <p className="text-[7px] text-slate-500 uppercase tracking-[0.3em] font-black mt-0.5 italic">Cashflow Monitoring</p>
             </div>
-            <Button variant="outline" size="sm" asChild className="h-10 rounded-xl hover:bg-slate-800 text-[10px] uppercase font-bold tracking-widest border-slate-800 text-white"><Link to="/payments">Registry <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" /></Link></Button>
+            <Button variant="outline" size="sm" asChild className="h-7 px-3 rounded-md hover:bg-slate-800 text-[8px] uppercase font-black tracking-widest border-slate-800 text-slate-400"><Link to="/payments">Full Registry <ArrowUpRight className="ml-1.5 h-3 w-3 text-blue-500" /></Link></Button>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {recent.map((p) => {
               const sub = subscribers.find(s => s.id === p.subscriberId);
               return (
-                <div key={p.id} className="flex items-center justify-between p-4 rounded-2xl border border-slate-800/50 bg-slate-950/50 hover:bg-slate-950 transition-all group">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="h-11 w-11 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all text-slate-500">
-                      <Wallet className="h-5 w-5" />
+                <div key={p.id} className="flex items-center justify-between p-2 rounded-lg border border-slate-800/40 bg-slate-950/40 hover:bg-blue-600/5 transition-all group">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-7 w-7 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all text-slate-500">
+                      <Wallet className="h-3.5 w-3.5" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-500 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">#{sub?.customerNo || '—'}</span>
-                        <p className="text-sm font-black text-white truncate tracking-tight">{sub?.name || 'Unknown User'}</p>
+                        <span className="text-[7px] font-black text-blue-500 bg-blue-500/10 px-1 py-0.5 rounded border border-blue-500/20">#{sub?.customerNo || '—'}</span>
+                        <p className="text-[11px] font-black text-white truncate tracking-tight">{sub?.name || 'Unknown'}</p>
                       </div>
-                      <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mt-1">{p.method} · {formatDate(p.date)}</p>
+                      <p className="text-[7px] text-slate-500 uppercase font-black tracking-[0.1em] mt-0.5">{p.method} · {formatDate(p.date)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono-num font-black text-emerald-500 text-base">+{formatCurrency(p.amount)}</p>
+                    <p className="font-mono font-black text-blue-500 text-[11px]">+{formatCurrency(p.amount)}</p>
                   </div>
                 </div>
               );
             })}
             {recent.length === 0 && (
-              <div className="py-20 text-center flex flex-col items-center gap-4 opacity-30">
-                <Activity className="h-12 w-12 text-slate-400" />
-                <p className="text-sm font-black uppercase tracking-widest text-slate-500">No transactions recorded</p>
+              <div className="py-12 text-center flex flex-col items-center gap-2 opacity-30">
+                <Activity className="h-8 w-8 text-slate-400" />
+                <p className="text-[8px] font-black uppercase tracking-widest text-slate-500">No records</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-slate-800 shadow-2xl shadow-black/20">
-            <h2 className="font-display text-xl font-black uppercase tracking-tight text-white mb-6">Sector View</h2>
-            <div className="space-y-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="space-y-4">
+          <div className="bg-slate-900/50 backdrop-blur-2xl rounded-2xl p-4 border border-slate-800 shadow-2xl">
+            <h2 className="font-display text-sm font-black uppercase tracking-tight text-white mb-4">Sector View</h2>
+            <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
               {areaBreakdown.map(([area, count]) => (
-                <div key={area} className="space-y-3">
-                  <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
-                    <span className="flex items-center gap-2 text-slate-400"><MapPin className="h-3.5 w-3.5 text-slate-600" /> {area}</span>
-                    <span className="text-slate-500">{count} subs</span>
+                <div key={area} className="space-y-2">
+                  <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.2em]">
+                    <span className="flex items-center gap-1.5 text-slate-500"><MapPin className="h-3 w-3 text-slate-700" /> {area}</span>
+                    <span className="text-slate-600">{count} SUBS</span>
                   </div>
-                  <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                  <div className="h-1 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800/50">
                     <div 
-                      className="h-full bg-primary rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(var(--primary),0.5)]" 
+                      className="h-full bg-blue-600 rounded-full transition-all duration-1000" 
                       style={{ width: `${(count / Math.max(1, subscribers.length)) * 100}%` }}
                     />
                   </div>
@@ -307,20 +300,20 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-rose-500/10 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-rose-500/20 shadow-2xl shadow-black/20">
-            <h2 className="font-display text-xl font-black uppercase tracking-tight text-rose-500 flex items-center gap-3 mb-6">
-              <AlertCircle className="h-6 w-6" /> Terminating
+          <div className="bg-blue-600/5 backdrop-blur-2xl rounded-2xl p-4 border border-blue-600/10 shadow-2xl">
+            <h2 className="font-display text-sm font-black uppercase tracking-tight text-blue-500 flex items-center gap-2 mb-4">
+              <AlertCircle className="h-4 w-4" /> Terminating
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {expiring.map((sub) => {
                 const days = Math.ceil((+new Date(sub.expiryDate) - Date.now()) / 86400000);
                 return (
-                  <div key={sub.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950 border border-rose-500/20 hover:border-rose-500/40 transition-all shadow-inner">
+                  <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-blue-600/10 hover:border-blue-600/30 transition-all">
                     <div className="min-w-0">
-                      <p className="text-xs font-black text-white truncate tracking-tight">{sub.name}</p>
-                      <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest truncate mt-0.5">{sub.area}</p>
+                      <p className="text-[10px] font-black text-white truncate tracking-tight">{sub.name}</p>
+                      <p className="text-[7px] text-slate-600 uppercase font-black tracking-widest truncate mt-0.5">{sub.area}</p>
                     </div>
-                    <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl ${days <= 3 ? 'bg-rose-600 text-white shadow-lg shadow-rose-500/20' : 'bg-rose-500/20 text-rose-500'}`}>
+                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded border ${days <= 3 ? 'bg-blue-600/20 text-blue-400 border-blue-600/30' : 'bg-slate-900 text-slate-500 border-slate-800'}`}>
                       {days}d
                     </span>
                   </div>

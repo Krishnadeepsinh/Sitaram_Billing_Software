@@ -10,20 +10,20 @@
     --background: 222.2 84% 4.9%; /* bg-slate-950 */
     --foreground: 210 40% 98%;
 
-    --primary: 142.1 76.2% 36.3%; /* Emerald 600 */
-    --primary-foreground: 355.7 100% 97.3%;
+    --primary: 221.2 83.2% 53.3%; /* Blue 600 */
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
-    --accent: 142.1 76.2% 46.3%; /* Emerald 500 */
+    --accent: 217.2 91.2% 59.8%; /* Blue 500 */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
+    --success: 221.2 83.2% 53.3%;
+    --success-foreground: 210 40% 98%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 48 96% 89%;
@@ -33,7 +33,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 142.1 76.2% 36.3%;
+    --ring: 221.2 83.2% 53.3%;
     --radius: 1.25rem;
   }
 
@@ -41,11 +41,11 @@
     /* Ensure dark mode remains consistent with the dark terminal theme */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 355.7 100% 97.3%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 12.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 142.1 76.2% 46.3%;
+    --accent: 217.2 91.2% 59.8%;
     --accent-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;

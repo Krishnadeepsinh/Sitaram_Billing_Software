@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { getBrandSettings } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 import { useBusinessMode } from "@/lib/turso";
+import { Logo } from "@/components/Logo";
 
 export default function Payments() {
   const activeBusinessMode = useBusinessMode();

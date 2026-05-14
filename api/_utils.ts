@@ -42,22 +42,34 @@ const configs = {
   },
 };
 
+const dbInstances: Record<string, ReturnType<typeof createClient>> = {};
+
 export const getDb = (mode: BusinessMode) => {
+  if (dbInstances[mode]) return dbInstances[mode];
+
   const config = configs[mode];
   if (!config.url || !config.authToken) {
     throw new Error(`${mode} database is not configured.`);
   }
 
-  // Use a local embedded replica that syncs with Turso
-  // Note: Vercel functions are read-only, so we use /tmp/ for Vercel, else local directory
-  const localDbUrl = process.env.VERCEL === "1" ? `file:/tmp/${mode}_local.db` : `file:./${mode}_local.db`;
+  // In Vercel serverless, embedded replicas download the entire DB to /tmp/ on cold starts,
+  // taking huge amounts of time. We MUST use direct HTTP remote connection for Vercel.
+  if (process.env.VERCEL === "1") {
+    dbInstances[mode] = createClient({
+      url: config.url,
+      authToken: config.authToken,
+    });
+  } else {
+    // For local development, use embedded replica for ultra-fast local reads
+    dbInstances[mode] = createClient({ 
+      url: `file:./${mode}_local.db`, 
+      syncUrl: config.url, 
+      authToken: config.authToken,
+      syncInterval: 2 // Automatically sync every 2 seconds in the background
+    });
+  }
 
-  return createClient({ 
-    url: localDbUrl, 
-    syncUrl: config.url, 
-    authToken: config.authToken,
-    syncInterval: 2 // Automatically sync every 2 seconds in the background
-  });
+  return dbInstances[mode];
 };
 
 export const sign = (payload: string) =>

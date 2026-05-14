@@ -610,7 +610,7 @@ export default function Reports() {
               </div>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-indigo-500 transition-colors">Base</span>
             </div>
-            <p className="text-4xl font-black tracking-tighter text-white">{monthStats.activeSubs}</p>
+            <p className="text-4xl font-black tracking-tighter text-white">{stats.active}</p>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Active Accounts</p>
           </div>
         </div>
@@ -708,7 +708,7 @@ export default function Reports() {
           integrityScore={integrityScore}
           companySettings={companySettings}
           subscribers={subscribers}
-          businessMode={activeBusinessMode}
+          businessMode={currentBusinessMode}
         />
       </div>
 
@@ -745,7 +745,7 @@ export default function Reports() {
                 integrityScore={integrityScore}
                 companySettings={companySettings}
                 subscribers={subscribers}
-                businessMode={activeBusinessMode}
+                businessMode={currentBusinessMode}
               />
             </div>
           </div>
@@ -753,8 +753,6 @@ export default function Reports() {
       )}
     </div>
   );
-};
-
-export default Reports;
+}
 
 

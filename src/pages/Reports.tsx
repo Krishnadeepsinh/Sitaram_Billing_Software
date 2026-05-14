@@ -669,8 +669,7 @@ export default function Reports() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+
           <div className="bg-white rounded-[2rem] p-10 border border-slate-200 shadow-sm transition-all hover:shadow-md">
             <h3 className="text-2xl font-black tracking-tight text-slate-900 mb-8 flex items-center gap-3">
               <TrendingUp className="h-6 w-6 text-primary" />

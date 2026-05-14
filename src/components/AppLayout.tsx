@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Bell, Search, Loader2 } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useBilling } from "@/context/BillingContext";
@@ -56,7 +56,6 @@ export default function AppLayout() {
                   Broadband
                 </button>
               </div>
-
               <div 
                 className="h-9 w-9 rounded-full bg-gradient-accent flex items-center justify-center font-display font-semibold text-sm text-accent-foreground cursor-pointer hover:opacity-80 transition-all"
                 title="Logout"

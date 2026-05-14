@@ -4,6 +4,7 @@ import {
   Wifi, BarChart3, Receipt, Send, ShieldCheck, 
   DatabaseZap, Database, Zap, Monitor, Activity
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { hasTursoDB, useBusinessMode } from "@/lib/turso";
 import {
   Sidebar,

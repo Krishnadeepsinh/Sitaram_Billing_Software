@@ -21,12 +21,13 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
   
   const escapedTokens = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const regex = new RegExp(`(${escapedTokens.join('|')})`, 'gi');
+  const matchRegex = new RegExp(`^(${escapedTokens.join('|')})$`, 'i');
   const parts = String(text).split(regex);
   
   return (
     <>
       {parts.map((part, i) => 
-        regex.test(part) ? (
+        matchRegex.test(part) ? (
           <mark key={i} className="bg-amber-200 text-amber-900 px-0.5 rounded-sm font-bold">{part}</mark>
         ) : (
           part
@@ -669,49 +670,44 @@ ${brand.name}`;
                           )}
                         </span>
                       </div>
-
-                    <div className="flex gap-3">
-                      <Button 
-                        variant="outline" 
-                        className="flex-1 h-12 rounded-xl font-bold"
-                        onClick={() => {
-                          setShowSubSelect(false);
-                          setSelectedSub("");
-                          setSelectedArea("");
-                          setIncludePreviousDue(false);
-                          setDiscountAmount(0);
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        className="flex-1 h-12 bg-primary text-white hover:bg-primary/90 rounded-xl font-bold shadow-lg shadow-primary/20"
-                        onClick={handleGenerateSingle}
-                        disabled={isProcessing}
-                      >
-                        {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
-                        Generate
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <Button 
-                    variant="outline" 
-                    className="w-full h-12 rounded-xl font-bold"
-                    onClick={() => {
-                      setShowSubSelect(false);
-                      setSelectedSub("");
-                      setSelectedArea("");
-                      setIncludePreviousDue(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                )}
+                      <div className="flex gap-3">
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 h-12 rounded-xl font-bold"
+                          onClick={() => {
+                            setShowSubSelect(false);
+                            setSelectedSub("");
+                            setSelectedArea("");
+                            setIncludePreviousDue(false);
+                            setDiscountAmount(0);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          className="flex-1 h-12 bg-primary text-white hover:bg-primary/90 rounded-xl font-bold shadow-lg shadow-primary/20"
+                          onClick={handleGenerateSingle}
+                          disabled={isProcessing}
+                        >
+                          {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+                          Generate
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-12 rounded-xl font-bold"
+                      onClick={() => setShowSubSelect(true)}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Select Subscriber
+                    </Button>
+                  )}
               </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Collect Payment Modal */}
       {payInv && (

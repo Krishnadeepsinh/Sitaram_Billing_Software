@@ -175,7 +175,7 @@ export default function Dashboard() {
               <SelectTrigger className="w-[130px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-black uppercase tracking-widest">
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-950 border-white/10 rounded-xl">
+              <SelectContent className="bg-card border-border rounded-xl">
                 {months.map(m => <SelectItem key={m} value={m} className="text-[10px] font-black uppercase tracking-widest">{m}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -184,7 +184,7 @@ export default function Dashboard() {
               <SelectTrigger className="w-[90px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-black uppercase tracking-widest">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-950 border-white/10 rounded-xl">
+              <SelectContent className="bg-card border-border rounded-xl">
                 {years.map(y => <SelectItem key={y} value={y.toString()} className="text-[10px] font-black uppercase tracking-widest">{y}</SelectItem>)}
               </SelectContent>
             </Select>

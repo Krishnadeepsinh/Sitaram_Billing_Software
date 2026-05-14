@@ -101,7 +101,7 @@ export default function InvoicePreviewModal({
       
       const options = {
         margin: [0, 0],
-        filename: `Invoice_${invoice.invoiceNumber || 'INV'}.pdf`,
+        filename: `Invoice_${invoice.invoiceNumber || invoice.number || 'INV'}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
           scale: 2,
@@ -118,6 +118,7 @@ export default function InvoicePreviewModal({
               clonedElement.style.margin = "0";
               clonedElement.style.width = "794px";
               clonedElement.style.height = "auto";
+              clonedElement.style.display = "flex"; // Force visibility in clone
             }
           }
         },
@@ -162,6 +163,7 @@ export default function InvoicePreviewModal({
           useCORS: true,
           logging: false,
           letterRendering: true,
+          windowWidth: 794,
           onclone: (doc: Document) => {
             const clonedElement = doc.getElementById("invoice-content");
             if (clonedElement) {
@@ -169,6 +171,7 @@ export default function InvoicePreviewModal({
               clonedElement.style.margin = "0";
               clonedElement.style.width = "794px";
               clonedElement.style.height = "auto";
+              clonedElement.style.display = "flex";
             }
           }
         },

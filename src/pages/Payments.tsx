@@ -568,7 +568,7 @@ Thank you!`;
     setIsSubmitting(true);
     try {
       const html2pdf = (await import("html2pdf.js")).default;
-      const opt = {
+      const options = {
         margin: [0, 0],
         filename: `Receipt_${selectedPayment.receiptNumber || selectedPayment.id || 'REC'}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
@@ -587,13 +587,14 @@ Thank you!`;
               clonedElement.style.margin = "0";
               clonedElement.style.width = "794px";
               clonedElement.style.height = "auto";
+              clonedElement.style.display = "flex"; // Ensure it's visible in the clone
             }
           }
         },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
 
-      await html2pdf().set(opt).from(element).save();
+      await html2pdf().set(options).from(element).save();
       toast.success("Receipt downloaded successfully");
     } catch (error) {
       console.error("Receipt generation error:", error);

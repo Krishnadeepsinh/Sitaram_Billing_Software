@@ -407,9 +407,9 @@ export default function Subscribers() {
                 value={statusF}
                 onChange={(e: any) => setStatusF(e.target.value)}
               >
-                <option value="all" className="bg-slate-950">All Status</option>
-                <option value="active" className="bg-slate-950">Active Only</option>
-                <option value="inactive" className="bg-slate-950">Inactive Only</option>
+                <option value="all" className="bg-card">All Status</option>
+                <option value="active" className="bg-card">Active Only</option>
+                <option value="inactive" className="bg-card">Inactive Only</option>
               </select>
               <div className="w-px h-4 bg-white/10" />
               <select 
@@ -417,8 +417,8 @@ export default function Subscribers() {
                 value={areaF}
                 onChange={(e) => setAreaF(e.target.value)}
               >
-                <option value="all" className="bg-slate-950">All Areas</option>
-                {areas.map(a => <option key={a} value={a} className="bg-slate-950">{a}</option>)}
+                <option value="all" className="bg-card">All Areas</option>
+                {areas.map(a => <option key={a} value={a} className="bg-card">{a}</option>)}
               </select>
               <div className="w-px h-4 bg-white/10" />
               <select 
@@ -426,8 +426,8 @@ export default function Subscribers() {
                 value={planF}
                 onChange={(e) => setPlanF(e.target.value)}
               >
-                <option value="all" className="bg-slate-950">All Plans</option>
-                {dbPlans.map(p => <option key={p.id} value={p.id} className="bg-slate-950">{p.name}</option>)}
+                <option value="all" className="bg-card">All Plans</option>
+                {dbPlans.map(p => <option key={p.id} value={p.id} className="bg-card">{p.name}</option>)}
               </select>
             </div>
 

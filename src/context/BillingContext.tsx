@@ -168,7 +168,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const fetchFromDB = async () => {
     if (!db) return false;
     try {
-      const schemaMigrated = LS.get(`schema_migrated_v2_${businessMode}`, false);
+      // Force schema migration to true. The database is already initialized.
+      // Running 30 sequential HTTP ALTER TABLE queries from the frontend causes
+      // massive 10-15 second freezes on new devices.
+      const schemaMigrated = true;
       if (!schemaMigrated) {
         // Initialize tables if they don't exist
         await db.batch([

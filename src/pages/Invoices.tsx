@@ -555,7 +555,7 @@ ${brand.name}`;
                   </div>
                 </div>
               )}
-            </div>
+
 
             <div className="pt-4 border-t space-y-4">
                 {selectedSub ? (

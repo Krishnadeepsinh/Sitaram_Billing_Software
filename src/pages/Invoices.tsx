@@ -558,7 +558,7 @@ ${brand.name}`;
             </div>
 
             <div className="pt-4 border-t space-y-4">
-                {selectedSub && (
+                {selectedSub ? (
                   <>
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       <button

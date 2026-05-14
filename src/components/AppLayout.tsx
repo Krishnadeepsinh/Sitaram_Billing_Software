@@ -32,7 +32,7 @@ export default function AppLayout() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center rounded-xl border border-border/60 bg-secondary/40 p-1">
+              <div className="flex items-center rounded-xl border border-border/60 bg-secondary/40 p-1">
                 <button
                   type="button"
                   onClick={() => activeBusinessMode !== "cable" && setActiveBusinessMode("cable")}
@@ -56,10 +56,7 @@ export default function AppLayout() {
                   Broadband
                 </button>
               </div>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary glow-primary" />
-              </Button>
+
               <div 
                 className="h-9 w-9 rounded-full bg-gradient-accent flex items-center justify-center font-display font-semibold text-sm text-accent-foreground cursor-pointer hover:opacity-80 transition-all"
                 title="Logout"

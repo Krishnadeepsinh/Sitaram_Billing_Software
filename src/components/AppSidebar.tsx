@@ -50,25 +50,36 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border bg-sidebar/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3 px-2 py-3">
+    <Sidebar collapsible="icon" className="border-r border-white/5">
+      <SidebarHeader className="border-b border-white/5 bg-sidebar/80 backdrop-blur-xl">
+        <div className="flex flex-col gap-2 px-3 py-4">
           <Logo showText={!collapsed} size="md" />
+          {!collapsed && (
+            <div className="flex items-center gap-2 mt-2 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 w-fit">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{activeBusinessLabel} ACTIVE</span>
+            </div>
+          )}
         </div>
       </SidebarHeader>
-      <SidebarContent className="bg-sidebar/30 backdrop-blur-sm">
+      <SidebarContent className="bg-sidebar/40 backdrop-blur-xl space-y-4 pt-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Operations</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 px-4 mb-2">Operations Center</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="px-2 gap-1">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} end={item.url === "/"} onClick={handleLinkClick} className="relative group">
-                      <item.icon className={`h-4 w-4 transition-transform group-hover:scale-110 ${isActive(item.url) ? 'text-primary' : item.color}`} />
-                      <span className="font-medium tracking-tight">{item.title}</span>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} className="rounded-xl h-11 px-3 hover:bg-white/5 transition-all">
+                    <NavLink to={item.url} end={item.url === "/"} onClick={handleLinkClick} className="relative group flex items-center gap-3">
+                      <div className={cn(
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110",
+                        isActive(item.url) ? "bg-primary/20 text-primary shadow-[0_0_15px_-3px_hsl(var(--primary))]" : "bg-white/5 text-muted-foreground group-hover:text-foreground"
+                      )}>
+                        <item.icon className="h-4 w-4" />
+                      </div>
+                      <span className={cn("text-[11px] font-black uppercase tracking-widest transition-colors", isActive(item.url) ? "text-primary" : "text-muted-foreground/80 group-hover:text-foreground")}>{item.title}</span>
                       {isActive(item.url) && (
-                        <div className="absolute right-2 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+                        <div className="absolute right-0 h-4 w-1 rounded-l-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" />
                       )}
                     </NavLink>
                   </SidebarMenuButton>
@@ -79,17 +90,22 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Analytics & Admin</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 px-4 mb-2">Intelligence & Control</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="px-2 gap-1">
               {analyticsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} onClick={handleLinkClick} className="relative group">
-                      <item.icon className={`h-4 w-4 transition-transform group-hover:scale-110 ${isActive(item.url) ? 'text-primary' : item.color}`} />
-                      <span className="font-medium tracking-tight">{item.title}</span>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} className="rounded-xl h-11 px-3 hover:bg-white/5 transition-all">
+                    <NavLink to={item.url} onClick={handleLinkClick} className="relative group flex items-center gap-3">
+                      <div className={cn(
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110",
+                        isActive(item.url) ? "bg-primary/20 text-primary shadow-[0_0_15px_-3px_hsl(var(--primary))]" : "bg-white/5 text-muted-foreground group-hover:text-foreground"
+                      )}>
+                        <item.icon className="h-4 w-4" />
+                      </div>
+                      <span className={cn("text-[11px] font-black uppercase tracking-widest transition-colors", isActive(item.url) ? "text-primary" : "text-muted-foreground/80 group-hover:text-foreground")}>{item.title}</span>
                       {isActive(item.url) && (
-                        <div className="absolute right-2 h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+                        <div className="absolute right-0 h-4 w-1 rounded-l-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" />
                       )}
                     </NavLink>
                   </SidebarMenuButton>

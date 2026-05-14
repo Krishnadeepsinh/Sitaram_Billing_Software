@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Search, Plus, Phone, MapPin, Filter, AlertCircle, Loader2, Edit2, 
-  Trash2, History, FileText, Wifi, MoreVertical, ChevronRight, Download
+  Trash2, History, FileText, Wifi, MoreVertical, ChevronRight, Download,
+  Activity, Edit, Wallet
 } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { toast } from "sonner";
@@ -178,7 +179,6 @@ export default function Subscribers() {
       return;
     }
     
-    // Service ID is now optional
     if (!formData.name.trim()) {
       toast.error("Subscriber name is required");
       return;
@@ -193,14 +193,13 @@ export default function Subscribers() {
     const submissionData = {
       ...rest,
       name: rest.name.trim(),
-      phone: trimmedPhone,
+      phone: rest.phone.trim(),
       area: rest.area.trim(),
       customerId: rest.customerId.trim(),
       customerUsername: rest.customerUsername.trim(),
       customerPassword: rest.customerPassword.trim(),
       email: rest.email.trim(),
       openingBalance: finalOpeningBalance,
-      // Installation date is only the setup date. Expiry is controlled by recharge billing.
       expiryDate: editingSub?.expiryDate || ""
     };
 
@@ -298,41 +297,42 @@ export default function Subscribers() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in relative">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div className="space-y-8 animate-fade-in relative pb-10">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground/90 flex items-center gap-3">
-            Subscribers
-            <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+          <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-black mb-2 flex items-center gap-2">
+            <Activity className="h-3 w-3 animate-pulse" />
+            Network Management · Intelligence
+          </p>
+          <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tighter uppercase leading-none">
+            Active <span className="gradient-text italic">Subscribers</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1 font-medium">
-            Manage your {activeBusinessMode === "cable" ? "Cable" : "Broadband"} network subscribers
+          <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.2em] mt-4 flex items-center gap-2">
+            Manage your {activeBusinessMode === "cable" ? "Cable" : "Broadband"} network accounts.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <Button 
             variant="outline"
-            size="sm"
-            disabled={isGlobalRefreshing}
+            className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-white/5 bg-white/5 hover:bg-white/10 active:scale-95 transition-all flex items-center gap-3 text-foreground" 
             onClick={async () => {
               setIsGlobalRefreshing(true);
               try {
                 await refreshData();
-                toast.success("Data refreshed from database");
+                toast.success("Database Synchronized");
               } finally {
                 setIsGlobalRefreshing(false);
               }
             }}
-            className="border-border/60 rounded-xl h-10 px-4 bg-background/50 hover:bg-secondary/50 transition-all"
           >
-            <Loader2 className={cn("mr-2 h-4 w-4", isGlobalRefreshing && "animate-spin")} />
-            <span className="hidden xs:inline">Refresh</span>
+            <Loader2 className={cn("h-4 w-4", isGlobalRefreshing && "animate-spin")} />
+            Sync
           </Button>
           <Button 
             onClick={handleOpenAdd}
-            className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-md rounded-xl h-10 px-5 font-bold transition-all active:scale-95"
+            className="h-12 px-8 bg-gradient-primary hover:opacity-90 text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-widest glow-primary shadow-lg active:scale-95 transition-all flex items-center gap-3"
           >
-            <Plus className="mr-2 h-4 w-4" /> Add <span className="hidden xs:inline ml-1">Subscriber</span>
+            <Plus className="h-4 w-4" /> Add Subscriber
           </Button>
         </div>
       </div>
@@ -380,63 +380,65 @@ export default function Subscribers() {
         </div>
       )}
 
-      <div className="glass-card p-4 sm:p-6 mb-8 rounded-3xl border-border/40 bg-background/40 backdrop-blur-md shadow-xl">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <div className="glass-card p-6 rounded-[2.5rem] border-white/5 bg-white/5 backdrop-blur-xl shadow-2xl space-y-6 mb-10">
+        <div className="flex flex-col lg:flex-row gap-6">
           <div className="relative flex-1 group">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40 group-focus-within:text-primary transition-all duration-300 group-focus-within:scale-110" />
             <Input
               placeholder={`Search name, phone, area, or ${customerIdLabel}...`}
-              className="pl-10 bg-background/50 border-border/60 rounded-2xl h-11 focus:ring-primary/20 transition-all text-sm font-medium"
+              className="pl-12 bg-white/5 border-white/5 rounded-2xl h-14 focus:ring-primary/20 transition-all text-sm font-bold placeholder:text-muted-foreground/30"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
             {q && (
               <button 
                 onClick={() => setQ("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground transition-all"
+                className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-muted-foreground transition-all"
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
           
-          <div className="flex flex-wrap items-center gap-3">
-            <select 
-              className="bg-background/50 border border-border/60 rounded-2xl h-11 px-4 text-xs font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-w-[120px] flex-1 sm:flex-none"
-              value={statusF}
-              onChange={(e: any) => setStatusF(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
-            </select>
-            
-            <select 
-              className="bg-background/50 border border-border/60 rounded-2xl h-11 px-4 text-xs font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-w-[120px] flex-1 sm:flex-none"
-              value={areaF}
-              onChange={(e) => setAreaF(e.target.value)}
-            >
-              <option value="all">All Areas</option>
-              {areas.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
-            
-            <select 
-              className="bg-background/50 border border-border/60 rounded-2xl h-11 px-4 text-xs font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-w-[120px] flex-1 sm:flex-none"
-              value={planF}
-              onChange={(e) => setPlanF(e.target.value)}
-            >
-              <option value="all">All Plans</option>
-              {dbPlans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2 glass-panel p-1.5 rounded-2xl border-white/5">
+              <select 
+                className="bg-transparent border-none rounded-xl h-10 px-4 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[130px] cursor-pointer"
+                value={statusF}
+                onChange={(e: any) => setStatusF(e.target.value)}
+              >
+                <option value="all" className="bg-slate-950">All Status</option>
+                <option value="active" className="bg-slate-950">Active Only</option>
+                <option value="inactive" className="bg-slate-950">Inactive Only</option>
+              </select>
+              <div className="w-px h-4 bg-white/10" />
+              <select 
+                className="bg-transparent border-none rounded-xl h-10 px-4 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[130px] cursor-pointer"
+                value={areaF}
+                onChange={(e) => setAreaF(e.target.value)}
+              >
+                <option value="all" className="bg-slate-950">All Areas</option>
+                {areas.map(a => <option key={a} value={a} className="bg-slate-950">{a}</option>)}
+              </select>
+              <div className="w-px h-4 bg-white/10" />
+              <select 
+                className="bg-transparent border-none rounded-xl h-10 px-4 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-0 transition-all min-w-[130px] cursor-pointer"
+                value={planF}
+                onChange={(e) => setPlanF(e.target.value)}
+              >
+                <option value="all" className="bg-slate-950">All Plans</option>
+                {dbPlans.map(p => <option key={p.id} value={p.id} className="bg-slate-950">{p.name}</option>)}
+              </select>
+            </div>
 
-            <div className="flex items-center gap-3 bg-background/50 border border-border/60 px-4 h-11 rounded-2xl flex-1 sm:flex-none">
+            <div className="flex items-center gap-4 glass-panel px-6 h-14 rounded-2xl border-white/5">
               <Switch 
                 id="dues-only" 
                 checked={showDuesOnly} 
                 onCheckedChange={setShowDuesOnly}
-                className="data-[state=checked]:bg-rose-500"
+                className="data-[state=checked]:bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.3)]"
               />
-              <Label htmlFor="dues-only" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap cursor-pointer">Dues Only</Label>
+              <Label htmlFor="dues-only" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 cursor-pointer select-none">Show Overdue</Label>
             </div>
           </div>
         </div>

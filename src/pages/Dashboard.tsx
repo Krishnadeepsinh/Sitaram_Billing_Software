@@ -154,42 +154,43 @@ export default function Dashboard() {
     <div className="space-y-8 animate-fade-in pb-10">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-black mb-1">
+          <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-black mb-2 flex items-center gap-2">
+            <Activity className="h-3 w-3 animate-pulse" />
             {companySettings?.name || 'SITARAM CABLE & BROADBAND'} · Control Center
           </p>
-          <h1 className="font-display text-2xl sm:text-4xl font-black tracking-tighter uppercase">
-            Operations <span className="text-primary italic">Intelligence</span>
+          <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tighter uppercase leading-none">
+            Operations <span className="gradient-text italic">Intelligence</span>
           </h1>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-3 mt-4 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 w-fit">
             <Calendar className="h-3.5 w-3.5 text-primary" />
-            <p className="text-muted-foreground text-sm font-bold uppercase tracking-wider">
-              Viewing Data for <span className="text-foreground">{months[dashboardDate.getMonth()]} {dashboardDate.getFullYear()}</span>
+            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.15em]">
+              Cycle: <span className="text-foreground">{months[dashboardDate.getMonth()]} {dashboardDate.getFullYear()}</span>
             </p>
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 bg-secondary/30 p-1 rounded-xl border border-border/40 backdrop-blur-sm">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2 glass-panel p-1.5 rounded-2xl border-white/10">
             <Select value={months[dashboardDate.getMonth()]} onValueChange={handleMonthChange}>
-              <SelectTrigger className="w-[120px] h-8 border-none bg-transparent focus:ring-0 text-xs font-bold uppercase">
+              <SelectTrigger className="w-[130px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-black uppercase tracking-widest">
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent>
-                {months.map(m => <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>)}
+              <SelectContent className="bg-slate-950 border-white/10 rounded-xl">
+                {months.map(m => <SelectItem key={m} value={m} className="text-[10px] font-black uppercase tracking-widest">{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="w-px h-3 bg-border/60" />
+            <div className="w-px h-4 bg-white/10" />
             <Select value={dashboardDate.getFullYear().toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="w-[80px] h-8 border-none bg-transparent focus:ring-0 text-xs font-bold uppercase">
+              <SelectTrigger className="w-[90px] h-9 border-none bg-transparent focus:ring-0 text-[10px] font-black uppercase tracking-widest">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent>
-                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-xs">{y}</SelectItem>)}
+              <SelectContent className="bg-slate-950 border-white/10 rounded-xl">
+                {years.map(y => <SelectItem key={y} value={y.toString()} className="text-[10px] font-black uppercase tracking-widest">{y}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
-          <Button size="sm" asChild className="bg-gradient-primary text-primary-foreground hover:opacity-90 glow-primary rounded-xl px-4 h-10">
+          <Button size="lg" asChild className="bg-gradient-primary text-primary-foreground hover:opacity-90 glow-primary rounded-2xl px-6 h-12 font-black uppercase tracking-widest text-[10px] transition-all active:scale-95">
             <Link to="/invoices">
               <Wallet className="mr-2 h-4 w-4" /> Collect Payment
             </Link>
@@ -197,49 +198,49 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard label="Today's Collection" value={formatCurrency(s.collectedToday)} delta="+12.5% vs yesterday" icon={Activity} variant="primary" />
         <StatCard label="Month Revenue" value={formatCurrency(s.monthRevenue)} delta={`${payments.length} transactions`} icon={Activity} variant="accent" />
         <StatCard label="Pending Dues" value={formatCurrency(s.pendingDues)} delta={`${s.expired} total expired`} icon={AlertCircle} variant="warning" />
         <StatCard label="Expenses" value={formatCurrency(s.monthExpenses)} delta={`${expenses.length} records`} icon={FileText} variant="destructive" />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Quick Actions</h2>
-          <div className="h-px flex-1 bg-border/40 ml-4" />
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-1">Quick Access Tools</h2>
+          <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent ml-6" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link to="/subscribers" className="group glass-card p-4 rounded-2xl border-primary/20 hover:border-primary hover:shadow-[0_0_20px_-5px_hsl(var(--primary)/0.3)] transition-all duration-300 flex flex-col items-center justify-center gap-3 bg-primary/5">
-             <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-               <Users className="h-6 w-6" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <Link to="/subscribers" className="group glass-card p-6 rounded-[2rem] border-primary/20 hover:border-primary/50 hover:glow-primary transition-all duration-500 flex flex-col items-center justify-center gap-4 bg-primary/5">
+             <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 shadow-inner border border-primary/20">
+               <Users className="h-8 w-8" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest">New Subscriber</span>
+             <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-primary transition-colors">Subscribers</span>
           </Link>
 
-          <Link to="/invoices" className="group glass-card p-4 rounded-2xl border-emerald-500/20 hover:border-emerald-500 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all duration-300 flex flex-col items-center justify-center gap-3 bg-emerald-500/5">
-             <div className="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
-               <Wallet className="h-6 w-6" />
+          <Link to="/invoices" className="group glass-card p-6 rounded-[2rem] border-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)] transition-all duration-500 flex flex-col items-center justify-center gap-4 bg-emerald-500/5">
+             <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 shadow-inner border border-emerald-500/20">
+               <Wallet className="h-8 w-8" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest">Collect Payment</span>
+             <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-emerald-400 transition-colors">Billing</span>
           </Link>
 
-          <Link to="/reports" className="group glass-card p-4 rounded-2xl border-accent/20 hover:border-accent hover:shadow-[0_0_20px_-5px_hsl(var(--accent)/0.3)] transition-all duration-300 flex flex-col items-center justify-center gap-3 bg-accent/5">
-             <div className="h-12 w-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all duration-300">
-               <BarChart3 className="h-6 w-6" />
+          <Link to="/reports" className="group glass-card p-6 rounded-[2rem] border-accent/20 hover:border-accent/50 hover:glow-accent transition-all duration-500 flex flex-col items-center justify-center gap-4 bg-accent/5">
+             <div className="h-16 w-16 rounded-2xl bg-accent/10 text-accent flex items-center justify-center group-hover:scale-110 group-hover:bg-accent group-hover:text-white transition-all duration-500 shadow-inner border border-accent/20">
+               <BarChart3 className="h-8 w-8" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest">Growth Reports</span>
+             <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-accent transition-colors">Analytics</span>
           </Link>
 
           <Button 
             variant="ghost" 
             onClick={handleDownloadReport}
-            className="group glass-card p-4 h-auto rounded-2xl border-amber-500/20 hover:border-amber-500 hover:bg-amber-500/5 hover:shadow-[0_0_20px_-5px_rgba(245,158,11,0.3)] transition-all duration-300 flex flex-col items-center justify-center gap-3"
+            className="group glass-card p-6 h-auto rounded-[2rem] border-amber-500/20 hover:border-amber-500/50 hover:bg-amber-500/5 hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)] transition-all duration-500 flex flex-col items-center justify-center gap-4"
           >
-             <div className="h-12 w-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
-               {isGenerating ? <Loader2 className="h-6 w-6 animate-spin" /> : <Download className="h-6 w-6" />}
+             <div className="h-16 w-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-500 shadow-inner border border-amber-500/20">
+               {isGenerating ? <Loader2 className="h-8 w-8 animate-spin" /> : <Download className="h-8 w-8" />}
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest">Export Operations</span>
+             <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-amber-400 transition-colors">Export</span>
           </Button>
         </div>
       </div>

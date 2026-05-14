@@ -12,7 +12,7 @@ export default function AppLayout() {
   
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full relative bg-slate-50/50 dark:bg-slate-950/50">
+      <div className="min-h-screen flex w-full relative bg-background bg-grid-white bg-mesh">
         {isLoading && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/60 backdrop-blur-sm transition-all">
             <div className="flex flex-col items-center gap-3 p-8 rounded-3xl bg-background/80 shadow-2xl border border-border/40 scale-100 animate-in zoom-in-95">

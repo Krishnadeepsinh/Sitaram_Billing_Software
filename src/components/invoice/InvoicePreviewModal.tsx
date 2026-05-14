@@ -89,11 +89,14 @@ export default function InvoicePreviewModal({
   const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
 
   const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) return;
+    if (!contentRef.current) {
+      toast.error("Invoice content not ready. Please try again.");
+      return;
+    }
     
     setIsProcessing(true);
     try {
-      const element = invoiceRef.current;
+      const element = contentRef.current;
       const html2pdf = (await import("html2pdf.js")).default;
       
       const options = {
@@ -106,8 +109,17 @@ export default function InvoicePreviewModal({
           letterRendering: true,
           scrollX: 0,
           scrollY: 0,
-          windowWidth: element.scrollWidth,
-          logging: false
+          windowWidth: 794,
+          logging: false,
+          onclone: (doc: Document) => {
+            const clonedElement = doc.getElementById("invoice-content");
+            if (clonedElement) {
+              clonedElement.style.transform = "none";
+              clonedElement.style.margin = "0";
+              clonedElement.style.width = "794px";
+              clonedElement.style.height = "auto";
+            }
+          }
         },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };

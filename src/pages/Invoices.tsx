@@ -423,18 +423,20 @@ ${brand.name}`;
 
   return (
     <div className="space-y-8 animate-fade-in relative pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">
-            <FileText className="h-10 w-10 text-primary" />
-            Billing Records
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tighter uppercase leading-none">
+            Billing <span className="gradient-text italic">Records</span>
           </h1>
-          <p className="text-muted-foreground font-medium mt-1">Manage digital invoices and tax compliance.</p>
+          <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.2em] mt-3 flex items-center gap-2">
+            <Activity className="h-3 w-3 text-primary" />
+            Manage digital invoices and tax compliance.
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-4">
           <Button 
             variant="outline"
-            className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-2 hover:bg-emerald-50 active:scale-95 transition-all flex items-center gap-2 text-emerald-600 border-emerald-100 bg-emerald-50/30" 
+            className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-white/5 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/20 active:scale-95 transition-all flex items-center gap-3 text-emerald-400" 
             onClick={handleSync}
             disabled={isProcessing}
           >
@@ -443,7 +445,7 @@ ${brand.name}`;
           </Button>
           <Button 
             variant="outline"
-            className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-2 hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-2" 
+            className="h-12 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border-white/5 bg-white/5 hover:bg-white/10 active:scale-95 transition-all flex items-center gap-3 text-foreground" 
             onClick={handleBulk}
             disabled={isProcessing}
           >
@@ -456,7 +458,7 @@ ${brand.name}`;
               setPlanMonths(1);
               setShowSubSelect(true);
             }} 
-            className="h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center gap-2"
+            className="h-12 px-8 bg-gradient-primary hover:opacity-90 text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-widest glow-primary shadow-lg active:scale-95 transition-all flex items-center gap-3"
           >
             <Plus className="h-4 w-4" /> New Invoice
           </Button>
@@ -491,41 +493,50 @@ ${brand.name}`;
 
       {/* Manual Generation Modal */}
       {showSubSelect && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200">
-            <h2 className="text-xl font-bold mb-6">Select Subscriber</h2>
+        <div className="fixed inset-0 bg-background/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="glass-card w-full max-w-md p-8 rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] border-white/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+              <Plus className="h-24 w-24 text-primary" />
+            </div>
             
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-bold text-muted-foreground mb-2">Filter by Address (Optional)</label>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">New Billing Entry</h2>
+              <button onClick={() => setShowSubSelect(false)} className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-6 mb-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Filter Area</label>
                 <select 
-                  className="w-full bg-secondary/50 border border-border rounded-xl p-3 outline-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-sm appearance-none cursor-pointer"
                   value={selectedArea}
                   onChange={(e) => {
                     setSelectedArea(e.target.value);
                     setSelectedSub("");
                   }}
                 >
-                  <option value="">All Addresses</option>
+                  <option value="" className="bg-slate-950">All Locations</option>
                   {Array.from(new Set(subscribers.filter(s => s.status === 'active' && s.area).map(s => s.area))).sort().map(area => (
-                    <option key={area || 'unknown'} value={area}>{area}</option>
+                    <option key={area || 'unknown'} value={area} className="bg-slate-950">{area}</option>
                   ))}
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-muted-foreground mb-2">Select Customer</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Subscriber</label>
                 <select 
-                  className="w-full bg-secondary/50 border border-border rounded-xl p-3 outline-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold text-sm appearance-none cursor-pointer"
                   value={selectedSub}
                   onChange={(e) => setSelectedSub(e.target.value)}
                 >
-                  <option value="">Choose a subscriber...</option>
+                  <option value="" className="bg-slate-950">Select Account...</option>
                   {subscribers
                     .filter(s => s.status === 'active' && (!selectedArea || s.area === selectedArea))
                     .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
                     .map(s => (
-                      <option key={s.id} value={s.id}>{s.name} {s.area ? `(${s.area})` : ''}</option>
+                      <option key={s.id} value={s.id} className="bg-slate-950">{s.name} {s.area ? `· ${s.area}` : ''}</option>
                     ))}
                 </select>
               </div>
@@ -1272,35 +1283,38 @@ ${brand.name}`;
       </div>
 
       {/* Bulk Action Footer */}
-      <div className="bg-primary/5 border border-primary/10 rounded-[2rem] p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
-        <div className="flex items-center gap-6">
-          <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary relative shadow-inner">
-            <FileText className="h-8 w-8" />
-            <div className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full border-2 border-white animate-bounce" />
+      <div className="glass-card bg-slate-900/60 border border-white/10 rounded-[2.5rem] p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 group-hover:bg-primary/10 transition-colors duration-500" />
+        
+        <div className="flex items-center gap-6 relative z-10">
+          <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary relative shadow-[inset_0_0_20px_rgba(6,182,212,0.1)] border border-primary/20">
+            <FileText className="h-10 w-10" />
+            <div className="absolute -top-1 -right-1 h-5 w-5 bg-primary rounded-full border-4 border-slate-900 animate-pulse shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
           </div>
-          <div className="space-y-1">
-            <h3 className="font-display font-black text-lg tracking-tight text-foreground">Monthly Bulk Billing Cycle</h3>
-            <p className="text-sm text-muted-foreground max-w-sm">Automatically generate pending invoices for all <strong>{subscribers.filter(s => s.status === 'active').length} active</strong> subscribers in your network.</p>
+          <div className="space-y-1.5">
+            <h3 className="font-display font-black text-2xl tracking-tight text-white">Monthly Bulk Billing Cycle</h3>
+            <p className="text-sm text-slate-400 max-w-md font-medium leading-relaxed">Automatically generate pending invoices for all <strong>{subscribers.filter(s => s.status === 'active').length} active</strong> subscribers in your network.</p>
           </div>
         </div>
+        
         <Button 
           disabled={isProcessing}
           onClick={handleBulk}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 glow-primary h-14 px-8 rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:-translate-y-1"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 glow-primary h-16 px-10 rounded-[1.25rem] font-black text-xs uppercase tracking-[0.2em] transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_-10px_rgba(6,182,212,0.4)] disabled:opacity-50 relative z-10"
         >
-          {isProcessing ? <Loader2 className="h-5 w-5 animate-spin mr-3" /> : null}
-          Initiate Cycle
+          {isProcessing ? <Loader2 className="h-5 w-5 animate-spin mr-3" /> : <Activity className="h-5 w-5 mr-3" />}
+          Initiate Billing
         </Button>
       </div>
 
       {/* Confirmation Modal */}
       {confirmModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-          <div className="bg-white text-black w-full max-w-md p-6 rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-200">
-            <h2 className="text-xl font-bold mb-2">Confirm Action</h2>
-            <p className="text-slate-600 mb-6 font-medium">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-slate-900/90 border border-white/10 w-full max-w-md p-8 rounded-[3rem] shadow-2xl animate-in zoom-in-95 duration-300 ring-1 ring-white/5">
+            <h2 className="text-2xl font-black mb-2 text-white tracking-tight">Confirm Action</h2>
+            <p className="text-slate-400 mb-8 font-medium leading-relaxed">
               {confirmModal.type === 'bulk' 
-                ? "Select the billing month and year for this cycle:"
+                ? "Configure the billing period for this automated cycle:"
                 : confirmModal.type === 'bulkDelete'
                 ? `Are you sure you want to delete ${selectedInvoices.length} selected invoice(s)? This action cannot be undone.`
                 : "Are you sure you want to delete this invoice? This action cannot be undone."}
@@ -1317,19 +1331,19 @@ ${brand.name}`;
                     <select 
                       value={billingMonth} 
                       onChange={(e) => setBillingMonth(Number(e.target.value))}
-                      className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none text-sm"
+                      className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 font-black text-white focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none text-xs uppercase tracking-widest transition-all hover:bg-white/10 cursor-pointer"
                     >
                       {months.map((m, i) => (
-                        <option key={m} value={i}>{m}</option>
+                        <option key={m} value={i} className="bg-slate-900 text-white font-bold">{m}</option>
                       ))}
                     </select>
                     <select 
                       value={billingYear} 
                       onChange={(e) => setBillingYear(Number(e.target.value))}
-                      className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none text-sm"
+                      className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 font-black text-white focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none text-xs uppercase tracking-widest transition-all hover:bg-white/10 cursor-pointer"
                     >
                       {years.map(y => (
-                        <option key={y} value={y}>{y}</option>
+                        <option key={y} value={y} className="bg-slate-900 text-white font-bold">{y}</option>
                       ))}
                     </select>
                   </div>
@@ -1344,34 +1358,37 @@ ${brand.name}`;
                     <select 
                       value={endMonth} 
                       onChange={(e) => setEndMonth(Number(e.target.value))}
-                      className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none text-sm"
+                      className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 font-black text-white focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none text-xs uppercase tracking-widest transition-all hover:bg-white/10 cursor-pointer"
                     >
                       {months.map((m, i) => (
-                        <option key={m} value={i}>{m}</option>
+                        <option key={m} value={i} className="bg-slate-900 text-white font-bold">{m}</option>
                       ))}
                     </select>
                     <select 
                       value={endYear} 
                       onChange={(e) => setEndYear(Number(e.target.value))}
-                      className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none text-sm"
+                      className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 font-black text-white focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none text-xs uppercase tracking-widest transition-all hover:bg-white/10 cursor-pointer"
                     >
                       {years.map(y => (
-                        <option key={y} value={y}>{y}</option>
+                        <option key={y} value={y} className="bg-slate-900 text-white font-bold">{y}</option>
                       ))}
                     </select>
                   </div>
                 </div>
 
-                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/20 space-y-1">
-                  <p className="text-[10px] text-primary uppercase font-black tracking-widest text-center">Billing Period</p>
-                  <p className="text-sm font-bold text-slate-900 text-center">
+                <div className="bg-primary/10 p-5 rounded-3xl border border-primary/20 space-y-1.5 shadow-inner">
+                  <p className="text-[9px] text-primary uppercase font-black tracking-[0.25em] text-center opacity-70">Calculated Cycle</p>
+                  <p className="text-lg font-black text-white text-center tracking-tight">
                     {months[billingMonth]} {billingYear}
                     {((endYear - billingYear) * 12 + (endMonth - billingMonth) + 1) > 1 && (
-                      <> — {months[endMonth]} {endYear}</>
+                      <span className="text-primary/60 mx-2">→</span>
+                    )}
+                    {((endYear - billingYear) * 12 + (endMonth - billingMonth) + 1) > 1 && (
+                      <>{months[endMonth]} {endYear}</>
                     )}
                   </p>
-                  <p className="text-[10px] text-slate-500 font-bold text-center">
-                    Total duration: {((endYear - billingYear) * 12 + (endMonth - billingMonth) + 1)} Month(s)
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest text-center">
+                    Duration: {((endYear - billingYear) * 12 + (endMonth - billingMonth) + 1)} Month(s)
                   </p>
                 </div>
 
@@ -1394,11 +1411,17 @@ ${brand.name}`;
                 </div>
               </div>
             )}
-            <div className="flex justify-end gap-3">
-              <Button variant="secondary" className="rounded-xl font-bold" onClick={() => setConfirmModal(null)}>Cancel</Button>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button 
+                variant="ghost" 
+                className="rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/5 h-12 px-6" 
+                onClick={() => setConfirmModal(null)}
+              >
+                Cancel
+              </Button>
               <Button 
                 variant={confirmModal.type === 'delete' || confirmModal.type === 'bulkDelete' ? 'destructive' : 'default'} 
-                className={`rounded-xl ${confirmModal.type === 'bulk' ? 'bg-primary text-primary-foreground hover:opacity-90' : ''}`}
+                className={`rounded-2xl h-12 px-8 font-black text-[10px] uppercase tracking-widest transition-all ${confirmModal.type === 'bulk' ? 'bg-primary text-primary-foreground hover:glow-primary' : ''}`}
                 onClick={() => {
                   if (confirmModal.type === 'bulk') {
                     executeBulk();

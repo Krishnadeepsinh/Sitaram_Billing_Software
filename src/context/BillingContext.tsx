@@ -259,12 +259,12 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const plansSeeded = LS.get(`plans_seeded_${businessMode}`, false);
         
         if (Number(planCheck.rows[0].count) === 0 && !plansSeeded) {
-          for (const p of getDefaultPlans(businessMode)) {
-            await db.execute({
-              sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-              args: [p.id, p.name, p.price, p.validityDays, p.speedMbps, p.priceWithoutGst || p.price, p.providerPlanId || '', p.category || 'welcome']
-            });
-          }
+          const initialPlans = getDefaultPlans(businessMode);
+          const planInserts = initialPlans.map(p => ({
+            sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            args: [p.id, p.name, p.price, p.validityDays, p.speedMbps, p.priceWithoutGst || p.price, p.providerPlanId || '', p.category || 'welcome']
+          }));
+          await db.batch(planInserts);
           LS.set(`plans_seeded_${businessMode}`, true);
         } else if (businessMode === "broadband") {
           const existingPlansRes = await db.execute('SELECT provider_plan_id FROM plans');
@@ -277,14 +277,30 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             (plan) => plan.providerPlanId && !existingPlanIds.has(plan.providerPlanId)
           );
   
-          for (const p of missingBroadbandPlans) {
-            await db.execute({
+          const missingBroadbandPlans = getDefaultPlans("broadband").filter(
+            (plan) => plan.providerPlanId && !existingPlanIds.has(plan.providerPlanId)
+          );
+  
+          if (missingBroadbandPlans.length > 0) {
+            const planInserts = missingBroadbandPlans.map(p => ({
               sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
               args: [p.id, p.name, p.price, p.validityDays, p.speedMbps, p.priceWithoutGst || p.price, p.providerPlanId || '', p.category || 'welcome']
-            });
+            }));
+            await db.batch(planInserts);
           }
         }
   
+        // Add indexes for performance optimization
+        await db.batch([
+          'CREATE INDEX IF NOT EXISTS idx_subs_status ON subscribers(status)',
+          'CREATE INDEX IF NOT EXISTS idx_subs_area ON subscribers(area)',
+          'CREATE INDEX IF NOT EXISTS idx_pay_subid ON payments(subscriber_id)',
+          'CREATE INDEX IF NOT EXISTS idx_pay_date ON payments(date)',
+          'CREATE INDEX IF NOT EXISTS idx_inv_subid ON invoices(subscriber_id)',
+          'CREATE INDEX IF NOT EXISTS idx_inv_date ON invoices(date)',
+          'CREATE INDEX IF NOT EXISTS idx_inv_status ON invoices(status)',
+        ]);
+
         LS.set(`schema_migrated_v2_${businessMode}`, true);
       }
 

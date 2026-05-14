@@ -351,7 +351,7 @@ export default function Payments() {
         amount: formData.amount,
         method: formData.method === "cash" ? "Cash" : "UPI",
         date: new Date().toISOString(),
-        agent: "Shaktisinh Chudasama", 
+        agent: "Chudasama Shaktisinh", 
       });
       toast.success("Payment recorded successfully");
       setShowForm(false);

@@ -769,7 +769,7 @@ export default function Subscribers() {
                     <td className="px-4 py-4">
                       <StatusBadge 
                         status={s.status} 
-                        onClick={() => updateSubscriber(s.id, { status: s.status === 'active' ? 'expired' : 'active' })}
+                        onClick={() => updateSubscriber(s.id, { status: String(s.status).toLowerCase() === 'active' ? 'expired' : 'active' })}
                         className="shadow-sm"
                       />
                     </td>

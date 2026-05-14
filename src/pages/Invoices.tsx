@@ -394,7 +394,7 @@ ${brand.name}`;
         discount: payDiscount,
         method: payMethod,
         date: paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString(),
-        agent: "Admin"
+        agent: "Chudasama Shaktisinh"
       });
       toast.success("Payment recorded successfully" + (payDiscount > 0 ? " with discount" : ""));
       setPayInv(null);

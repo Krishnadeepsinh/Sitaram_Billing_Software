@@ -1,4 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
+import { InStatement } from "@libsql/client";
 import { getDb, verifySession, readJsonBody } from "../_utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -7,7 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const session = verifySession(req);
   if (!session) return res.status(401).json({ error: "Unauthorized" });
 
-  const { mode, queries, txMode } = await readJsonBody<{ mode?: string; queries?: Array<string | { sql: string; args?: unknown[] }>; txMode?: "read" | "write" }>(req);
+  const { mode, queries, txMode } = await readJsonBody<{ mode?: string; queries?: InStatement[]; txMode?: "read" | "write" }>(req);
   const db = getDb(mode === "cable" ? "cable" : "broadband");
 
   try {

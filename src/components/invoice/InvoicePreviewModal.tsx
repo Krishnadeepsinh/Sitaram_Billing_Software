@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { Download, Loader2, Send, X, ShieldCheck, CreditCard, Calendar } from "lucide-react";
+import { Download, Loader2, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatDate, formatFullDate } from "@/lib/mockData";
+import { formatFullDate } from "@/lib/mockData";
 import { toast } from "sonner";
-import { getBillingPeriodLabel, getInvoiceLabel, getInvoiceLineItem } from "./invoicePreviewUtils";
+import { getBillingPeriodLabel, getInvoiceLineItem } from "./invoicePreviewUtils";
 import { QRCodeSVG } from "qrcode.react";
 
 type InvoicePreviewModalProps = {
@@ -65,35 +65,22 @@ export default function InvoicePreviewModal({
     () => subscribers.find((item) => item.id === invoice.subscriberId),
     [invoice.subscriberId, subscribers],
   );
-  const invoiceLabel = getInvoiceLabel(invoice, isCableMode);
   const billingPeriodLabel = getBillingPeriodLabel(invoice);
-  const lineItem = getInvoiceLineItem(invoice, subscriber, plans, isCableMode);
 
   const generatePdfBlob = async () => {
     const element = document.getElementById("invoice-content-print");
     if (!element) throw new Error("Document not ready");
 
-    const parent = element.parentElement;
-    const originalParentStyle = parent ? parent.getAttribute("style") : "";
-    
-    if (parent) {
-      parent.style.display = "block";
-      parent.style.position = "fixed";
-      parent.style.top = "0";
-      parent.style.left = "-10000px";
-      parent.style.width = "794px";
-      parent.style.zIndex = "-9999";
-    }
-
     try {
       const { toPng } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Small delay for React to finish rendering DOM and SVG
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const dataUrl = await toPng(element, {
-        quality: 0.95,
-        pixelRatio: 1.5,
+        quality: 1.0,
+        pixelRatio: 2,
         backgroundColor: "#ffffff",
         cacheBust: true,
         style: {
@@ -113,12 +100,9 @@ export default function InvoicePreviewModal({
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
       pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-      
-      if (parent) parent.setAttribute("style", originalParentStyle || "display: none");
       return pdf.output("blob");
     } catch (err) {
       console.error("PDF Gen Error:", err);
-      if (parent) parent.setAttribute("style", originalParentStyle || "display: none");
       throw err;
     }
   };
@@ -165,6 +149,11 @@ export default function InvoicePreviewModal({
   };
 
   const InvoiceContent = ({ id }: { id?: string }) => {
+    const subscriber = useMemo(
+      () => subscribers.find((item) => item.id === invoice.subscriberId),
+      [invoice.subscriberId, subscribers],
+    );
+
     const parseAmount = (val: any) => {
       if (typeof val === 'number') return isNaN(val) ? 0 : val;
       const cleaned = String(val || '0').replace(/[^0-9.]/g, '');
@@ -172,11 +161,9 @@ export default function InvoicePreviewModal({
       return isNaN(num) ? 0 : num;
     };
 
-    const currentAmount = parseAmount(invoice?.amount);
-    const previousDues = (invoices || [])
-      .filter((item) => item.subscriberId === invoice.subscriberId && item.id !== invoice.id && item.status !== "paid")
-      .reduce((sum, item) => sum + parseAmount(item.amount), 0);
-    const grandTotal = currentAmount + previousDues;
+    const amount = parseAmount(invoice.amount);
+    const previousBalance = parseAmount(invoice.previousBalance);
+    const grandTotal = amount + previousBalance;
 
     const numToWords = (n: number) => {
       if (isNaN(n)) return "Zero Rupees Only";
@@ -193,229 +180,232 @@ export default function InvoicePreviewModal({
       return result ? result + " Rupees Only" : "Zero Rupees Only";
     };
 
+    const styles: Record<string, React.CSSProperties> = {
+      page: { fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif", fontSize: 13, color: "#1a1a2e", background: "#ffffff", width: 794, minHeight: 1123, margin: "0 auto", boxSizing: "border-box", padding: 0, position: "relative" },
+      header: { background: "#1a2e5a", color: "#ffffff", padding: "24px 36px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" },
+      headerLeft: { display: "flex", alignItems: "center", gap: 18 },
+      logoBox: { width: 76, height: 76, background: "#ffffff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 },
+      logoSvg: { width: 72, height: 72 },
+      companyName: { fontSize: 22, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.2 },
+      tagline: { fontSize: 11, color: "#a0b4d0", marginTop: 2 },
+      contactInfo: { fontSize: 11, color: "#c8d8ee", marginTop: 8, lineHeight: 1.8 },
+      headerBadge: { background: "#e8522a", color: "#fff", fontSize: 13, fontWeight: 700, padding: "6px 18px", borderRadius: 6, letterSpacing: 1, textTransform: "uppercase" },
+      orangeBar: { height: 5, background: "linear-gradient(90deg,#e8522a,#f4a035)" },
+      metaRow: { display: "flex", borderBottom: "1px solid #e4e9f0", background: "#f8fafc" },
+      metaCell: { flex: 1, padding: "14px 20px", borderRight: "1px solid #e4e9f0" },
+      metaCellLast: { flex: 1, padding: "14px 20px" },
+      metaLabel: { fontSize: 10, color: "#7a8fa6", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 },
+      metaValue: { fontSize: 14, fontWeight: 700, color: "#1a2e5a", marginTop: 3 },
+      statusUnpaid: { display: "inline-block", background: "#fff3e0", color: "#e65100", fontWeight: 800, fontSize: 13, padding: "3px 12px", borderRadius: 4, marginTop: 3, border: "1px solid #ffcc80" },
+      statusPaid: { display: "inline-block", background: "#e8f5e9", color: "#1b5e20", fontWeight: 800, fontSize: 13, padding: "3px 12px", borderRadius: 4, marginTop: 3, border: "1px solid #a5d6a7" },
+      body: { padding: "20px 36px 28px" },
+      twoCol: { display: "flex", gap: 16, marginBottom: 16 },
+      infoBox: { flex: 1 },
+      sectionTitle: { background: "#1a2e5a", color: "#ffffff", fontSize: 11, fontWeight: 700, padding: "7px 14px", letterSpacing: 0.8, textTransform: "uppercase", borderRadius: "4px 4px 0 0" },
+      infoContent: { border: "1px solid #dce4ef", borderTop: "none", padding: "12px 14px", borderRadius: "0 0 4px 4px", background: "#fcfdff" },
+      infoRow: { display: "flex", marginBottom: 6, fontSize: 12 },
+      infoKey: { color: "#7a8fa6", fontWeight: 600, width: 130, flexShrink: 0, fontSize: 11 },
+      infoVal: { color: "#1a2e5a", fontWeight: 600 },
+      addressText: { color: "#1a2e5a", fontWeight: 500, lineHeight: 1.7, fontSize: 12 },
+      table: { width: "100%", borderCollapse: "collapse", marginBottom: 0 },
+      thRow: { background: "#1a2e5a" },
+      th: { color: "#ffffff", fontSize: 11, fontWeight: 700, padding: "9px 12px", textAlign: "left", letterSpacing: 0.5 },
+      thRight: { color: "#ffffff", fontSize: 11, fontWeight: 700, padding: "9px 12px", textAlign: "right", letterSpacing: 0.5 },
+      td: { padding: "10px 12px", fontSize: 12, color: "#1a2e5a", borderBottom: "1px solid #e4e9f0", textAlign: "left" },
+      tdRight: { padding: "10px 12px", fontSize: 12, color: "#1a2e5a", borderBottom: "1px solid #e4e9f0", textAlign: "right" },
+      tableWrapper: { border: "1px solid #dce4ef", borderRadius: 4, overflow: "hidden", marginBottom: 10 },
+      totalsArea: { display: "flex", justifyContent: "flex-end", marginTop: 0 },
+      totalsBox: { width: 280 },
+      totalRow: { display: "flex", justifyContent: "space-between", padding: "6px 14px", fontSize: 12, color: "#4a5568", borderBottom: "1px solid #eef1f6" },
+      grandRow: { display: "flex", justifyContent: "space-between", padding: "10px 14px", fontSize: 14, fontWeight: 800, color: "#ffffff", background: "#1a2e5a", borderRadius: "0 0 4px 4px" },
+      wordsBox: { background: "#f0f4fa", border: "1px solid #dce4ef", borderRadius: 4, padding: "8px 14px", fontSize: 12, color: "#4a5568", fontStyle: "italic", marginTop: 8, marginBottom: 16 },
+      bottomArea: { display: "flex", gap: 16, marginTop: 10 },
+      payBox: { flex: 1 },
+      payTitle: { fontSize: 11, fontWeight: 700, color: "#e8522a", letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 8 },
+      payItem: { fontSize: 12, color: "#1a2e5a", marginBottom: 4, display: "flex", gap: 6 },
+      payNum: { color: "#7a8fa6", fontWeight: 700, width: 18, flexShrink: 0 },
+      qrBox: { width: 140, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px solid #dce4ef", borderRadius: 4, padding: "10px 14px", background: "#f8fafc" },
+      qrTitle: { fontSize: 10, fontWeight: 700, color: "#1a2e5a", letterSpacing: 0.5, marginBottom: 6 },
+      qrUpi: { fontSize: 10, color: "#1a2e5a", fontWeight: 600, marginTop: 4 },
+      footer: { background: "#1a2e5a", color: "#a0b4d0", fontSize: 10, textAlign: "center", padding: "10px 20px", marginTop: "auto" },
+    };
+
+    const LogoSVG = () => (
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={styles.logoSvg}>
+        <rect width="80" height="80" rx="10" fill="#1a2e5a" />
+        <circle cx="40" cy="34" r="18" fill="none" stroke="#e8522a" strokeWidth="3" />
+        <circle cx="40" cy="34" r="10" fill="none" stroke="#f4a035" strokeWidth="2.5" />
+        <circle cx="40" cy="34" r="4" fill="#e8522a" />
+        <path d="M28 52 Q40 44 52 52" stroke="#ffffff" strokeWidth="2" fill="none" strokeLinecap="round" />
+        <path d="M22 58 Q40 48 58 58" stroke="#a0b4d0" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        <text x="40" y="73" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="700" fontFamily="Arial">SITARAM</text>
+      </svg>
+    );
+
+    const isPaid = invoice.status === "PAID";
+    const statusStyle = isPaid ? styles.statusPaid : styles.statusUnpaid;
+    const lineItem = getInvoiceLineItem(invoice, subscriber, plans, isCableMode);
+
     return (
-      <div 
-        id={id}
-        className="bg-white relative font-sans flex flex-col min-h-[1122px] w-[794px] shrink-0 overflow-hidden"
-        style={{ color: "#1E293B" }}
-      >
-        {/* Professional Header Section */}
-        <div className="bg-[#1A3C6E] p-12 flex justify-between items-start relative overflow-hidden h-[180px]">
-          <div className="absolute top-[-40px] right-[-40px] w-64 h-64 bg-white/5 rounded-full" />
-          <div className="absolute bottom-[-60px] right-40 w-40 h-40 bg-white/5 rounded-full" />
-          <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#0EA5E9]" />
-
-          <div className="flex gap-12 relative z-10 items-center">
-            <div className="bg-white p-4 rounded-3xl w-[45mm] h-[45mm] flex items-center justify-center shadow-2xl border border-white/20">
-              <img src="/logo.png" alt="Sitaram Logo" className="w-full h-auto object-contain" />
-            </div>
-
-            <div className="text-white flex flex-col justify-center">
-              <h1 className="text-[28px] font-black tracking-tighter leading-none mb-1">{brand.name}</h1>
-              <p className="text-[11px] text-blue-300 font-bold mb-6 tracking-[0.25em] uppercase opacity-90">Connecting Every Home • Fast & Reliable</p>
-              
-              <div className="space-y-1.5 opacity-90">
-                <p className="text-[10px] flex items-center gap-2">📞 +91 98765 43210  |  📞 +91 91234 56789</p>
-                <p className="text-[10px]">📍 {brand.address || "Shop No. 5, Main Market, Veraval, Gujarat - 362265"}</p>
-                <p className="text-[10px] font-bold text-blue-300">WhatsApp: +91 98765 43210 | UPI: {brand.upiId}</p>
+      <div id={id} style={styles.page}>
+        {/* Header */}
+        <div style={styles.header}>
+          <div style={styles.headerLeft}>
+            <div style={styles.logoBox}><LogoSVG /></div>
+            <div>
+              <div style={styles.companyName}>SITARAM CABLE & BROADBAND</div>
+              <div style={styles.tagline}>Connecting Every Home</div>
+              <div style={styles.contactInfo}>
+                ☎ {brand.phone} <br />
+                ■ {brand.address}<br />
+                WhatsApp Support: {brand.phone}<br />
+                UPI: {brand.upiId}
               </div>
             </div>
           </div>
+          <div style={styles.headerBadge}>INVOICE</div>
+        </div>
+        <div style={styles.orangeBar} />
 
-          <div className="flex flex-col items-end relative z-10 pt-4">
-            <div className="bg-[#F47920] px-12 py-4 rounded-2xl shadow-[0_15px_35px_rgba(244,121,32,0.4)] border-2 border-white/30">
-              <span className="text-white text-[18px] font-black uppercase tracking-[0.3em]">INVOICE</span>
-            </div>
-            <p className="text-white/50 text-[10px] font-bold mt-4 tracking-widest uppercase">Official Document</p>
+        {/* Meta Row */}
+        <div style={styles.metaRow}>
+          <div style={styles.metaCell}>
+            <div style={styles.metaLabel}>Invoice No</div>
+            <div style={styles.metaValue}>{invoice.number}</div>
+          </div>
+          <div style={styles.metaCell}>
+            <div style={styles.metaLabel}>Billing Date</div>
+            <div style={styles.metaValue}>{formatFullDate(invoice.date)}</div>
+          </div>
+          <div style={styles.metaCell}>
+            <div style={styles.metaLabel}>Due Date</div>
+            <div style={styles.metaValue}>{formatFullDate(invoice.dueDate)}</div>
+          </div>
+          <div style={styles.metaCellLast}>
+            <div style={styles.metaLabel}>Status</div>
+            <div style={statusStyle}>{isPaid ? "PAID" : "UNPAID"}</div>
           </div>
         </div>
 
-        <div className="h-3 bg-[#F47920] relative overflow-hidden">
-           <div className="absolute inset-0 bg-white/20 animate-pulse" />
-        </div>
-
-        <div className="p-12 space-y-10 flex-1">
-          {/* Quick Info Grid */}
-          <div className="bg-[#EFF6FF] border-2 border-[#BFDBFE] rounded-[6mm] px-12 py-8 grid grid-cols-4 gap-10 shadow-sm relative">
-            <div className="absolute top-0 left-10 transform -translate-y-1/2 bg-white px-4 py-1 rounded-full border border-blue-100 shadow-sm">
-               <span className="text-[#1A3C6E] text-[8px] font-black uppercase tracking-widest">Document Details</span>
-            </div>
-            {[
-              { label: "Invoice No:", val: invoice.number },
-              { label: "Billing Date:", val: formatFullDate(invoice.date) },
-              { label: "Due Date:", val: formatFullDate(invoice.dueDate) },
-              { label: "Status:", val: "UNPAID", color: "text-[#DC2626]" }
-            ].map((item, idx) => (
-              <div key={idx} className="flex flex-col">
-                <span className="text-[#64748B] text-[9px] font-black uppercase tracking-widest mb-1.5">{item.label}</span>
-                <span className={`text-[12px] font-black ${item.color || "text-[#1E293B]"}`}>{item.val}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Customer & Address Section */}
-          <div className="grid grid-cols-12 gap-10">
-            <div className="col-span-7 bg-[#F8FAFC] border border-[#CBD5E1] rounded-[6mm] overflow-hidden flex flex-col shadow-sm">
-              <div className="bg-[#1A3C6E] px-8 py-4 flex items-center justify-between">
-                <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">CUSTOMER INFORMATION</span>
-                <ShieldCheck className="h-4 w-4 text-blue-400 opacity-50" />
-              </div>
-              <div className="p-8 space-y-4 flex-1 bg-white">
+        {/* Body */}
+        <div style={styles.body}>
+          {/* Customer + Address */}
+          <div style={styles.twoCol}>
+            <div style={styles.infoBox}>
+              <div style={styles.sectionTitle}>Customer Information</div>
+              <div style={styles.infoContent}>
                 {[
-                  { label: "Full Name:", val: subscriber?.name || "N/A" },
-                  { label: "Customer ID:", val: subscriber?.customerId || subscriber?.id || "N/A" },
-                  { label: "Mobile No:", val: subscriber?.phone || "N/A" },
-                  { label: "Service Type:", val: isCableMode ? "Digital Cable TV" : "Broadband - Fiber Optic" },
-                  { label: "Plan Name:", val: lineItem.description }
-                ].map((row, i) => (
-                  <div key={i} className="grid grid-cols-5 text-[11px] items-center border-b border-slate-50 pb-2">
-                    <span className="col-span-2 text-[#64748B] font-bold">{row.label}</span>
-                    <span className="col-span-3 text-[#1E293B] font-black truncate">{row.val}</span>
+                  { k: "Full Name", v: subscriber?.name },
+                  { k: customerIdLabel, v: subscriber?.customerId || subscriber?.id },
+                  { k: "Mobile No", v: subscriber?.phone },
+                  { k: "Service Type", v: isCableMode ? "Digital Cable TV" : "Broadband - Fiber" },
+                  { k: "Device (ONU/MAC)", v: subscriber?.onuSerial || subscriber?.stbNumber },
+                ].filter(i => i.v).map((item) => (
+                  <div style={styles.infoRow} key={item.k}>
+                    <span style={styles.infoKey}>{item.k}:</span>
+                    <span style={styles.infoVal}>{item.v}</span>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="col-span-5 bg-[#F8FAFC] border border-[#CBD5E1] rounded-[6mm] overflow-hidden flex flex-col shadow-sm">
-              <div className="bg-[#1A3C6E] px-8 py-4">
-                <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">SERVICE ADDRESS</span>
-              </div>
-              <div className="p-8 space-y-8 flex-1 bg-white">
-                <p className="text-[12px] text-[#1E293B] font-bold leading-relaxed">
-                  {subscriber?.area || "House No. 12, Patel Colony, Near Ram Mandir"},<br />
-                  Veraval, Gujarat - 362265
-                </p>
-                <div className="bg-[#EFF6FF] border-2 border-blue-100 px-6 py-4 rounded-3xl flex items-center gap-4">
-                  <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_#3B82F6]" />
-                  <span className="text-[#1A3C6E] text-[10px] font-black uppercase tracking-widest">Zone: {subscriber?.towerId || "Zone-B | Tower: VRW-02"}</span>
+            <div style={styles.infoBox}>
+              <div style={styles.sectionTitle}>Installation Address</div>
+              <div style={styles.infoContent}>
+                <div style={styles.addressText}>
+                  {subscriber?.address || "N/A"}
                 </div>
+                {subscriber?.area && (
+                  <div style={{ ...styles.infoRow, marginTop: 10 }}>
+                    <span style={styles.infoKey}>Area:</span>
+                    <span style={styles.infoVal}>{subscriber.area}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Line Item Table */}
-          <div className="rounded-[6mm] border-2 border-[#1A3C6E]/10 overflow-hidden shadow-lg">
-            <table className="w-full text-left border-collapse">
+          {/* Line Items Table */}
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
               <thead>
-                <tr className="bg-[#1A3C6E] text-white">
-                  <th className="px-8 py-5 text-[10px] font-black uppercase w-20 border-r border-white/10 text-center">ITEM</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase border-r border-white/10">DESCRIPTION</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase border-r border-white/10 text-center">BILLING PERIOD</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase border-r border-white/10 text-right">RATE</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase border-r border-white/10 text-right">ARREARS</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase text-right">TOTAL</th>
+                <tr style={styles.thRow}>
+                  <th style={styles.th}>#</th>
+                  <th style={styles.th}>Plan Name</th>
+                  <th style={styles.th}>Service Period</th>
+                  <th style={styles.thRight}>Rate (Rs.)</th>
+                  <th style={styles.thRight}>Arrears (Rs.)</th>
+                  <th style={styles.thRight}>Amount (Rs.)</th>
                 </tr>
               </thead>
-              <tbody className="text-[11px]">
-                <tr className="bg-white border-b border-[#E2E8F0]">
-                  <td className="px-8 py-6 text-center text-[#64748B] font-black border-r border-[#E2E8F0]">01</td>
-                  <td className="px-8 py-6 text-[#1E293B] font-black border-r border-[#E2E8F0]">
-                    <p>{lineItem.description}</p>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">High Speed Digital Service</p>
-                  </td>
-                  <td className="px-8 py-6 text-[#1E293B] font-bold text-center border-r border-[#E2E8F0]">{billingPeriodLabel}</td>
-                  <td className="px-8 py-6 text-right text-[#1E293B] font-black border-r border-[#E2E8F0]">Rs. {currentAmount.toFixed(2)}</td>
-                  <td className="px-8 py-6 text-right text-[#DC2626] font-black border-r border-[#E2E8F0]">Rs. {previousDues.toFixed(2)}</td>
-                  <td className="px-8 py-6 text-right text-[#1A3C6E] font-black bg-blue-50/30">Rs. {grandTotal.toFixed(2)}</td>
+              <tbody>
+                <tr style={{ background: "#f8fafc" }}>
+                  <td style={styles.td}>1</td>
+                  <td style={styles.td}>{lineItem.planName}</td>
+                  <td style={styles.td}>{billingPeriodLabel}</td>
+                  <td style={styles.tdRight}>{amount.toFixed(2)}</td>
+                  <td style={styles.tdRight}>{previousBalance.toFixed(2)}</td>
+                  <td style={styles.tdRight}>{grandTotal.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Calculation & Summary Section */}
-          <div className="flex justify-between items-start pt-4">
-             <div className="flex-1 pr-12">
-                <p className="text-[10px] text-[#64748B] font-black uppercase tracking-widest mb-2 opacity-50">Amount In Words</p>
-                <p className="text-[12px] text-[#1A3C6E] font-black uppercase leading-tight bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-inner">
-                   {numToWords(grandTotal)}
-                </p>
-             </div>
-
-            <div className="w-[90mm] space-y-3">
-              <div className="flex justify-between items-center text-[12px] px-4">
-                <span className="text-[#64748B] font-bold">Subtotal:</span>
-                <span className="text-[#1E293B] font-black">Rs. {currentAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center text-[12px] px-4">
-                <span className="text-[#64748B] font-bold">Past Dues / Arrears:</span>
-                <span className="text-[#DC2626] font-black">Rs. {previousDues.toFixed(2)}</span>
-              </div>
-              <div className="bg-[#1A3C6E] rounded-[5mm] p-6 flex justify-between items-center shadow-2xl border-t-8 border-[#0EA5E9]">
-                <span className="text-white text-[14px] font-black tracking-[0.25em] uppercase">TOTAL DUE</span>
-                <div className="flex flex-col items-end">
-                  <span className="text-white text-[22px] font-black">Rs. {grandTotal.toFixed(2)}</span>
-                  <span className="text-[#0EA5E9] text-[8px] font-black uppercase tracking-widest mt-1">Inclusive of all taxes</span>
+          {/* Totals */}
+          <div style={styles.totalsArea}>
+            <div style={styles.totalsBox}>
+              <div style={{ border: "1px solid #dce4ef", borderRadius: "4px 4px 0 0", overflow: "hidden" }}>
+                <div style={styles.totalRow}>
+                  <span>Plan Amount:</span>
+                  <span>Rs. {amount.toFixed(2)}</span>
                 </div>
+                <div style={styles.totalRow}>
+                  <span>Previous Dues (Arrears):</span>
+                  <span>Rs. {previousBalance.toFixed(2)}</span>
+                </div>
+              </div>
+              <div style={styles.grandRow}>
+                <span>GRAND TOTAL:</span>
+                <span>Rs. {grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
 
-          {/* Payment Instructions & Verification */}
-          <div className="grid grid-cols-12 gap-10 pt-8">
-            <div className="col-span-8 bg-[#FFF7ED] border-2 border-[#FED7AA] rounded-[6mm] p-10 shadow-sm relative">
-              <h3 className="text-[#F47920] text-[12px] font-black uppercase tracking-[0.25em] mb-8 flex items-center gap-4">
-                <div className="w-2 h-8 bg-[#F47920] rounded-full" />
-                PAYMENT INSTRUCTIONS
-              </h3>
-              <div className="space-y-4 text-[11px] text-[#431407] font-bold">
-                <div className="flex items-center gap-4 bg-white/60 p-3 rounded-2xl border border-orange-100 shadow-sm">
-                  <span className="bg-[#F47920] text-white w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black shadow-lg">01</span>
-                  <p>Pay via UPI ID: <span className="text-[#1E293B] font-black bg-white px-3 py-1.5 rounded-xl border-2 border-orange-200">{brand.upiId}</span></p>
-                </div>
-                <div className="flex items-center gap-4 bg-white/60 p-3 rounded-2xl border border-orange-100 shadow-sm">
-                  <span className="bg-[#F47920] text-white w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black shadow-lg">02</span>
-                  <p>Accepting GPay, PhonePe, Paytm, BHIM & All UPI Apps</p>
-                </div>
-                <div className="flex items-center gap-4 bg-white/60 p-3 rounded-2xl border border-orange-100 shadow-sm">
-                  <span className="bg-[#F47920] text-white w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black shadow-lg">03</span>
-                  <p>Please share payment screenshot on WhatsApp: <b>+91 98765 43210</b></p>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-span-4 flex flex-col gap-6">
-              <div className="bg-[#EFF6FF] border-2 border-[#BFDBFE] rounded-[6mm] p-8 flex flex-col items-center justify-center text-center shadow-sm flex-1 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-3">
-                  <ShieldCheck className="h-6 w-6 text-blue-400 opacity-40" />
-                </div>
-                <span className="text-[#1A3C6E] text-[11px] font-black uppercase tracking-[0.2em] mb-6">SCAN TO PAY</span>
-                <div className="bg-white p-5 rounded-[8mm] shadow-2xl border-4 border-white mb-6 relative group transition-transform hover:scale-105">
-                  <QRCodeSVG
-                    value={`upi://pay?pa=${brand.upiId}&pn=${encodeURIComponent(brand.name)}&am=${grandTotal.toFixed(2)}&cu=INR`}
-                    size={140}
-                    level="H"
-                  />
-                </div>
-                <span className="text-[#1A3C6E] text-[10px] font-black tracking-tight bg-white px-5 py-2.5 rounded-full border-2 border-blue-100 shadow-lg">
-                  {brand.upiId}
-                </span>
-              </div>
-            </div>
+          {/* Amount in Words */}
+          <div style={styles.wordsBox}>
+            Amount in Words: <strong>{numToWords(grandTotal)}</strong>
           </div>
 
-          {/* Signature Area */}
-          <div className="flex justify-between items-end pt-12 border-t-2 border-slate-50">
-             <div className="text-[10px] text-slate-400 font-bold max-w-xs">
-                <p>Terms: This is a computer generated invoice and does not require a physical signature. Goods/Services once sold are not returnable.</p>
-             </div>
-             <div className="flex flex-col items-center gap-4">
-                <div className="h-20 w-48 border-b-2 border-slate-200 flex items-end justify-center pb-2 opacity-50 italic text-[11px] text-slate-400">
-                   Computer Generated Seal
+          {/* Payment Instructions + QR */}
+          <div style={styles.bottomArea}>
+            <div style={styles.payBox}>
+              <div style={styles.payTitle}>Payment Instructions</div>
+              {[
+                `Pay via UPI: ${brand.upiId}`,
+                "GPay / PhonePe / Paytm accepted",
+                "Cash payment at office also accepted",
+                "Share screenshot after online payment",
+                `Contact us for any billing queries`,
+              ].map((txt, i) => (
+                <div style={styles.payItem} key={i}>
+                  <span style={styles.payNum}>{i + 1}.</span>
+                  <span>{txt}</span>
                 </div>
-                <span className="text-[#1A3C6E] text-[11px] font-black uppercase tracking-widest">Authorized Signatory</span>
-             </div>
+              ))}
+              <div style={{ ...styles.payItem, marginTop: 4 }}>
+                <span style={{ ...styles.payNum, width: "auto", marginLeft: 24 }}>Phone: {brand.phone}</span>
+              </div>
+            </div>
+            <div style={styles.qrBox}>
+              <div style={styles.qrTitle}>SCAN & PAY</div>
+              <QRCodeSVG value={`upi://pay?pa=${brand.upiId}&pn=SitaramCable&am=${grandTotal}&cu=INR`} size={80} level="H" />
+              <div style={styles.qrUpi}>UPI: {brand.upiId}</div>
+            </div>
           </div>
         </div>
 
-        {/* Professional Footer Band */}
-        <div className="bg-[#1A3C6E] py-6 px-12 flex items-center justify-between">
-          <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.25em]">
-            Official Electronic Invoice • {brand.name}
-          </p>
-          <div className="flex gap-8 items-center text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">
-            <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_8px_#60A5FA]" /> Verified</span>
-            <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_8px_#FB923C]" /> Veraval</span>
-          </div>
+        {/* Footer */}
+        <div style={styles.footer}>
+          Thank you for choosing Sitaram Cable & Broadband &nbsp;|&nbsp; {brand.upiId} &nbsp;|&nbsp; Support: {brand.phone}
         </div>
       </div>
     );
@@ -424,62 +414,30 @@ export default function InvoicePreviewModal({
   return (
     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col relative z-10 max-h-[96vh]">
+      <div className="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative z-10 max-h-[96vh]">
         <div className="px-10 py-6 bg-white flex justify-between items-center border-b border-slate-100">
           <div className="flex items-center gap-4">
-            <div className="h-3 w-3 rounded-full bg-[#F47920] shadow-[0_0_10px_#F47920] animate-pulse" />
-            <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1B2B4B]">High-Fidelity Preview</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Document Ready for Export</span>
-            </div>
+            <div className="h-3 w-3 rounded-full bg-[#e8522a] animate-pulse" />
+            <div className="flex flex-col"><span className="text-[11px] font-black uppercase tracking-[0.2em]">Invoice Preview</span></div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-all group">
-            <X className="h-6 w-6 text-slate-300 group-hover:text-slate-900" />
-          </button>
+          <button onClick={onClose}><X className="h-6 w-6" /></button>
         </div>
-
         <div ref={containerRef} className="flex-1 overflow-auto bg-[#EDF1F7] flex justify-center p-12 scrollbar-hide">
-          <div 
-            ref={contentRef}
-            className="origin-top transition-all duration-500 ease-out shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)]"
-            style={{ 
-              transform: `scale(${scale})`, 
-              marginBottom: `${(scale - 1) * contentHeight}px`,
-            }}
-          >
+          <div ref={contentRef} className="origin-top transition-all" style={{ transform: `scale(${scale})`, marginBottom: `${(scale - 1) * contentHeight}px` }}>
             <InvoiceContent id="invoice-content" />
           </div>
         </div>
-
-        <div style={{ display: "none" }}>
-          <InvoiceContent id="invoice-content-print" />
+        <div style={{ position: "absolute", opacity: 0, pointerEvents: "none", zIndex: -9999 }}>
+          <div id="invoice-content-print">
+            <InvoiceContent />
+          </div>
         </div>
-
         <div className="p-10 bg-white border-t border-slate-100 flex gap-6">
-          <Button 
-            variant="outline" 
-            onClick={onClose} 
-            className="h-16 px-10 rounded-2xl font-black text-slate-400 uppercase tracking-[0.2em] text-[10px] hover:bg-slate-50 hover:text-slate-900 border-slate-200"
-          >
-            Discard
-          </Button>
+          <Button variant="outline" onClick={onClose}>Discard</Button>
           <div className="flex-1 flex gap-4">
-            <Button 
-              variant="outline" 
-              onClick={handleSharePDF} 
-              disabled={isProcessing}
-              className="flex-1 h-16 rounded-2xl font-black text-[#F47920] uppercase tracking-[0.2em] text-[10px] bg-orange-50/50 border-orange-100 hover:bg-orange-50 transition-all flex gap-3 items-center justify-center"
-            >
-              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />} 
-              Share via WhatsApp
-            </Button>
-            <Button 
-              onClick={handleDownloadPDF} 
-              disabled={isProcessing}
-              className="flex-1 h-16 rounded-2xl font-black text-white uppercase tracking-[0.2em] text-[10px] bg-[#1B2B4B] hover:bg-[#243352] shadow-xl shadow-slate-200 transition-all flex gap-3 items-center justify-center"
-            >
-              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />} 
-              Download Professional PDF
+            <Button variant="outline" onClick={handleSharePDF} disabled={isProcessing} className="flex-1 h-16 text-[#e8522a]"><Send className="mr-2" /> Share</Button>
+            <Button onClick={handleDownloadPDF} disabled={isProcessing} className="flex-1 h-16 bg-[#1a2e5a]">
+              {isProcessing ? <Loader2 className="mr-2 animate-spin" /> : <Download className="mr-2" />} Download
             </Button>
           </div>
         </div>

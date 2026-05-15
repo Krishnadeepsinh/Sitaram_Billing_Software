@@ -316,12 +316,13 @@ export default function PaymentReceiptModal({
       allocRowBalance: {
         display: "flex",
         justifyContent: "space-between",
-        padding: "14px 16px",
-        fontSize: 15,
+        alignItems: "flex-start",
+        padding: "16px 16px",
+        fontSize: 14,
         fontWeight: 700,
         color: "#1b5e20",
         background: "#e8f5e9",
-        lineHeight: 1.5,
+        lineHeight: 1.4,
       },
       verifiedArea: {
         display: "flex",
@@ -463,8 +464,8 @@ export default function PaymentReceiptModal({
               <span>Rs. {amount.toFixed(2)}</span>
             </div>
             <div style={styles.allocRowBalance}>
-              <span>Remaining Balance:</span>
-              <span>Rs. 0.00 (FULLY CLEARED)</span>
+              <span style={{ flexShrink: 0 }}>Remaining Balance:</span>
+              <span style={{ textAlign: "right", marginLeft: 16 }}>Rs. 0.00 (FULLY CLEARED)</span>
             </div>
           </div>
 

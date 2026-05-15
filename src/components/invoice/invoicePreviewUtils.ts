@@ -88,7 +88,9 @@ export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[], 
     
     // 2. Fallback regex for loose speed indicators not wrapped in brackets
     serviceName = serviceName
-      .replace(/\d+\s*mbps/gi, "")
+      .replace(/\d+\s*(mbps|gbps|kbps)/gi, "")
+      .replace(/\[\d+\s*(mbps|gbps|kbps)\]/gi, "")
+      .replace(/\(\d+\s*(mbps|gbps|kbps)\)/gi, "")
       .replace(/\s+/g, " ")
       .trim();
 

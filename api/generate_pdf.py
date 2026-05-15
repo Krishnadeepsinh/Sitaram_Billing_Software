@@ -1,6 +1,7 @@
 import io
 import os
 import json
+import re
 from http.server import BaseHTTPRequestHandler
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -28,7 +29,7 @@ WHITE = colors.HexColor("#FFFFFF")
 
 # HELPER FUNCTIONS
 def rrect(c, x, y, w, h, r, fill=False, stroke=False, sw=0.5):
-    """rounded rect using manual beginPath()+arcTo()"""
+    """rounded rect using manual beginPath()+arcTo() as requested"""
     c.setLineWidth(sw)
     if fill:
         c.setFillColor(fill if isinstance(fill, colors.Color) else colors.white)
@@ -51,7 +52,7 @@ def rrect(c, x, y, w, h, r, fill=False, stroke=False, sw=0.5):
         c.drawPath(path, fill=0, stroke=1)
 
 def make_qr_image(text):
-    """generates QR with qrcode lib"""
+    """generates QR with qrcode lib as requested (fill=#1B2B4B, white back, ERROR_CORRECT_M)"""
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -68,37 +69,45 @@ def make_qr_image(text):
     return ImageReader(img_byte_arr)
 
 def draw_logo(c, x, y, size):
-    """loads logo and draws with mask='auto'"""
-    # In Vercel, we might need to check multiple paths
-    logo_path = "public/logo-transparent.png"
-    if not os.path.exists(logo_path):
-        logo_path = "logo-transparent.png" # Sometimes it's in the same dir
+    """loads logo from public dir and draws with size 14x14mm as requested"""
+    # Prefer transparent png then fallback to jpg
+    paths = ["public/logo-transparent.png", "public/logo.jpg", "logo.jpg"]
+    logo_img = None
+    for p in paths:
+        if os.path.exists(p):
+            logo_img = ImageReader(p)
+            break
     
-    if os.path.exists(logo_path):
-        img = ImageReader(logo_path)
-        c.drawImage(img, x, y, width=size, height=size, mask='auto')
+    if logo_img:
+        c.drawImage(logo_img, x, y, width=size, height=size, mask='auto')
     else:
-        # Draw placeholder
+        # Dynamic fallback if no logo found
         c.setFillColor(ORANGE)
-        c.rect(x, y, size, size, fill=1, stroke=0)
+        rrect(c, x, y, size, size, 2*mm, fill=ORANGE, stroke=False)
         c.setFillColor(WHITE)
-        c.setFont("Helvetica-Bold", 4)
-        c.drawCentredString(x + size/2, y + size/2, "SITARAM")
+        c.setFont("Helvetica-Bold", 4.5)
+        c.drawCentredString(x + size/2, y + size/2 + 0.5*mm, "SITARAM")
 
 def hline(c, x1, x2, y, col, w):
     c.setStrokeColor(col)
     c.setLineWidth(w)
     c.line(x1, y, x2, y)
 
-def label_value(c, x, y, label_text, value_text, color=DARK):
-    c.setFont("Helvetica", 6.5)
-    c.setFillColor(LABEL)
-    c.drawString(x, y + 5*mm, label_text)
-    c.setFont("Helvetica-Bold", 9)
-    c.setFillColor(color)
-    c.drawString(x, y, value_text)
+def clean_plan_name(plan_name, is_cable):
+    """Strips speed indicators for Cable mode to keep documents professional"""
+    if not plan_name:
+        return "Service Plan"
+    if is_cable:
+        # Regex to remove patterns like 250mbps, 100 Mbps, 1gbps, etc.
+        res = re.sub(r'\d+\s*(?:mbps|kbps|gbps)', '', plan_name, flags=re.IGNORECASE).strip()
+        # Remove empty brackets or parentheses if left behind
+        res = re.sub(r'\[\s*\]|\(\s*\)', '', res).strip()
+        if not res or len(res) < 3 or res.lower() == "plan":
+            res = "Digital Cable TV"
+        return res
+    return plan_name
 
-def draw_shared_header(c, doc_type, brand):
+def draw_shared_header(c, doc_type, brand, data):
     width, height = A4
     c.setFillColor(NAVY)
     c.rect(0, height - 48*mm, width, 48*mm, fill=1, stroke=0)
@@ -115,30 +124,36 @@ def draw_shared_header(c, doc_type, brand):
     
     text_x = margin + logo_size + 4*mm
     c.setFillColor(ORANGE)
-    c.setFont("Helvetica-Bold", 7)
+    c.setFont("Helvetica-Bold", 7.5)
     c.drawString(text_x, header_y + 28*mm, "SITARAM CABLE & BROADBAND")
     c.setFillColor(WHITE)
-    c.setFont("Helvetica-Bold", 17)
+    c.setFont("Helvetica-Bold", 18)
     c.drawString(text_x, header_y + 20*mm, brand.get('name', 'SITARAM CABLE & BROADBAND'))
     c.setFillColor(LABEL)
     c.setFont("Helvetica", 7.5)
-    c.drawString(text_x, header_y + 14*mm, f"{brand.get('address', '')} | Support: {brand.get('phone', '')}")
+    # Filter out None or empty values for address/phone
+    addr = brand.get('address', '').strip()
+    phone = brand.get('phone', '').strip()
+    header_info = f"{addr} | Support: {phone}" if addr and phone else (addr or f"Support: {phone}")
+    c.drawString(text_x, header_y + 14*mm, header_info)
     
+    # Document Type Box (Right side of header)
     box_w = 55*mm
-    box_h = 36*mm
+    box_h = 32*mm
     box_x = width - margin - box_w
-    box_y = header_y + 6*mm
+    box_y = header_y + 8*mm
     rrect(c, box_x, box_y, box_w, box_h, 5*mm, fill=NAVY2, stroke=False)
     c.setFillColor(ORANGE)
-    c.setFont("Helvetica-Bold", 6.5)
-    c.drawCentredString(box_x + box_w/2, box_y + 28*mm, "PAYMENT SUMMARY")
+    c.setFont("Helvetica-Bold", 7)
+    c.drawCentredString(box_x + box_w/2, box_y + 24*mm, "DOCUMENT TYPE")
     c.setFillColor(WHITE)
-    c.setFont("Helvetica-Bold", 13)
-    c.drawCentredString(box_x + box_w/2, box_y + 20*mm, doc_type)
+    c.setFont("Helvetica-Bold", 14)
+    c.drawCentredString(box_x + box_w/2, box_y + 16*mm, doc_type.upper())
     c.setFillColor(LABEL)
-    c.setFont("Helvetica", 7)
-    c.drawCentredString(box_x + box_w/2, box_y + 12*mm, brand.get('address', ''))
-    c.drawCentredString(box_x + box_w/2, box_y + 8*mm, f"Support: {brand.get('phone', '')}")
+    c.setFont("Helvetica", 7.5)
+    # Use bill date or current date
+    doc_date = data.get('date', brand.get('currentDate', ''))
+    c.drawCentredString(box_x + box_w/2, box_y + 8*mm, f"Date: {doc_date}")
 
 def generate_invoice_pdf(buffer, data):
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -146,15 +161,16 @@ def generate_invoice_pdf(buffer, data):
     margin = 22*mm
     content_width = width - 2*margin
     brand = data.get('brand', {})
+    is_cable = data.get('isCableMode', True)
     
-    draw_shared_header(c, "Cable Bill", brand)
+    draw_shared_header(c, "Invoice", brand, data)
     
     # SECTION 1 — FOUR META CARDS
     y_pos = height - 48*mm - 20*mm
     card_w = (content_width - 9*mm) / 4
     card_h = 17*mm
     
-    labels = ["INVOICE NO.", "INVOICE DATE", "SERVICE WINDOW", "DUE DATE"]
+    labels = ["INVOICE NO.", "INVOICE DATE", "BILLING PERIOD", "DUE DATE"]
     values = [
         data.get('number', 'N/A'),
         data.get('date', 'N/A'),
@@ -164,7 +180,7 @@ def generate_invoice_pdf(buffer, data):
     
     for i in range(4):
         x = margin + i * (card_w + 3*mm)
-        if i == 2: # Highlighted card
+        if i == 2: # Highlighted card for Billing Period
             rrect(c, x, y_pos, card_w, card_h, 4*mm, fill=NAVY, stroke=False)
             c.setFont("Helvetica", 6.5)
             c.setFillColor(LABEL)
@@ -174,95 +190,88 @@ def generate_invoice_pdf(buffer, data):
             c.drawString(x + 3*mm, y_pos + 4*mm, values[i])
         else:
             rrect(c, x, y_pos, card_w, card_h, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-            color = RED_TEXT if i == 3 else DARK
-            label_value(c, x + 3*mm, y_pos + 4*mm, labels[i], values[i], color=color)
+            c.setFont("Helvetica", 6.5)
+            c.setFillColor(LABEL)
+            c.drawString(x + 3*mm, y_pos + 11*mm, labels[i])
+            c.setFont("Helvetica-Bold", 9)
+            # Due date in red if not paid? Or just keep it clean
+            c.setFillColor(RED_TEXT if (i == 3 and data.get('status') != 'paid') else DARK)
+            c.drawString(x + 3*mm, y_pos + 4*mm, values[i])
 
-    # SECTION 2 — CONN ID STRIP
-    y_pos -= 16*mm
-    rrect(c, margin, y_pos, content_width, 13*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-    label_value(c, margin + 5*mm, y_pos + 4*mm, "USER ID / CONN ID", data.get('customerId', 'N/A'))
-    label_value(c, margin + 60*mm, y_pos + 4*mm, "PLAN PERIOD", data.get('planPeriod', 'N/A'))
-    
-    # Status badge
-    status = data.get('status', 'unpaid').upper()
-    badge_w = 20*mm
-    badge_h = 6*mm
-    badge_x = width - margin - 5*mm - badge_w
-    badge_y = y_pos + 3.5*mm
-    badge_color = GREEN if status == 'PAID' else RED_TEXT
-    badge_bg = GREEN_BG if status == 'PAID' else colors.HexColor("#FEE2E2")
-    
-    rrect(c, badge_x, badge_y, badge_w, badge_h, 3*mm, fill=badge_bg, stroke=badge_color, sw=0.5)
-    c.setFont("Helvetica-Bold", 7)
-    c.setFillColor(badge_color)
-    c.drawCentredString(badge_x + badge_w/2, badge_y + 1.5*mm, f"● {status}")
-    
-    # SECTION 3 — CUSTOMER + PAYMENT STATUS (60/40)
-    y_pos -= 46*mm
+    # SECTION 2 — CUSTOMER + STATUS (60/40)
+    y_pos -= 48*mm
     left_w = content_width * 0.6 - 1.5*mm
     right_w = content_width * 0.4 - 1.5*mm
     
-    rrect(c, margin, y_pos, left_w, 43*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-    c.setFont("Helvetica-Bold", 6.5)
+    # Customer Info Box
+    rrect(c, margin, y_pos, left_w, 45*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
+    c.setFont("Helvetica-Bold", 7)
     c.setFillColor(ORANGE)
-    c.drawString(margin + 5*mm, y_pos + 35*mm, "BILLED TO CUSTOMER")
+    c.drawString(margin + 5*mm, y_pos + 38*mm, "BILLED TO CUSTOMER")
     
-    c.setFont("Helvetica-Bold", 9.5)
-    c.drawString(margin + 5*mm, y_pos + 28*mm, f"#{data.get('customerNo', '-')}")
-    c.setFont("Helvetica-Bold", 13)
+    cust_no = data.get('customerNo', '-')
+    c.setFont("Helvetica-Bold", 10)
     c.setFillColor(DARK)
-    c.drawString(margin + 25*mm, y_pos + 28*mm, data.get('customerName', 'N/A'))
+    c.drawString(margin + 5*mm, y_pos + 31*mm, f"#{cust_no}")
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(margin + 22*mm, y_pos + 31*mm, data.get('customerName', 'N/A'))
     
-    c.setFont("Helvetica", 9)
+    c.setFont("Helvetica", 8.5)
     c.setFillColor(GREY)
-    addr = data.get('customerAddress', 'N/A').split('\n')
-    c.drawString(margin + 5*mm, y_pos + 22*mm, addr[0] if len(addr) > 0 else 'N/A')
-    c.drawString(margin + 5*mm, y_pos + 17*mm, addr[1] if len(addr) > 1 else '')
+    addr_val = data.get('customerAddress', 'N/A')
+    addr = str(addr_val).split('\n') if addr_val else ['N/A']
+    c.drawString(margin + 5*mm, y_pos + 25*mm, addr[0] if len(addr) > 0 else 'N/A')
+    c.drawString(margin + 5*mm, y_pos + 20*mm, addr[1] if len(addr) > 1 else '')
     
-    # STB and Mobile - Dynamic display
-    stb = str(data.get('stbNumber') or '').strip()
-    if stb and stb != 'N/A':
-        c.setFont("Helvetica", 7)
+    # Dynamic Fields: STB/ID and Mobile - only show if valid
+    stb_val = str(data.get('stbNumber') or '').strip()
+    mobile_val = str(data.get('customerMobile') or '').strip()
+    
+    row_y = y_pos + 10*mm
+    has_stb = stb_val and stb_val.upper() not in ["N/A", "-", ""]
+    if has_stb:
+        label = "STB:" if is_cable else "ID:"
+        c.setFont("Helvetica", 7.5)
         c.setFillColor(LABEL)
-        c.drawString(margin + 5*mm, y_pos + 8*mm, "STB:")
-        c.setFont("Helvetica-Bold", 7.5)
+        c.drawString(margin + 5*mm, row_y, label)
+        c.setFont("Helvetica-Bold", 8.5)
         c.setFillColor(DARK)
-        c.drawString(margin + 12*mm, y_pos + 8*mm, stb)
-    
-    mobile = str(data.get('customerMobile') or '').strip()
-    if mobile and mobile != 'N/A':
-        # Offset mobile if STB is present, otherwise put it at the start
-        x_off = 40*mm if (stb and stb != 'N/A') else 5*mm
-        c.setFont("Helvetica", 7)
+        c.drawString(margin + 12*mm, row_y, stb_val)
+        
+    if mobile_val and mobile_val.upper() not in ["N/A", "-", ""]:
+        x_off = 45*mm if has_stb else 5*mm
+        c.setFont("Helvetica", 7.5)
         c.setFillColor(LABEL)
-        c.drawString(margin + x_off, y_pos + 8*mm, "MOBILE:")
-        c.setFont("Helvetica-Bold", 7.5)
+        c.drawString(margin + x_off, row_y, "MOBILE:")
+        c.setFont("Helvetica-Bold", 8.5)
         c.setFillColor(DARK)
-        c.drawString(margin + x_off + 15*mm, y_pos + 8*mm, mobile)
+        c.drawString(margin + x_off + 14*mm, row_y, mobile_val)
+
+    # Payment Status Box (Right)
+    status = str(data.get('status', 'unpaid')).upper()
+    badge_color = GREEN if status == 'PAID' else RED_TEXT
+    badge_bg = GREEN_BG if status == 'PAID' else colors.HexColor("#FEE2E2")
     
-    rrect(c, margin + left_w + 3*mm, y_pos, right_w, 43*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-    c.setFont("Helvetica-Bold", 6.5)
+    rrect(c, margin + left_w + 3*mm, y_pos, right_w, 45*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
+    c.setFont("Helvetica-Bold", 7)
     c.setFillColor(LABEL)
-    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 35*mm, "PAYMENT STATUS")
+    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 38*mm, "PAYMENT STATUS")
     
-    badge_w = 30*mm
-    badge_h = 12*mm
-    badge_x = margin + left_w + 3*mm + (right_w - badge_w)/2
-    rrect(c, badge_x, y_pos + 18*mm, badge_w, badge_h, 4*mm, fill=badge_bg, stroke=False)
+    rrect(c, margin + left_w + 10*mm, y_pos + 20*mm, right_w - 14*mm, 12*mm, 4*mm, fill=badge_bg, stroke=False)
     c.setFont("Helvetica-Bold", 14)
     c.setFillColor(badge_color)
-    c.drawCentredString(badge_x + badge_w/2, y_pos + 22*mm, status)
+    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 24*mm, status)
     
-    c.setFont("Helvetica", 7)
+    c.setFont("Helvetica", 7.5)
     c.setFillColor(LABEL)
-    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 10*mm, f"Due {data.get('dueDate', 'N/A')}")
-    
-    # SECTION 4 — SERVICE TABLE
+    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 12*mm, f"DUE BY {data.get('dueDate', 'N/A')}")
+
+    # SECTION 3 — SERVICE TABLE
     y_pos -= 15*mm
     c.setFillColor(NAVY)
     rrect(c, margin, y_pos, content_width, 9.5*mm, 4*mm, fill=NAVY, stroke=False)
     c.setFillColor(WHITE)
-    c.setFont("Helvetica-Bold", 7)
+    c.setFont("Helvetica-Bold", 7.5)
     c.drawString(margin + 5*mm, y_pos + 3.5*mm, "DESCRIPTION OF SERVICE")
     c.drawCentredString(margin + 75*mm, y_pos + 3.5*mm, "BILLING PERIOD")
     c.drawCentredString(margin + 120*mm, y_pos + 3.5*mm, "MONTHS")
@@ -271,112 +280,105 @@ def generate_invoice_pdf(buffer, data):
     y_pos -= 13*mm
     rrect(c, margin, y_pos, content_width, 12*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
     c.setFillColor(DARK)
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(margin + 5*mm, y_pos + 6.5*mm, data.get('planName', 'N/A'))
-    c.setFont("Helvetica", 7)
+    c.setFont("Helvetica-Bold", 10)
+    # Clean plan name to remove speed indicators for Cable
+    plan_name = clean_plan_name(data.get('planName', ''), is_cable)
+    c.drawString(margin + 5*mm, y_pos + 6.5*mm, plan_name)
+    c.setFont("Helvetica", 7.5)
     c.setFillColor(GREY)
-    service_type = "Digital Cable TV Service" if data.get('isCableMode', True) else "High-Speed Internet Service"
-    c.drawString(margin + 5*mm, y_pos + 2.5*mm, service_type)
-    c.setFont("Helvetica", 8.5)
-    c.setFillColor(DARK)
-    c.drawCentredString(margin + 75*mm, y_pos + 5*mm, data.get('planPeriod', 'N/A'))
-    c.drawCentredString(margin + 120*mm, y_pos + 5*mm, str(data.get('planMonths', '1.0')))
-    c.setFont("Helvetica-Bold", 9.5)
-    c.setFillColor(NAVY)
-    c.drawRightString(width - margin - 5*mm, y_pos + 5*mm, f"Rs. {float(data.get('amount', 0)):.2f}")
+    service_desc = "Digital Cable TV Service" if is_cable else "High-Speed Internet Service"
+    c.drawString(margin + 5*mm, y_pos + 2.5*mm, service_desc)
     
-    # SECTION 5 — QR + TOTALS
+    c.setFont("Helvetica", 9)
+    c.setFillColor(DARK)
+    c.drawCentredString(margin + 75*mm, y_pos + 5*mm, data.get('billingPeriod', 'N/A'))
+    c.drawCentredString(margin + 120*mm, y_pos + 5*mm, str(data.get('planMonths', '1.0')))
+    c.setFont("Helvetica-Bold", 10.5)
+    c.setFillColor(NAVY)
+    # Use "Rs." prefix as requested
+    c.drawRightString(width - margin - 5*mm, y_pos + 5*mm, f"Rs. {float(data.get('amount', 0)):.2f}")
+
+    # SECTION 4 — QR + SUMMARY
     y_pos -= 50*mm
+    # UPI QR Box
     rrect(c, margin, y_pos, 42*mm, 45*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
     c.setFillColor(NAVY)
-    c.setFont("Helvetica-Bold", 6.5)
+    c.setFont("Helvetica-Bold", 7)
     c.drawCentredString(margin + 21*mm, y_pos + 40*mm, "SCAN TO PAY (UPI)")
-    rrect(c, margin + 5*mm, y_pos + 8*mm, 32*mm, 30*mm, 3*mm, fill=WHITE, stroke=False)
+    rrect(c, margin + 6*mm, y_pos + 9*mm, 30*mm, 30*mm, 3*mm, fill=WHITE, stroke=False)
     
-    upi_url = f"upi://pay?pa={brand.get('upiId', 'sitaram@upi')}&pn=Sitaram&am={data.get('amount', 0)}&cu=INR"
+    upi_pa = brand.get('upiId', 'sitaram@upi')
+    total_amt = float(data.get('amount', 0)) - float(data.get('discount', 0))
+    upi_url = f"upi://pay?pa={upi_pa}&pn=Sitaram&am={total_amt}&cu=INR"
     qr_img = make_qr_image(upi_url)
-    c.drawImage(qr_img, margin + 6*mm, y_pos + 9*mm, width=30*mm, height=30*mm)
+    c.drawImage(qr_img, margin + 7*mm, y_pos + 10*mm, width=28*mm, height=28*mm)
     c.setFillColor(GREY)
-    c.setFont("Helvetica", 6)
-    c.drawCentredString(margin + 21*mm, y_pos + 3*mm, brand.get('upiId', 'sitaram@upi'))
-    
-    right_x = margin + 45*mm
-    right_w = content_width - 45*mm
-    rrect(c, right_x, y_pos, right_w, 45*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
+    c.setFont("Helvetica", 6.5)
+    c.drawCentredString(margin + 21*mm, y_pos + 4*mm, upi_pa)
+
+    # Summary Box
+    summary_x = margin + 45*mm
+    summary_w = content_width - 45*mm
+    rrect(c, summary_x, y_pos, summary_w, 45*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
     c.setFillColor(LABEL)
-    c.setFont("Helvetica-Bold", 6.5)
-    c.drawString(right_x + 5*mm, y_pos + 40*mm, "INVOICE SUMMARY")
-    hline(c, right_x + 5*mm, right_x + right_w - 5*mm, y_pos + 38*mm, BORDER, 0.5)
+    c.setFont("Helvetica-Bold", 7)
+    c.drawString(summary_x + 5*mm, y_pos + 40*mm, "INVOICE SUMMARY")
+    hline(c, summary_x + 5*mm, summary_x + summary_w - 5*mm, y_pos + 38*mm, BORDER, 0.5)
     
-    amt = float(data.get('amount', 0))
+    base_amt = float(data.get('amount', 0))
+    disc_amt = float(data.get('discount', 0))
     row_y = y_pos + 32*mm
-    c.setFont("Helvetica", 8)
+    c.setFont("Helvetica", 9)
     c.setFillColor(GREY)
-    c.drawString(right_x + 5*mm, row_y, "Invoice Amount")
-    c.drawRightString(right_x + right_w - 5*mm, row_y, f"Rs. {amt:.2f}")
-    row_y -= 5*mm
-    c.drawString(right_x + 5*mm, row_y, "Discount")
-    c.drawRightString(right_x + right_w - 5*mm, row_y, f"Rs. {float(data.get('discount', 0)):.2f}")
-    row_y -= 5*mm
-    c.drawString(right_x + 5*mm, row_y, "GST (0%)")
-    c.drawRightString(right_x + right_w - 5*mm, row_y, "Rs. 0.00")
-    hline(c, right_x + 5*mm, right_x + right_w - 5*mm, row_y - 3*mm, BORDER, 0.5)
+    c.drawString(summary_x + 5*mm, row_y, "Base Plan Amount")
+    c.drawRightString(summary_x + summary_w - 5*mm, row_y, f"Rs. {base_amt:.2f}")
+    row_y -= 6*mm
+    c.drawString(summary_x + 5*mm, row_y, "Discount Applied")
+    c.drawRightString(summary_x + summary_w - 5*mm, row_y, f"Rs. {disc_amt:.2f}")
+    row_y -= 6*mm
+    c.drawString(summary_x + 5*mm, row_y, "GST (Exempted)")
+    c.drawRightString(summary_x + summary_w - 5*mm, row_y, "Rs. 0.00")
     
-    final_amt = amt - float(data.get('discount', 0))
-    rrect(c, right_x + 3*mm, y_pos + 3*mm, right_w - 6*mm, 10*mm, 3*mm, fill=NAVY, stroke=False)
+    # Final Total Card
+    total_y = y_pos + 3*mm
+    rrect(c, summary_x + 3*mm, total_y, summary_w - 6*mm, 10*mm, 3*mm, fill=NAVY, stroke=False)
     c.setFillColor(WHITE)
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(right_x + 8*mm, y_pos + 6.5*mm, "FINAL AMOUNT PAYABLE")
-    c.setFont("Helvetica-Bold", 12)
-    c.drawRightString(right_x + right_w - 8*mm, y_pos + 6.5*mm, f"Rs. {final_amt:.2f}")
-    
-    y_pos -= 14*mm
+    c.drawString(summary_x + 8*mm, total_y + 3.5*mm, "FINAL AMOUNT PAYABLE")
+    c.setFont("Helvetica-Bold", 12.5)
+    c.drawRightString(summary_x + summary_w - 8*mm, total_y + 3.5*mm, f"Rs. {total_amt:.2f}")
+
+    # Amount in Words Strip
+    y_pos -= 15*mm
     rrect(c, margin, y_pos, content_width, 11*mm, 4*mm, fill=ORANGE_BG, stroke=ORANGE_BD)
     c.setFillColor(ORANGE)
-    c.setFont("Helvetica-Bold", 6.5)
+    c.setFont("Helvetica-Bold", 7)
     c.drawString(margin + 5*mm, y_pos + 6.5*mm, "AMOUNT IN WORDS")
     c.setFillColor(DARK)
-    c.setFont("Helvetica-Bold", 8.5)
-    c.drawString(margin + 35*mm, y_pos + 4*mm, data.get('amountInWords', 'N/A'))
-    
-    y_pos -= 10*mm
-    c.setFillColor(DARK)
-    c.setFont("Helvetica-Bold", 8.5)
-    c.drawString(margin, y_pos, "RECENT RECEIPT HISTORY")
-    hline(c, margin, margin + 50*mm, y_pos - 2*mm, ORANGE, 1)
-    
-    history = data.get('history', [])
-    for h in history[:1]: # Show latest only
-        y_pos -= 15*mm
-        hist_w = content_width * 0.58
-        rrect(c, margin, y_pos, hist_w, 11*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-        c.setFillColor(DARK)
-        c.setFont("Helvetica-Bold", 8.5)
-        c.drawString(margin + 5*mm, y_pos + 6*mm, h.get('date', 'N/A'))
-        c.setFont("Helvetica", 7)
-        c.setFillColor(GREY)
-        c.drawString(margin + 5*mm, y_pos + 2.5*mm, f"Method: {h.get('method', 'N/A')}")
-        rrect(c, margin + hist_w - 25*mm, y_pos + 2.5*mm, 20*mm, 6*mm, 3*mm, fill=GREEN_BG, stroke=False)
-        c.setFont("Helvetica-Bold", 8)
-        c.setFillColor(GREEN)
-        c.drawCentredString(margin + hist_w - 15*mm, y_pos + 4.5*mm, f"Rs. {h.get('amount', 0)}")
-    
+    c.setFont("Helvetica-Bold", 9.5)
+    words = data.get('amountInWords', 'Zero Rupees Only')
+    if not words or words == 'N/A': words = "Zero Rupees Only"
+    c.drawString(margin + 35*mm, y_pos + 4*mm, words)
+
+    # Final Footer Section
     y_pos = 40*mm
     hline(c, margin, width - margin, y_pos, ORANGE, 1)
     c.setFillColor(NAVY)
-    c.setFont("Helvetica-Bold", 14)
-    c.drawCentredString(width/2, y_pos - 6*mm, "Thank You!")
+    c.setFont("Helvetica-Bold", 15)
+    c.drawCentredString(width/2, y_pos - 8*mm, "Thank You!")
     c.setFillColor(GREY)
-    c.setFont("Helvetica", 7.5)
-    c.drawCentredString(width/2, y_pos - 10*mm, f"FOR CHOOSING {brand.get('name', 'SITARAM')}")
+    c.setFont("Helvetica", 8.5)
+    brand_title = brand.get('name', 'SITARAM CABLE & BROADBAND').upper()
+    c.drawCentredString(width/2, y_pos - 13*mm, f"FOR CHOOSING {brand_title}")
     
+    # Bottom Strip
     footer_h = 9*mm
     c.setFillColor(NAVY)
     c.rect(0, 0, width, footer_h, fill=1, stroke=0)
     hline(c, 0, width, footer_h, ORANGE, 1.2*mm)
     c.setFillColor(WHITE)
-    c.setFont("Helvetica", 6.5)
-    c.drawCentredString(width/2, 3*mm, "THIS IS A SYSTEM GENERATED INVOICE")
+    c.setFont("Helvetica", 7)
+    c.drawCentredString(width/2, 3.5*mm, "THIS IS A COMPUTER GENERATED DOCUMENT • NO PHYSICAL SIGNATURE REQUIRED")
     c.save()
 
 def generate_receipt_pdf(buffer, data):
@@ -385,25 +387,26 @@ def generate_receipt_pdf(buffer, data):
     margin = 22*mm
     content_width = width - 2*margin
     brand = data.get('brand', {})
+    is_cable = data.get('isCableMode', True)
     
-    draw_shared_header(c, "Payment Receipt", brand)
+    draw_shared_header(c, "Receipt", brand, data)
     
     # SECTION 1 — FOUR META CARDS
     y_pos = height - 48*mm - 20*mm
     card_w = (content_width - 9*mm) / 4
     card_h = 17*mm
     
-    labels = ["RECEIPT NO", "PAYMENT DATE", "METHOD", "STATUS"]
+    labels = ["RECEIPT NO.", "PAYMENT DATE", "METHOD", "STATUS"]
     values = [
         data.get('number', 'N/A'),
         data.get('date', 'N/A'),
-        data.get('method', 'N/A'),
+        str(data.get('method', 'CASH')).upper(),
         "SUCCESS"
     ]
     
     for i in range(4):
         x = margin + i * (card_w + 3*mm)
-        if i == 2: # Method highlighted
+        if i == 2: # Method highlighted in Navy
             rrect(c, x, y_pos, card_w, card_h, 4*mm, fill=NAVY, stroke=False)
             c.setFont("Helvetica", 6.5)
             c.setFillColor(LABEL)
@@ -411,7 +414,7 @@ def generate_receipt_pdf(buffer, data):
             c.setFont("Helvetica-Bold", 9)
             c.setFillColor(WHITE)
             c.drawString(x + 3*mm, y_pos + 4*mm, values[i])
-        elif i == 3: # Status highlighted
+        elif i == 3: # Status highlighted in Green
             rrect(c, x, y_pos, card_w, card_h, 4*mm, fill=GREEN_BG, stroke=GREEN, sw=0.5)
             c.setFont("Helvetica", 6.5)
             c.setFillColor(LABEL)
@@ -421,152 +424,200 @@ def generate_receipt_pdf(buffer, data):
             c.drawString(x + 3*mm, y_pos + 4*mm, values[i])
         else:
             rrect(c, x, y_pos, card_w, card_h, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-            label_value(c, x + 3*mm, y_pos + 4*mm, labels[i], values[i])
+            c.setFont("Helvetica", 6.5)
+            c.setFillColor(LABEL)
+            c.drawString(x + 3*mm, y_pos + 11*mm, labels[i])
+            c.setFont("Helvetica-Bold", 9)
+            c.setFillColor(DARK)
+            c.drawString(x + 3*mm, y_pos + 4*mm, values[i])
 
-    # SECTION 2 — CUSTOMER + TOTAL PAID (60/40)
-    y_pos -= 49*mm
+    # SECTION 2 — CUSTOMER + TOTAL RECEIVED (60/40)
+    y_pos -= 48*mm
     left_w = content_width * 0.6 - 1.5*mm
     right_w = content_width * 0.4 - 1.5*mm
     
+    # Customer Information
     rrect(c, margin, y_pos, left_w, 46*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-    c.drawString(margin + 5*mm, y_pos + 38*mm, "BILLED TO CUSTOMER")
-    c.setFont("Helvetica-Bold", 9.5)
-    c.drawString(margin + 5*mm, y_pos + 31*mm, f"#{data.get('customerNo', '-')}")
-    c.setFont("Helvetica-Bold", 13)
+    c.setFont("Helvetica-Bold", 7)
+    c.setFillColor(ORANGE)
+    c.drawString(margin + 5*mm, y_pos + 39*mm, "RECEIVED FROM CUSTOMER")
+    
+    cust_no = data.get('customerNo', '-')
+    c.setFont("Helvetica-Bold", 10)
     c.setFillColor(DARK)
-    c.drawString(margin + 25*mm, y_pos + 31*mm, data.get('customerName', 'N/A'))
-    c.setFont("Helvetica", 9)
+    c.drawString(margin + 5*mm, y_pos + 32*mm, f"#{cust_no}")
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(margin + 22*mm, y_pos + 32*mm, data.get('customerName', 'N/A'))
+    
+    c.setFont("Helvetica", 8.5)
     c.setFillColor(GREY)
-    addr = data.get('customerAddress', 'N/A').split('\n')
-    c.drawString(margin + 5*mm, y_pos + 25*mm, addr[0] if len(addr) > 0 else 'N/A')
-    c.drawString(margin + 5*mm, y_pos + 20*mm, addr[1] if len(addr) > 1 else '')
+    addr_val = data.get('customerAddress', 'N/A')
+    addr = str(addr_val).split('\n') if addr_val else ['N/A']
+    c.drawString(margin + 5*mm, y_pos + 26*mm, addr[0] if len(addr) > 0 else 'N/A')
+    c.drawString(margin + 5*mm, y_pos + 21*mm, addr[1] if len(addr) > 1 else '')
+    
+    # Dynamic Fields: STB/ID and Mobile
+    stb_val = str(data.get('stbNumber') or '').strip()
+    mobile_val = str(data.get('customerMobile') or '').strip()
+    
+    row_y = y_pos + 10*mm
+    has_stb = stb_val and stb_val.upper() not in ["N/A", "-", ""]
+    if has_stb:
+        label = "STB:" if is_cable else "ID:"
+        c.setFont("Helvetica", 7.5)
+        c.setFillColor(LABEL)
+        c.drawString(margin + 5*mm, row_y, label)
+        c.setFont("Helvetica-Bold", 8.5)
+        c.setFillColor(DARK)
+        c.drawString(margin + 12*mm, row_y, stb_val)
+        
+    if mobile_val and mobile_val.upper() not in ["N/A", "-", ""]:
+        x_off = 45*mm if has_stb else 5*mm
+        c.setFont("Helvetica", 7.5)
+        c.setFillColor(LABEL)
+        c.drawString(margin + x_off, row_y, "MOBILE:")
+        c.setFont("Helvetica-Bold", 8.5)
+        c.setFillColor(DARK)
+        c.drawString(margin + x_off + 14*mm, row_y, mobile_val)
 
-    # CONDITIONAL STB/CUSTOMER ID
-    stb_val = data.get('stbNumber')
-    if stb_val and str(stb_val).strip().upper() not in ["N/A", "-", ""]:
-        label = "STB" if data.get('isCableMode', True) else "ID"
-        c.drawString(margin + 5*mm, y_pos + 14*mm, f"{label}: {stb_val}")
-    
-    # CONDITIONAL MOBILE
-    mob_val = data.get('customerMobile')
-    if mob_val and str(mob_val).strip().upper() not in ["N/A", "-", ""]:
-        c.drawString(margin + 5*mm, y_pos + 10*mm, f"Mobile: {mob_val}")
-    # Total Received Card (Right)
-    
+    # Amount Card (Large Navy Card)
     rrect(c, margin + left_w + 3*mm, y_pos, right_w, 46*mm, 4*mm, fill=NAVY, stroke=False)
-    c.setFont("Helvetica", 7)
+    c.setFont("Helvetica-Bold", 7.5)
     c.setFillColor(LABEL)
-    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 38*mm, "TOTAL PAID")
-    hline(c, margin + left_w + 8*mm, margin + content_width - 5*mm, y_pos + 36*mm, WHITE, 0.5)
-    c.setFont("Helvetica-Bold", 30)
-    c.setFillColor(WHITE)
-    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 15*mm, f"Rs. {int(float(data.get('amount', 0)))}")
-    c.setFont("Helvetica", 6.5)
-    c.setFillColor(LABEL)
-    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 8*mm, "NET RECEIVED")
+    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 39*mm, "TOTAL PAID")
+    hline(c, margin + left_w + 10*mm, margin + content_width - 7*mm, y_pos + 37*mm, WHITE, 0.4)
     
+    c.setFont("Helvetica-Bold", 34)
+    c.setFillColor(WHITE)
+    amount = float(data.get('amount', 0))
+    # Using Rs. prefix in small text above if needed, but here just big amount
+    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 18*mm, f"{int(amount)}")
+    c.setFont("Helvetica", 8)
+    c.setFillColor(LABEL)
+    c.drawCentredString(margin + left_w + 3*mm + right_w/2, y_pos + 8*mm, "RUPEES ONLY • NET RECEIVED")
+
     # SECTION 3 — SERVICE TABLE
     y_pos -= 15*mm
     c.setFillColor(NAVY)
     rrect(c, margin, y_pos, content_width, 9.5*mm, 4*mm, fill=NAVY, stroke=False)
     c.setFillColor(WHITE)
-    c.setFont("Helvetica-Bold", 7)
+    c.setFont("Helvetica-Bold", 7.5)
     c.drawString(margin + 5*mm, y_pos + 3.5*mm, "SERVICE DESCRIPTION")
     c.drawCentredString(margin + 75*mm, y_pos + 3.5*mm, "SERVICE PERIOD")
     c.drawCentredString(margin + 120*mm, y_pos + 3.5*mm, "QTY")
     c.drawRightString(width - margin - 5*mm, y_pos + 3.5*mm, "AMOUNT")
     
     items = data.get('items', [])
+    if not items:
+        # Construct single item from top-level data
+        items = [{
+            'desc': clean_plan_name(data.get('planName', 'Service Plan'), is_cable),
+            'period': data.get('billingPeriod', 'N/A'),
+            'qty': 1,
+            'total': data.get('amount', 0),
+            'subDesc': "Digital Cable TV Service" if is_cable else "High-Speed Internet Service"
+        }]
+        
     for item in items:
         y_pos -= 13*mm
         rrect(c, margin, y_pos, content_width, 12*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
         c.setFillColor(DARK)
-        c.setFont("Helvetica-Bold", 9)
+        c.setFont("Helvetica-Bold", 10)
         c.drawString(margin + 5*mm, y_pos + 6.5*mm, item.get('desc', 'N/A'))
-        c.setFont("Helvetica", 7)
+        c.setFont("Helvetica", 7.5)
         c.setFillColor(GREY)
         c.drawString(margin + 5*mm, y_pos + 2.5*mm, item.get('subDesc', ''))
-        c.setFont("Helvetica", 8.5)
+        
+        c.setFont("Helvetica", 9)
         c.setFillColor(DARK)
         c.drawCentredString(margin + 75*mm, y_pos + 5*mm, item.get('period', 'N/A'))
         c.drawCentredString(margin + 120*mm, y_pos + 5*mm, str(item.get('qty', '1')))
-        c.setFont("Helvetica-Bold", 9.5)
+        c.setFont("Helvetica-Bold", 10.5)
         c.setFillColor(NAVY)
         c.drawRightString(width - margin - 5*mm, y_pos + 5*mm, f"Rs. {float(item.get('total', 0)):.2f}")
-    
-    y_pos -= 40*mm
-    right_w = content_width * 0.45
-    right_x = width - margin - right_w
-    rrect(c, right_x, y_pos, right_w, 35*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
+
+    # SECTION 4 — BREAKDOWN
+    y_pos -= 45*mm
+    break_w = content_width * 0.45
+    break_x = width - margin - break_w
+    rrect(c, break_x, y_pos, break_w, 35*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
     c.setFillColor(LABEL)
-    c.setFont("Helvetica-Bold", 6.5)
-    c.drawString(right_x + 5*mm, y_pos + 30*mm, "PAYMENT BREAKDOWN")
-    hline(c, right_x + 5*mm, right_x + right_w - 5*mm, y_pos + 28*mm, BORDER, 0.5)
+    c.setFont("Helvetica-Bold", 7)
+    c.drawString(break_x + 5*mm, y_pos + 30*mm, "PAYMENT BREAKDOWN")
+    hline(c, break_x + 5*mm, break_x + break_w - 5*mm, y_pos + 28*mm, BORDER, 0.5)
     
-    amt = float(data.get('amount', 0))
     row_y = y_pos + 22*mm
-    c.setFont("Helvetica-Bold", 8)
+    c.setFont("Helvetica-Bold", 9.5)
     c.setFillColor(DARK)
-    c.drawString(right_x + 5*mm, row_y, "Subtotal")
-    c.drawRightString(right_x + right_w - 5*mm, row_y, f"Rs. {amt:.2f}")
+    c.drawString(break_x + 5*mm, row_y, "Gross Amount")
+    c.drawRightString(break_x + break_w - 5*mm, row_y, f"Rs. {amount:.2f}")
     row_y -= 6*mm
-    c.setFont("Helvetica", 8)
+    c.setFont("Helvetica", 8.5)
     c.setFillColor(GREY)
-    c.drawString(right_x + 5*mm, row_y, "Discount")
-    c.drawRightString(right_x + right_w - 5*mm, row_y, "Rs. 0.00")
-    hline(c, right_x + 5*mm, right_x + right_w - 5*mm, row_y - 4*mm, BORDER, 0.5)
+    c.drawString(break_x + 5*mm, row_y, "Taxes & Adjustments")
+    c.drawRightString(break_x + break_w - 5*mm, row_y, "Rs. 0.00")
+    hline(c, break_x + 5*mm, break_x + break_w - 5*mm, row_y - 4*mm, BORDER, 0.4)
     
-    rrect(c, right_x + 3*mm, y_pos + 3*mm, right_w - 6*mm, 9*mm, 3*mm, fill=NAVY, stroke=False)
+    # Net Total Card
+    rrect(c, break_x + 3*mm, y_pos + 3*mm, break_w - 6*mm, 10*mm, 3*mm, fill=NAVY, stroke=False)
     c.setFillColor(WHITE)
-    c.setFont("Helvetica-Bold", 8)
-    c.drawString(right_x + 8*mm, y_pos + 6*mm, "NET RECEIVED")
-    c.setFont("Helvetica-Bold", 11)
-    c.drawRightString(right_x + right_w - 8*mm, y_pos + 6*mm, f"Rs. {amt:.2f}")
-    
+    c.setFont("Helvetica-Bold", 9.5)
+    c.drawString(break_x + 8*mm, y_pos + 6.5*mm, "NET RECEIVED")
+    c.setFont("Helvetica-Bold", 12.5)
+    c.drawRightString(break_x + break_w - 8*mm, y_pos + 6.5*mm, f"Rs. {amount:.2f}")
+
+    # Receipt Footer Section
     y_pos = 40*mm
     hline(c, margin, width - margin, y_pos, ORANGE, 1)
     c.setFillColor(NAVY)
-    c.setFont("Helvetica-Bold", 14)
+    c.setFont("Helvetica-Bold", 15)
     c.drawCentredString(width/2, y_pos - 8*mm, "Payment Confirmed")
     c.setFillColor(GREY)
-    c.setFont("Helvetica", 7.5)
-    c.drawCentredString(width/2, y_pos - 13*mm, "AUTHORIZED DIGITAL RECEIPT")
+    c.setFont("Helvetica", 8.5)
+    c.drawCentredString(width/2, y_pos - 13*mm, "OFFICIAL DIGITAL PAYMENT RECEIPT")
     hline(c, margin, width - margin, y_pos - 18*mm, ORANGE, 1)
     
+    # Bottom strip
     footer_h = 9*mm
     c.setFillColor(NAVY)
     c.rect(0, 0, width, footer_h, fill=1, stroke=0)
     hline(c, 0, width, footer_h, ORANGE, 1.2*mm)
     c.setFillColor(WHITE)
-    c.setFont("Helvetica", 6.5)
-    c.drawCentredString(width/2, 3*mm, "THIS IS A SYSTEM GENERATED RECEIPT")
+    c.setFont("Helvetica", 7)
+    c.drawCentredString(width/2, 3.5*mm, "THIS IS A COMPUTER GENERATED RECEIPT • VALID WITHOUT PHYSICAL SIGNATURE")
     c.save()
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length)
-        data = json.loads(post_data)
-        
-        doc_type = data.get('type', 'invoice')
-        buffer = io.BytesIO()
-        
-        if doc_type == 'invoice':
-            generate_invoice_pdf(buffer, data)
-            filename = f"Invoice_{data.get('number', 'INV')}.pdf"
-        else:
-            generate_receipt_pdf(buffer, data)
-            filename = f"Receipt_{data.get('number', 'PAY')}.pdf"
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data)
             
-        pdf_data = buffer.getvalue()
-        buffer.close()
-        
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/pdf')
-        self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
-        self.send_header('Content-Length', len(pdf_data))
-        self.end_headers()
-        self.wfile.write(pdf_data)
+            doc_type = data.get('type', 'invoice')
+            buffer = io.BytesIO()
+            
+            if doc_type == 'invoice':
+                generate_invoice_pdf(buffer, data)
+                filename = f"Invoice_{data.get('number', 'INV')}.pdf"
+            else:
+                generate_receipt_pdf(buffer, data)
+                filename = f"Receipt_{data.get('number', 'PAY')}.pdf"
+                
+            pdf_data = buffer.getvalue()
+            buffer.close()
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/pdf')
+            self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
+            self.send_header('Content-Length', len(pdf_data))
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(pdf_data)
+        except Exception as e:
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(str(e).encode())
 
     def do_OPTIONS(self):
         self.send_response(200)

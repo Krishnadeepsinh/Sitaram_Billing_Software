@@ -138,7 +138,7 @@ export default function PaymentReceiptModal({
         const dates = getInvoiceServiceDates(inv, sub, plans);
         const planName = plan?.name || "Standard Plan";
         const cleanedPlanName = isCableMode 
-          ? planName.replace(/\[?\d+\s*Mbps\]?/gi, "").replace(/\(\s*Mbps\s*\)/gi, "").trim() 
+          ? planName.replace(/\d+\s*(mbps|gbps|kbps)/gi, "").replace(/\[\d+\s*(mbps|gbps|kbps)\]/gi, "").replace(/\(\d+\s*(mbps|gbps|kbps)\)/gi, "").replace(/\s+/g, " ").trim() 
           : planName;
           
         items.push({ 
@@ -162,6 +162,14 @@ export default function PaymentReceiptModal({
 
     return items;
   }, [payment, subscribers, plans, invoices, payments, isCableMode]);
+
+  const selectedPaymentServiceDates = useMemo(() => {
+    const associatedInvoice = invoices.find(inv => inv.id === payment.invoiceId) || 
+                             invoices.filter(inv => inv.subscriberId === payment.subscriberId)
+                                     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+    
+    return getInvoiceServiceDates(associatedInvoice, subscriber, plans);
+  }, [payment, subscriber, invoices, plans]);
 
   const handleDownloadPDF = async () => {
     setIsProcessing(true);

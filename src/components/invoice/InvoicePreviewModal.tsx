@@ -230,29 +230,27 @@ export default function InvoicePreviewModal({
       footer: { background: "#1a2e5a", color: "#a0b4d0", fontSize: 10, textAlign: "center", padding: "10px 20px", marginTop: "auto" },
     };
 
-    const LogoSVG = () => (
-      <svg width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={styles.logoSvg}>
-        <rect width="80" height="80" rx="10" fill="#1a2e5a" />
-        <circle cx="40" cy="34" r="18" fill="none" stroke="#e8522a" strokeWidth="3" />
-        <circle cx="40" cy="34" r="10" fill="none" stroke="#f4a035" strokeWidth="2.5" />
-        <circle cx="40" cy="34" r="4" fill="#e8522a" />
-        <path d="M28 52 Q40 44 52 52" stroke="#ffffff" strokeWidth="2" fill="none" strokeLinecap="round" />
-        <path d="M22 58 Q40 48 58 58" stroke="#a0b4d0" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        <text x="40" y="73" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="700" fontFamily="Arial">SITARAM</text>
-      </svg>
-    );
+    const encodedLogo = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`<svg width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="10" fill="#1a2e5a"/><circle cx="40" cy="34" r="18" fill="none" stroke="#e8522a" stroke-width="3"/><circle cx="40" cy="34" r="10" fill="none" stroke="#f4a035" stroke-width="2.5"/><circle cx="40" cy="34" r="4" fill="#e8522a"/><path d="M28 52 Q40 44 52 52" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/><path d="M22 58 Q40 48 58 58" stroke="#a0b4d0" stroke-width="1.5" stroke-linecap="round"/><text x="40" y="73" text-anchor="middle" fill="#ffffff" font-size="7" font-weight="700" font-family="Arial">SITARAM</text></svg>`);
+    const LogoImg = () => <img src={encodedLogo} width="72" height="72" alt="Logo" style={{ display: "block" }} />;
 
     const isPaid = invoice.status === "PAID";
     const statusStyle = isPaid ? styles.statusPaid : styles.statusUnpaid;
     const lineItem = getInvoiceLineItem(invoice, subscriber, plans, isCableMode);
+    
+    // Service Dates
+    const { getInvoiceServiceDates } = require("./invoicePreviewUtils");
+    const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
+    const servicePeriodLabel = invoice.type === "legacy" 
+      ? billingPeriodLabel 
+      : `${formatFullDate(serviceDates.rechargeDate)} - ${formatFullDate(serviceDates.expiryDate)}`;
 
     return (
       <div id={id} style={styles.page}>
         {/* Header */}
         <div style={styles.header}>
           <div style={styles.headerLeft}>
-            <div style={styles.logoBox}><LogoSVG /></div>
-            <div>
+            <div style={styles.logoBox}><LogoImg /></div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <div style={styles.companyName}>SITARAM CABLE & BROADBAND</div>
               <div style={styles.tagline}>Connecting Every Home</div>
               <div style={styles.contactInfo}>
@@ -344,7 +342,7 @@ export default function InvoicePreviewModal({
                 <tr style={{ background: "#f8fafc" }}>
                   <td style={styles.td}>1</td>
                   <td style={styles.td}>{lineItem.description}</td>
-                  <td style={styles.td}>{billingPeriodLabel}</td>
+                  <td style={styles.td}>{servicePeriodLabel}</td>
                   <td style={styles.tdRight}>{amount.toFixed(2)}</td>
                   <td style={styles.tdRight}>{previousBalance.toFixed(2)}</td>
                   <td style={styles.tdRight}>{grandTotal.toFixed(2)}</td>

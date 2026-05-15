@@ -91,6 +91,11 @@ export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[], 
       .replace(/\d+\s*mbps/gi, "")
       .replace(/\s+/g, " ")
       .trim();
+
+    // 3. Fallback if the remaining string is too sparse or just "Plan"
+    if (!serviceName || serviceName.length < 3 || serviceName.toLowerCase() === "plan") {
+      serviceName = "Cable TV Service";
+    }
   }
 
   if (quantity === 1 && validityDays > 31) {

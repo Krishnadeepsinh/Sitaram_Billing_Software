@@ -82,18 +82,32 @@ const validateSubscriberInput = ({
   const username = String(candidate.customerUsername || "").trim();
 
   if (!name) throw new Error("Customer name is required.");
-  if (!/^\d{10}$/.test(phone)) throw new Error("Mobile number must be exactly 10 digits.");
+  
+  // Mobile number is now optional
+  if (phone && !/^\d{10}$/.test(phone)) {
+    throw new Error("Mobile number must be exactly 10 digits if provided.");
+  }
+  
   if (!planId) throw new Error("Please select a plan.");
-  if (!customerId) throw new Error(businessMode === "cable" ? "STB number is required." : "Customer ID is required.");
-
-  const duplicateCustomerId = subscribers.find((sub) => sub.id !== editingId && normalizeComparable(sub.customerId) === normalizeComparable(customerId));
-  if (duplicateCustomerId) {
-    throw new Error(businessMode === "cable" ? "This STB number already exists." : "This customer ID already exists.");
+  
+  // Customer ID / STB is now optional
+  if (customerId) {
+    const duplicateCustomerId = subscribers.find((sub) => 
+      sub.id !== editingId && 
+      sub.customerId && 
+      normalizeComparable(sub.customerId) === normalizeComparable(customerId)
+    );
+    if (duplicateCustomerId) {
+      throw new Error(businessMode === "cable" ? "This STB number already exists." : "This customer ID already exists.");
+    }
   }
 
-  if (businessMode === "broadband") {
-    if (!username) throw new Error("Customer username is required for broadband subscribers.");
-    const duplicateUsername = subscribers.find((sub) => sub.id !== editingId && normalizeComparable(sub.customerUsername) === normalizeComparable(username));
+  if (businessMode === "broadband" && username) {
+    const duplicateUsername = subscribers.find((sub) => 
+      sub.id !== editingId && 
+      sub.customerUsername && 
+      normalizeComparable(sub.customerUsername) === normalizeComparable(username)
+    );
     if (duplicateUsername) throw new Error("This customer username already exists.");
   }
 };

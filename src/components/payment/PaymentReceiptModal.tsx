@@ -178,6 +178,7 @@ export default function PaymentReceiptModal({
         stbNumber: subscriber?.customerId || subscriber?.customerUsername || 'N/A',
         customerMobile: subscriber?.phone || 'N/A',
         amountInWords: numberToWords(Number(payment.amount)),
+        isCableMode: isCableMode,
         brand: {
           name: brand.name,
           address: brand.address,

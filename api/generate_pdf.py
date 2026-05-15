@@ -219,19 +219,26 @@ def generate_invoice_pdf(buffer, data):
     c.drawString(margin + 5*mm, y_pos + 22*mm, addr[0] if len(addr) > 0 else 'N/A')
     c.drawString(margin + 5*mm, y_pos + 17*mm, addr[1] if len(addr) > 1 else '')
     
-    c.setFont("Helvetica", 7)
-    c.setFillColor(LABEL)
-    c.drawString(margin + 5*mm, y_pos + 8*mm, "STB:")
-    c.setFont("Helvetica-Bold", 7.5)
-    c.setFillColor(DARK)
-    c.drawString(margin + 12*mm, y_pos + 8*mm, data.get('stbNumber', 'N/A'))
+    # STB and Mobile - Dynamic display
+    stb = str(data.get('stbNumber') or '').strip()
+    if stb and stb != 'N/A':
+        c.setFont("Helvetica", 7)
+        c.setFillColor(LABEL)
+        c.drawString(margin + 5*mm, y_pos + 8*mm, "STB:")
+        c.setFont("Helvetica-Bold", 7.5)
+        c.setFillColor(DARK)
+        c.drawString(margin + 12*mm, y_pos + 8*mm, stb)
     
-    c.setFont("Helvetica", 7)
-    c.setFillColor(LABEL)
-    c.drawString(margin + 40*mm, y_pos + 8*mm, "MOBILE:")
-    c.setFont("Helvetica-Bold", 7.5)
-    c.setFillColor(DARK)
-    c.drawString(margin + 55*mm, y_pos + 8*mm, data.get('customerMobile', 'N/A'))
+    mobile = str(data.get('customerMobile') or '').strip()
+    if mobile and mobile != 'N/A':
+        # Offset mobile if STB is present, otherwise put it at the start
+        x_off = 40*mm if (stb and stb != 'N/A') else 5*mm
+        c.setFont("Helvetica", 7)
+        c.setFillColor(LABEL)
+        c.drawString(margin + x_off, y_pos + 8*mm, "MOBILE:")
+        c.setFont("Helvetica-Bold", 7.5)
+        c.setFillColor(DARK)
+        c.drawString(margin + x_off + 15*mm, y_pos + 8*mm, mobile)
     
     rrect(c, margin + left_w + 3*mm, y_pos, right_w, 43*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
     c.setFont("Helvetica-Bold", 6.5)
@@ -268,7 +275,8 @@ def generate_invoice_pdf(buffer, data):
     c.drawString(margin + 5*mm, y_pos + 6.5*mm, data.get('planName', 'N/A'))
     c.setFont("Helvetica", 7)
     c.setFillColor(GREY)
-    c.drawString(margin + 5*mm, y_pos + 2.5*mm, "Digital Cable TV Service")
+    service_type = "Digital Cable TV Service" if data.get('isCableMode', True) else "High-Speed Internet Service"
+    c.drawString(margin + 5*mm, y_pos + 2.5*mm, service_type)
     c.setFont("Helvetica", 8.5)
     c.setFillColor(DARK)
     c.drawCentredString(margin + 75*mm, y_pos + 5*mm, data.get('planPeriod', 'N/A'))
@@ -421,8 +429,6 @@ def generate_receipt_pdf(buffer, data):
     right_w = content_width * 0.4 - 1.5*mm
     
     rrect(c, margin, y_pos, left_w, 46*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-    c.setFont("Helvetica-Bold", 6.5)
-    c.setFillColor(ORANGE)
     c.drawString(margin + 5*mm, y_pos + 38*mm, "BILLED TO CUSTOMER")
     c.setFont("Helvetica-Bold", 9.5)
     c.drawString(margin + 5*mm, y_pos + 31*mm, f"#{data.get('customerNo', '-')}")
@@ -434,18 +440,18 @@ def generate_receipt_pdf(buffer, data):
     addr = data.get('customerAddress', 'N/A').split('\n')
     c.drawString(margin + 5*mm, y_pos + 25*mm, addr[0] if len(addr) > 0 else 'N/A')
     c.drawString(margin + 5*mm, y_pos + 20*mm, addr[1] if len(addr) > 1 else '')
-    c.setFont("Helvetica", 7)
-    c.setFillColor(LABEL)
-    c.drawString(margin + 5*mm, y_pos + 10*mm, "STB:")
-    c.setFont("Helvetica-Bold", 7.5)
-    c.setFillColor(DARK)
-    c.drawString(margin + 12*mm, y_pos + 10*mm, data.get('stbNumber', 'N/A'))
-    c.setFont("Helvetica", 7)
-    c.setFillColor(LABEL)
-    c.drawString(margin + 40*mm, y_pos + 10*mm, "MOBILE:")
-    c.setFont("Helvetica-Bold", 7.5)
-    c.setFillColor(DARK)
-    c.drawString(margin + 55*mm, y_pos + 10*mm, data.get('customerMobile', 'N/A'))
+
+    # CONDITIONAL STB/CUSTOMER ID
+    stb_val = data.get('stbNumber')
+    if stb_val and str(stb_val).strip().upper() not in ["N/A", "-", ""]:
+        label = "STB" if data.get('isCableMode', True) else "ID"
+        c.drawString(margin + 5*mm, y_pos + 14*mm, f"{label}: {stb_val}")
+    
+    # CONDITIONAL MOBILE
+    mob_val = data.get('customerMobile')
+    if mob_val and str(mob_val).strip().upper() not in ["N/A", "-", ""]:
+        c.drawString(margin + 5*mm, y_pos + 10*mm, f"Mobile: {mob_val}")
+    # Total Received Card (Right)
     
     rrect(c, margin + left_w + 3*mm, y_pos, right_w, 46*mm, 4*mm, fill=NAVY, stroke=False)
     c.setFont("Helvetica", 7)

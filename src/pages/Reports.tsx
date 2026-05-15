@@ -189,20 +189,18 @@ const AuditReportTemplate = ({
 export default function Reports() {
   const currentBusinessMode = useBusinessMode();
   const customerIdLabel = currentBusinessMode === "cable" ? "STB Number" : "Customer ID";
-  const billing = useBilling();
-  
   const { 
-    stats: s = {}, 
-    payments = [], 
-    subscribers = [], 
-    companySettings = {}, 
-    expenses = [], 
-    isLoading: billingLoading = false,
+    stats: s,
+    payments,
+    subscribers,
+    companySettings,
+    expenses,
+    isLoading: billingLoading,
     filterStartDate,
     setFilterStartDate,
     filterEndDate,
     setFilterEndDate
-  } = billing || {};
+  } = useBilling();
 
 
   const [selectedArea, setSelectedArea] = useState("All Addresses");
@@ -212,6 +210,9 @@ export default function Reports() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const selectedYear = filterStartDate.getFullYear();
+  const selectedMonth = filterStartDate.getMonth();
 
   useEffect(() => {
     const handleResize = () => {
@@ -320,9 +321,9 @@ export default function Reports() {
       const opt = {
         margin: 10,
         filename: `Audit_${monthNameLong.replace(' ', '_')}.pdf`,
-        image: { type: 'jpeg', quality: 1.0 },
+        image: { type: 'jpeg' as const, quality: 1.0 },
         html2canvas: { scale: 2, useCORS: true, width: 794 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
       };
       await html2pdf().set(opt).from(element).save();
       toast.success("PDF report downloaded");

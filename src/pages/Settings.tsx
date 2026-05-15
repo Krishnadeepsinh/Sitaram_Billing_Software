@@ -17,19 +17,21 @@ const Settings = () => {
     address: '',
     upiId: '',
     phone: '',
-    email: ''
+    email: '',
+    gstin: ''
   });
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (companySettings) {
-      setFormData({
-        name: companySettings.name || '',
-        address: companySettings.address || '',
-        upiId: companySettings.upiId || '',
-        phone: companySettings.phone || '',
-        email: companySettings.email || ''
-      });
+        setFormData({
+          name: companySettings.name || '',
+          address: companySettings.address || '',
+          upiId: companySettings.upiId || '',
+          phone: companySettings.phone || '',
+          email: companySettings.email || '',
+          gstin: companySettings.gstin || ''
+        });
     }
   }, [companySettings]);
 

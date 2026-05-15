@@ -64,6 +64,7 @@ export interface Payment {
   method: "Cash" | "UPI";
   agent: string;
   date: string;
+  invoiceId?: string;
   discount?: number;
   balanceAtPayment?: number;
   createdAt?: string;

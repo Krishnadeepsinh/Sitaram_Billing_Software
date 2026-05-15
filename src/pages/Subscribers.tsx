@@ -167,7 +167,15 @@ export default function Subscribers() {
       if (editingSub) {
         await updateSubscriber(editingSub.id, { ...rest, openingBalance: finalOpeningBalance });
       } else {
-        await addSubscriber({ ...rest, openingBalance: finalOpeningBalance, status: formData.status || 'active' });
+        await addSubscriber({
+          ...rest,
+          openingBalance: finalOpeningBalance,
+          status: formData.status || 'active',
+          expiryDate: '',
+          balance: 0,
+          autoBilling: false,
+          unpaidMonths: [],
+        });
       }
       await refreshData();
       toast.success(editingSub ? "Sync Successful" : "New Node Established");

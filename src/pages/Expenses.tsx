@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { formatCurrency, formatDate, Expense } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { Plus, Receipt, Fuel, Users, Wrench, Home, Globe, HelpCircle, Download, Trash2, X, Loader2 } from "lucide-react";
@@ -18,7 +18,17 @@ const categoryIcon = {
 } as const;
 
 export default function Expenses() {
-  const { expenses, stats: s, addExpense, deleteExpense } = useBilling();
+  const { 
+    expenses, 
+    stats: s, 
+    addExpense, 
+    deleteExpense,
+    filterStartDate,
+    setFilterStartDate,
+    filterEndDate,
+    setFilterEndDate
+  } = useBilling();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -28,7 +38,20 @@ export default function Expenses() {
     date: new Date().toISOString().split('T')[0]
   });
 
-  const sortedExpenses = [...expenses].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const years = [2024, 2025, 2026];
+
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter(e => {
+      if (!e || !e.date) return false;
+      const d = new Date(e.date);
+      return d >= filterStartDate && d <= filterEndDate;
+    }).sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  }, [expenses, filterStartDate, filterEndDate]);
+
+  const rangeTotal = useMemo(() => {
+    return filteredExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  }, [filteredExpenses]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +100,7 @@ export default function Expenses() {
     }
 
     const headers = ["ID", "Description", "Category", "Amount", "Date"];
-    const rows = sortedExpenses.map(e => [
+    const rows = filteredExpenses.map(e => [
       e.id,
       e.description,
       e.category,
@@ -207,22 +230,81 @@ export default function Expenses() {
         </div>
       </div>
 
+      {/* Range Filter */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="lg:col-span-8 flex flex-col sm:flex-row items-center gap-3 rounded-xl border border-white/10 bg-slate-900 p-3">
+          <div className="flex items-center gap-2 flex-1 w-full">
+            <div className="flex flex-1 items-center gap-1 rounded-lg border border-white/10 bg-slate-950 p-1">
+              <span className="text-[9px] uppercase font-bold text-slate-500 px-2">From</span>
+              <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
+                const monthIndex = months.indexOf(e.target.value);
+                const d = new Date(filterStartDate);
+                d.setMonth(monthIndex);
+                setFilterStartDate(d);
+              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer flex-1">
+                {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+              </select>
+              <select value={filterStartDate.getFullYear()} onChange={(e) => {
+                const d = new Date(filterStartDate);
+                d.setFullYear(Number(e.target.value));
+                setFilterStartDate(d);
+              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer w-14">
+                {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+              </select>
+            </div>
+            <div className="h-4 w-px bg-white/10" />
+            <div className="flex flex-1 items-center gap-1 rounded-lg border border-white/10 bg-slate-950 p-1">
+              <span className="text-[9px] uppercase font-bold text-slate-500 px-2">To</span>
+              <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
+                const monthIndex = months.indexOf(e.target.value);
+                const d = new Date(filterEndDate);
+                d.setMonth(monthIndex + 1);
+                d.setDate(0);
+                d.setHours(23, 59, 59, 999);
+                setFilterEndDate(d);
+              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer flex-1">
+                {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+              </select>
+              <select value={filterEndDate.getFullYear()} onChange={(e) => {
+                const d = new Date(filterEndDate);
+                d.setFullYear(Number(e.target.value));
+                setFilterEndDate(d);
+              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer w-14">
+                {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div className="lg:col-span-4 bg-slate-900 rounded-xl border border-white/10 p-3 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-500">Range Total</span>
+            <span className="text-lg font-black text-rose-400 tabular-nums">-{formatCurrency(rangeTotal)}</span>
+          </div>
+          <div className="h-10 w-px bg-white/10" />
+          <div className="flex flex-col text-right">
+            <span className="text-[10px] uppercase font-bold text-slate-500">Records</span>
+            <span className="text-lg font-black text-white">{filteredExpenses.length}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="bg-slate-900 rounded-xl border border-white/10 border-l-4 border-l-indigo-500 p-5 transition-colors hover:border-white/20">
             <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-              <Receipt className="h-3.5 w-3.5 text-indigo-400" /> This month
+              <Receipt className="h-3.5 w-3.5 text-indigo-400" /> Current Selection
           </p>
-          <p className="font-display text-2xl font-semibold tabular-nums tracking-tight text-white">{formatCurrency(s.monthExpenses)}</p>
-          <p className="mt-1 text-xs text-slate-500">Total spend</p>
+          <p className="font-display text-2xl font-semibold tabular-nums tracking-tight text-white">{formatCurrency(rangeTotal)}</p>
+          <p className="mt-1 text-xs text-slate-500">Total range spend</p>
         </div>
 
         <div className="bg-slate-900 rounded-xl border border-white/10 p-5 transition-colors hover:border-white/20">
           <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-            <Users className="h-3.5 w-3.5 text-slate-400" /> Entries
+            <Users className="h-3.5 w-3.5 text-slate-400" /> Count
           </p>
-          <p className="font-display text-2xl font-semibold tabular-nums tracking-tight text-white">{expenses.length}</p>
-          <p className="mt-1 text-xs text-slate-500">Logged expenses</p>
+          <p className="font-display text-2xl font-semibold tabular-nums tracking-tight text-white">{filteredExpenses.length}</p>
+          <p className="mt-1 text-xs text-slate-500">Filtered entries</p>
         </div>
 
         <div className="bg-slate-900 rounded-xl border border-white/10 p-5 transition-colors hover:border-white/20">
@@ -230,9 +312,9 @@ export default function Expenses() {
               <Globe className="h-3.5 w-3.5 text-indigo-400" /> Margin
             </p>
             <p className="font-display text-2xl font-semibold tabular-nums tracking-tight text-indigo-400">
-            {s.monthRevenue > 0 ? ((1 - (s.monthExpenses / s.monthRevenue)) * 100).toFixed(1) : '0'}%
+            {s.monthRevenue > 0 ? ((1 - (rangeTotal / s.monthRevenue)) * 100).toFixed(1) : '0'}%
           </p>
-          <p className="mt-1 text-xs text-slate-500">Approx. net of expenses</p>
+          <p className="mt-1 text-xs text-slate-500">Approx. net in range</p>
         </div>
       </div>
 
@@ -243,7 +325,7 @@ export default function Expenses() {
               <Receipt className="h-4 w-4 text-indigo-400" />
               Expense ledger
             </h3>
-          <span className="rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs font-medium text-slate-500">{sortedExpenses.length} rows</span>
+          <span className="rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs font-medium text-slate-500">{filteredExpenses.length} rows</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
@@ -257,7 +339,7 @@ export default function Expenses() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {sortedExpenses.map((expense) => {
+              {filteredExpenses.map((expense) => {
                 const Icon = categoryIcon[expense.category];
                 return (
                     <tr key={expense.id} className="hover:bg-indigo-600/[0.02] transition-colors group">
@@ -296,7 +378,7 @@ export default function Expenses() {
                   </tr>
                 );
               })}
-              {expenses.length === 0 && (
+              {filteredExpenses.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-10 py-16 text-center">
                     <div className="flex flex-col items-center justify-center gap-3 opacity-10">

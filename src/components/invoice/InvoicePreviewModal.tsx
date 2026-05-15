@@ -177,7 +177,7 @@ export default function InvoicePreviewModal({
       const options = {
         margin: 0,
         filename: fileName,
-        image: { type: "jpeg", quality: 1.0 },
+        image: { type: "jpeg" as const, quality: 1.0 },
         html2canvas: {
           scale: 2,
           useCORS: true,
@@ -203,7 +203,7 @@ export default function InvoicePreviewModal({
             }
           }
         },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
       };
 
       const pdfBlob = await html2pdf().set(options).from(element).toPdf().output("blob");

@@ -11,7 +11,7 @@ import {
   Agent,
   formatMonthRanges,
 } from '@/lib/mockData';
-import { BusinessMode, db, useBusinessMode } from '@/lib/turso';
+import { BusinessMode, db, hasTursoDB, useBusinessMode } from '@/lib/turso';
 import { BRAND_ADDRESS, BRAND_EMAIL, BRAND_NAME, BRAND_PHONE, BRAND_UPI, cleanBrandValue } from '@/lib/branding';
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
@@ -129,7 +129,7 @@ interface BillingContextType {
   deletePlan: (id: string) => Promise<void>;
   generateInvoice: (subId: string, months?: number | string[], skipFetch?: boolean, customDate?: Date, includePreviousDue?: boolean, subObj?: Subscriber, discount?: number) => Promise<void>;
   deleteInvoice: (id: string, skipFetch?: boolean) => Promise<void>;
-  runBulkBilling: (startDate?: Date, numMonths?: number, includePreviousDue?: boolean) => Promise<void>;
+  runBulkBilling: (startDate?: Date, numMonths?: number, includePreviousDue?: boolean) => Promise<{ legacyGenerated: number; total: number; generated: number; skipped: number }>;
   bulkDeleteInvoices: (ids: string[]) => Promise<void>;
   recordPayment: (payment: Omit<Payment, 'id'> & { invoiceId?: string, discount?: number }) => Promise<Payment>;
   deletePayment: (id: string) => Promise<void>;
@@ -150,6 +150,7 @@ interface BillingContextType {
   setFilterStartDate: (date: Date) => void;
   setFilterEndDate: (date: Date) => void;
   companySettings: CompanySettings;
+  hasTursoDB: boolean;
   updateCompanySettings: (settings: CompanySettings) => Promise<void>;
   refreshData: () => Promise<void>;
   runAutoLegacyBilling: () => Promise<void>;
@@ -287,7 +288,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const plansSeeded = LS.get(`plans_seeded_${businessMode}`, false);
         
         if (Number(planCheck.rows[0].count) === 0 && !plansSeeded) {
-          const initialPlans = getDefaultPlans(businessMode);
+          const initialPlans = getDefaultPlans(businessMode as BusinessMode);
           const planInserts = initialPlans.map(p => ({
             sql: 'INSERT INTO plans (id, name, price, validity_days, speed_mbps, price_without_gst, provider_plan_id, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             args: [p.id, p.name, p.price, p.validityDays, p.speedMbps, p.priceWithoutGst || p.price, p.providerPlanId || '', p.category || 'welcome']
@@ -456,7 +457,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setInvoices(LS.get<Invoice[]>('invoices', []));
     setExpenses(LS.get<Expense[]>('expenses', []));
     setReminders(LS.get<Reminder[]>('reminders', []));
-    setPlansList(LS.get<typeof plans>('plans', getDefaultPlans(businessMode)));
+    setPlansList(LS.get<typeof plans>('plans', getDefaultPlans(businessMode as BusinessMode)));
     setCompanySettings({
       name: BRAND_NAME,
       address: BRAND_ADDRESS,
@@ -504,7 +505,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // ── Mutations ────────────────────────────────────────────────────────────────
   const addSubscriber = async (newSubData: Omit<Subscriber, 'id' | 'code'>): Promise<Subscriber> => {
-    validateSubscriberInput({ candidate: newSubData, subscribers, businessMode });
+    validateSubscriberInput({ candidate: newSubData, subscribers, businessMode: businessMode as BusinessMode });
     const id = Math.random().toString(36).substr(2, 9);
     const code = `SUB-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     const customerNo = subscribers.length > 0 ? Math.max(...subscribers.map(s => s.customerNo || 0)) + 1 : 1;
@@ -548,7 +549,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Skip full validation if only status is being updated to avoid blocking toggles on legacy records
     const isStatusOnly = Object.keys(updates).length === 1 && updates.status !== undefined;
     if (!isStatusOnly) {
-      validateSubscriberInput({ candidate: { ...existingSub, ...updates }, subscribers, editingId: id, businessMode });
+      validateSubscriberInput({ candidate: { ...existingSub, ...updates }, subscribers, editingId: id, businessMode: businessMode as BusinessMode });
     }
 
     if (db) {
@@ -1845,7 +1846,6 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // ── Stats ────────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const today = new Date();
-    const dDate = dashboardDate || today;
 
     const collectedToday  = payments
       .filter(p => p.date && new Date(p.date).toDateString() === today.toDateString())
@@ -1955,7 +1955,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       generateInvoice, deleteInvoice, bulkDeleteInvoices, runBulkBilling, runAutoLegacyBilling,
       recordPayment, deletePayment,
       addExpense, deleteExpense,
-      stats, filterStartDate, setFilterStartDate, filterEndDate, setFilterEndDate, companySettings, updateCompanySettings,
+      stats, filterStartDate, setFilterStartDate, filterEndDate, setFilterEndDate, companySettings, hasTursoDB, updateCompanySettings,
       refreshData: fetchData,
       recalculateBalances,
       importBackupData: async (data: any) => {

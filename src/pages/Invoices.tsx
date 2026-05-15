@@ -150,6 +150,33 @@ export default function Invoices() {
     });
   }, [filtered, sortBy, subMap]);
 
+  const getInvoiceDueAmount = (invoiceId: string) => {
+    const invoice = invoices.find((inv) => inv.id === invoiceId);
+    if (!invoice) return 0;
+
+    const paidAgainstInvoice = payments
+      .filter((payment) => payment.invoiceId === invoiceId)
+      .reduce((sum, payment) => {
+        return sum + Number(payment.amount || 0) + Number(payment.discount || 0);
+      }, 0);
+
+    return Math.max(0, Number(invoice.amount || 0) - paidAgainstInvoice);
+  };
+
+  const resetDateRange = () => {
+    const start = new Date();
+    start.setDate(1);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + 1);
+    end.setDate(0);
+    end.setHours(23, 59, 59, 999);
+
+    setFilterStartDate(start);
+    setFilterEndDate(end);
+  };
+
   const handleSync = async () => {
     setIsProcessing(true);
     try {
@@ -312,7 +339,7 @@ export default function Invoices() {
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-400">Date Range</span>
             <button 
-              onClick={() => { setFilterMonth("all"); setFilterYear("all"); setFilterEndMonth("all"); setFilterEndYear("all"); }}
+              onClick={resetDateRange}
               className="text-xs font-medium text-indigo-400 hover:text-indigo-300"
             >
               Reset
@@ -382,6 +409,7 @@ export default function Invoices() {
       <div className="grid grid-cols-1 gap-4 lg:hidden">
         {sorted.length > 0 ? sorted.map((inv) => {
           const sub = subMap[inv.subscriberId];
+          const dueAmount = getInvoiceDueAmount(inv.id);
           return (
             <div key={inv.id} className="rounded-xl border border-white/10 bg-slate-900 p-4 space-y-4">
               <div className="flex justify-between items-start">
@@ -406,7 +434,7 @@ export default function Invoices() {
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-white tabular-nums">{formatCurrency(inv.amount)}</p>
-                  {inv.balance > 0 && <p className="text-xs text-rose-400 mt-0.5">Due: {formatCurrency(inv.balance)}</p>}
+                  {dueAmount > 0 && <p className="text-xs text-rose-400 mt-0.5">Due: {formatCurrency(dueAmount)}</p>}
                 </div>
               </div>
               <div className="flex gap-2 pt-2 border-t border-white/5">
@@ -414,7 +442,7 @@ export default function Invoices() {
                   <Eye className="h-4 w-4 mr-2" /> View
                 </Button>
                 {inv.status !== 'paid' && (
-                  <Button variant="secondary" size="sm" className="flex-1 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20" onClick={() => { setPayInv(inv); setCustomAmount(inv.balance); }}>
+                  <Button variant="secondary" size="sm" className="flex-1 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20" onClick={() => { setPayInv(inv); setCustomAmount(dueAmount); }}>
                     <Wallet className="h-4 w-4 mr-2" /> Pay
                   </Button>
                 )}
@@ -456,6 +484,7 @@ export default function Invoices() {
             <tbody className="divide-y divide-white/5">
               {sorted.length > 0 ? sorted.map((inv) => {
                 const sub = subMap[inv.subscriberId];
+                const dueAmount = getInvoiceDueAmount(inv.id);
                 return (
                   <tr key={inv.id} className="hover:bg-slate-800/50 transition-colors group">
                     <td className="px-4 py-3 text-center">
@@ -495,13 +524,13 @@ export default function Invoices() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex flex-col items-end">
                         <span className="font-bold text-white tabular-nums">{formatCurrency(inv.amount)}</span>
-                        {inv.balance > 0 && <span className="text-xs text-rose-400 mt-0.5">Due: {formatCurrency(inv.balance)}</span>}
+                        {dueAmount > 0 && <span className="text-xs text-rose-400 mt-0.5">Due: {formatCurrency(dueAmount)}</span>}
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white" onClick={() => { setPreviewInv(inv); setShowPreview(true); }}><Eye className="h-4 w-4" /></Button>
-                        {inv.status !== 'paid' && <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10" onClick={() => { setPayInv(inv); setCustomAmount(inv.balance); }}><Wallet className="h-4 w-4" /></Button>}
+                        {inv.status !== 'paid' && <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10" onClick={() => { setPayInv(inv); setCustomAmount(dueAmount); }}><Wallet className="h-4 w-4" /></Button>}
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10" onClick={() => setConfirmModal({ type: 'delete', id: inv.id })}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </td>
@@ -656,7 +685,7 @@ export default function Invoices() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-400 mb-1">Due Amount</p>
-                <p className="text-lg font-bold text-emerald-400">{formatCurrency(payInv.balance)}</p>
+                <p className="text-lg font-bold text-emerald-400">{formatCurrency(getInvoiceDueAmount(payInv.id))}</p>
               </div>
             </div>
 

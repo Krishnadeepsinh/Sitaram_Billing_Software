@@ -38,6 +38,11 @@ export default function Payments() {
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [formData, setFormData] = useState({
+    subscriberId: "",
+    amount: 0,
+    method: "Cash" as const,
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -182,7 +187,7 @@ export default function Payments() {
       const matchMethod = methodF === "all" || p.method === methodF;
       return matchQ && matchMonth && matchArea && matchMethod;
     });
-  }, [q, payments, subscribers, filterMonth, filterYear, areaF, methodF]);
+  }, [q, payments, subscribers, filterStartDate, filterEndDate, areaF, methodF]);
 
   const sorted = [...filtered].sort((a,b) => +new Date(b.date) - +new Date(a.date));
 
@@ -194,6 +199,7 @@ export default function Payments() {
       const newPay = await recordPayment({ ...formData, date: new Date().toISOString(), agent: "System Admin" });
       toast.success("Transaction Record Created");
       setIsAddOpen(false);
+      setFormData({ subscriberId: "", amount: 0, method: "Cash" });
       setSelectedPayment(newPay);
       setIsReceiptOpen(true);
     } catch (err) { toast.error("Transaction failed"); } finally { setIsSubmitting(false); }

@@ -458,15 +458,15 @@ export default function PaymentReceiptModal({
           <div style={styles.allocBox}>
             <div style={styles.allocTitle}>Payment Allocation Summary</div>
             <div style={styles.allocRow}>
-              <span>Subtotal:</span>
+              <span style={{ whiteSpace: "nowrap" }}>Subtotal:</span>
               <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
             </div>
             <div style={styles.allocRowTotal}>
-              <span>Total Paid:</span>
+              <span style={{ whiteSpace: "nowrap" }}>Total Paid:</span>
               <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
             </div>
             <div style={styles.allocRowBalance}>
-              <span style={{ flexShrink: 0 }}>Remaining Balance:</span>
+              <span style={{ flexShrink: 0, whiteSpace: "nowrap" }}>Remaining Balance:</span>
               <span style={{ textAlign: "right", marginLeft: 16, whiteSpace: "nowrap" }}>Rs. 0.00 (FULLY CLEARED)</span>
             </div>
           </div>

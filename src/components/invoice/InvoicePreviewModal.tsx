@@ -186,9 +186,9 @@ export default function InvoicePreviewModal({
       headerLeft: { display: "flex", alignItems: "center", gap: 18 },
       logoBox: { width: 76, height: 76, background: "#ffffff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 },
       logoSvg: { width: 72, height: 72 },
-      companyName: { fontSize: 22, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.2 },
-      tagline: { fontSize: 11, color: "#a0b4d0", marginTop: 2 },
-      contactInfo: { fontSize: 11, color: "#c8d8ee", marginTop: 8, lineHeight: 1.8 },
+      companyName: { fontSize: 22, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.4, margin: 0, padding: 0 },
+      tagline: { fontSize: 11, color: "#a0b4d0", marginTop: 2, marginBottom: 4, margin: 0, padding: 0 },
+      contactInfo: { fontSize: 11, color: "#c8d8ee", marginTop: 4, lineHeight: 1.6 },
       headerBadge: { background: "#e8522a", color: "#fff", fontSize: 13, fontWeight: 700, padding: "6px 18px", borderRadius: 6, letterSpacing: 1, textTransform: "uppercase" },
       orangeBar: { height: 5, background: "linear-gradient(90deg,#e8522a,#f4a035)" },
       metaRow: { display: "flex", borderBottom: "1px solid #e4e9f0", background: "#f8fafc" },
@@ -231,7 +231,7 @@ export default function InvoicePreviewModal({
     };
 
     const LogoSVG = () => (
-      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={styles.logoSvg}>
+      <svg width="72" height="72" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={styles.logoSvg}>
         <rect width="80" height="80" rx="10" fill="#1a2e5a" />
         <circle cx="40" cy="34" r="18" fill="none" stroke="#e8522a" strokeWidth="3" />
         <circle cx="40" cy="34" r="10" fill="none" stroke="#f4a035" strokeWidth="2.5" />
@@ -312,13 +312,16 @@ export default function InvoicePreviewModal({
               <div style={styles.sectionTitle}>Installation Address</div>
               <div style={styles.infoContent}>
                 <div style={styles.addressText}>
-                  {subscriber?.address || "N/A"}
+                  {subscriber?.address && subscriber.address !== "N/A" ? subscriber.address : ""}
                 </div>
                 {subscriber?.area && (
-                  <div style={{ ...styles.infoRow, marginTop: 10 }}>
+                  <div style={{ ...styles.infoRow, marginTop: (subscriber?.address && subscriber.address !== "N/A") ? 10 : 0 }}>
                     <span style={styles.infoKey}>Area:</span>
                     <span style={styles.infoVal}>{subscriber.area}</span>
                   </div>
+                )}
+                {(!subscriber?.address || subscriber.address === "N/A") && !subscriber?.area && (
+                   <div style={styles.addressText}>N/A</div>
                 )}
               </div>
             </div>

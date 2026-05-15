@@ -205,9 +205,9 @@ export default function PaymentReceiptModal({
         overflow: "hidden",
         flexShrink: 0,
       },
-      companyName: { fontSize: 22, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.2 },
-      tagline: { fontSize: 11, color: "#a0b4d0", marginTop: 2 },
-      contactInfo: { fontSize: 11, color: "#c8d8ee", marginTop: 8, lineHeight: 1.8 },
+      companyName: { fontSize: 22, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.4, margin: 0, padding: 0 },
+      tagline: { fontSize: 11, color: "#a0b4d0", marginTop: 2, marginBottom: 4, margin: 0, padding: 0 },
+      contactInfo: { fontSize: 11, color: "#c8d8ee", marginTop: 4, lineHeight: 1.6 },
       headerBadge: {
         background: "#16a34a",
         color: "#fff",
@@ -352,7 +352,7 @@ export default function PaymentReceiptModal({
     };
 
     const LogoSVG = () => (
-      <svg viewBox="0 0 80 80" fill="none" style={{ width: 72, height: 72 }}>
+      <svg width="72" height="72" viewBox="0 0 80 80" fill="none" style={{ width: 72, height: 72 }}>
         <rect width="80" height="80" rx="10" fill="#1a2e5a" />
         <circle cx="40" cy="34" r="18" fill="none" stroke="#e8522a" strokeWidth="3" />
         <circle cx="40" cy="34" r="10" fill="none" stroke="#f4a035" strokeWidth="2.5" />

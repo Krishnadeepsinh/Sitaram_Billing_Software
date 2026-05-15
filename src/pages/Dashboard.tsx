@@ -7,6 +7,7 @@ import {
   Cpu, Network, Signal, ArrowDownLeft
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/mockData";
+import { useBusinessMode } from "@/lib/turso";
 import { useBilling } from "@/context/BillingContext";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";

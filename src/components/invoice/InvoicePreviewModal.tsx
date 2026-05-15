@@ -199,8 +199,8 @@ export default function InvoicePreviewModal({
       metaValue: { fontSize: 14, fontWeight: 700, color: "#1a2e5a", marginTop: 3 },
       statusUnpaid: { display: "inline-block", background: "#fff3e0", color: "#e65100", fontWeight: 800, fontSize: 13, padding: "3px 12px", borderRadius: 4, marginTop: 3, border: "1px solid #ffcc80" },
       statusPaid: { display: "inline-block", background: "#e8f5e9", color: "#1b5e20", fontWeight: 800, fontSize: 13, padding: "3px 12px", borderRadius: 4, marginTop: 3, border: "1px solid #a5d6a7" },
-      body: { padding: "20px 36px 28px" },
-      twoCol: { display: "flex", gap: 16, marginBottom: 16 },
+      body: { padding: "40px 36px 40px" },
+      twoCol: { display: "flex", gap: 24, marginBottom: 30 },
       infoBox: { flex: 1 },
       sectionTitle: { background: "#1a2e5a", color: "#ffffff", fontSize: 11, fontWeight: 700, padding: "7px 14px", letterSpacing: 0.8, textTransform: "uppercase", borderRadius: "4px 4px 0 0" },
       infoContent: { border: "1px solid #dce4ef", borderTop: "none", padding: "12px 14px", borderRadius: "0 0 4px 4px", background: "#fcfdff" },
@@ -214,7 +214,7 @@ export default function InvoicePreviewModal({
       thRight: { color: "#ffffff", fontSize: 11, fontWeight: 700, padding: "9px 12px", textAlign: "right", letterSpacing: 0.5 },
       td: { padding: "10px 12px", fontSize: 12, color: "#1a2e5a", borderBottom: "1px solid #e4e9f0", textAlign: "left" },
       tdRight: { padding: "10px 12px", fontSize: 12, color: "#1a2e5a", borderBottom: "1px solid #e4e9f0", textAlign: "right" },
-      tableWrapper: { border: "1px solid #dce4ef", borderRadius: 4, overflow: "hidden", marginBottom: 10 },
+      tableWrapper: { border: "1px solid #dce4ef", borderRadius: 4, overflow: "hidden", marginBottom: 30 },
       totalsArea: { display: "flex", justifyContent: "flex-end", marginTop: 0 },
       totalsBox: { width: 280 },
       totalRow: { display: "flex", justifyContent: "space-between", padding: "6px 14px", fontSize: 12, color: "#4a5568", borderBottom: "1px solid #eef1f6" },
@@ -222,12 +222,12 @@ export default function InvoicePreviewModal({
       wordsBox: { background: "#f0f4fa", border: "1px solid #dce4ef", borderRadius: 4, padding: "8px 14px", fontSize: 12, color: "#4a5568", fontStyle: "italic", marginTop: 8, marginBottom: 16 },
       bottomArea: { display: "flex", gap: 16, marginTop: 10 },
       payBox: { flex: 1 },
-      payTitle: { fontSize: 11, fontWeight: 700, color: "#e8522a", letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 8 },
-      payItem: { fontSize: 12, color: "#1a2e5a", marginBottom: 4, display: "flex", gap: 6 },
-      payNum: { color: "#7a8fa6", fontWeight: 700, width: 18, flexShrink: 0 },
-      qrBox: { width: 140, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px solid #dce4ef", borderRadius: 4, padding: "10px 14px", background: "#f8fafc" },
-      qrTitle: { fontSize: 10, fontWeight: 700, color: "#1a2e5a", letterSpacing: 0.5, marginBottom: 6 },
-      qrUpi: { fontSize: 10, color: "#1a2e5a", fontWeight: 600, marginTop: 4 },
+      payTitle: { fontSize: 13, fontWeight: 700, color: "#e8522a", letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 12 },
+      payItem: { fontSize: 14, color: "#1a2e5a", marginBottom: 8, display: "flex", gap: 8 },
+      payNum: { color: "#7a8fa6", fontWeight: 700, width: 22, flexShrink: 0 },
+      qrBox: { width: 170, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px solid #dce4ef", borderRadius: 4, padding: "12px 18px", background: "#f8fafc" },
+      qrTitle: { fontSize: 11, fontWeight: 700, color: "#1a2e5a", letterSpacing: 0.5, marginBottom: 8 },
+      qrUpi: { fontSize: 11, color: "#1a2e5a", fontWeight: 600, marginTop: 6 },
       footer: { background: "#1a2e5a", color: "#a0b4d0", fontSize: 10, textAlign: "center", padding: "10px 20px", marginTop: "auto" },
     };
 
@@ -395,7 +395,7 @@ export default function InvoicePreviewModal({
             </div>
             <div style={styles.qrBox}>
               <div style={styles.qrTitle}>SCAN & PAY</div>
-              <QRCodeSVG value={`upi://pay?pa=${brand.upiId}&pn=SitaramCable&am=${grandTotal}&cu=INR`} size={80} level="H" />
+              <QRCodeSVG value={`upi://pay?pa=${brand.upiId}&pn=SitaramCable&am=${grandTotal}&cu=INR`} size={110} level="H" />
               <div style={styles.qrUpi}>UPI: {brand.upiId}</div>
             </div>
           </div>

@@ -254,6 +254,7 @@ export default function PaymentReceiptModal({
       amountValue: { fontSize: 48, fontWeight: 900, letterSpacing: -1, lineHeight: 1 },
       amountWords: { fontSize: 12, opacity: 0.8, marginTop: 6 },
       body: { padding: "22px 36px 28px" },
+      bottomArea: { display: "flex", gap: 16, marginTop: 40 },
       twoCol: { display: "flex", gap: 16, marginBottom: 16 },
       infoBox: { flex: 1 },
       sectionTitle: {
@@ -322,26 +323,26 @@ export default function PaymentReceiptModal({
       verifiedArea: {
         display: "flex",
         justifyContent: "center",
-        marginTop: 20,
-        marginBottom: 4,
+        marginTop: 60,
+        marginBottom: 20,
       },
       verifiedStamp: {
         border: "3px solid #2e7d32",
         borderRadius: "50%",
-        width: 90,
-        height: 90,
+        width: 120,
+        height: 120,
         display: "flex",
         flexDirection: "column" as const,
         alignItems: "center",
         justifyContent: "center",
         color: "#2e7d32",
         fontWeight: 800,
-        fontSize: 13,
+        fontSize: 16,
         letterSpacing: 1,
         textTransform: "uppercase" as const,
         position: "relative" as const,
       },
-      checkmark: { fontSize: 28, lineHeight: 1, marginBottom: 2 },
+      checkmark: { fontSize: 42, lineHeight: 1, marginBottom: 2 },
       footer: {
         background: "#1a2e5a",
         color: "#a0b4d0",
@@ -469,8 +470,8 @@ export default function PaymentReceiptModal({
             <div style={styles.verifiedStamp}>
               <span style={styles.checkmark}>✓</span>
               <span>VERIFIED</span>
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 0.5 }}>PAYMENT</span>
-              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: 0.5, opacity: 0.7 }}>CONFIRMED</span>
+              <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.5 }}>PAYMENT</span>
+              <span style={{ fontSize: 12, fontWeight: 500, letterSpacing: 0.5, opacity: 0.7 }}>CONFIRMED</span>
             </div>
           </div>
         </div>

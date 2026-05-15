@@ -5,6 +5,7 @@ import { formatFullDate } from "@/lib/mockData";
 import { toast } from "sonner";
 import { getBillingPeriodLabel, getInvoiceLineItem, getInvoiceServiceDates } from "./invoicePreviewUtils";
 import { QRCodeSVG } from "qrcode.react";
+import { logoBase64 } from "@/assets/logoBase64";
 
 type InvoicePreviewModalProps = {
   brand: {
@@ -186,9 +187,9 @@ export default function InvoicePreviewModal({
       headerLeft: { display: "flex", alignItems: "center", gap: 18 },
       logoBox: { width: 76, height: 76, background: "#ffffff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 },
       logoSvg: { width: 72, height: 72 },
-      companyName: { fontSize: 22, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.4, margin: 0, padding: 0 },
-      tagline: { fontSize: 11, color: "#a0b4d0", marginTop: 2, marginBottom: 4, margin: 0, padding: 0 },
-      contactInfo: { fontSize: 11, color: "#c8d8ee", marginTop: 4, lineHeight: 1.6 },
+      companyName: { fontSize: 24, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.1, margin: 0, padding: 0 },
+      tagline: { fontSize: 12, color: "#a0b4d0", marginTop: 6, marginBottom: 4, margin: 0, padding: 0 },
+      contactInfo: { fontSize: 11, color: "#c8d8ee", marginTop: 8, lineHeight: 1.5 },
       headerBadge: { background: "#e8522a", color: "#fff", fontSize: 13, fontWeight: 700, padding: "6px 18px", borderRadius: 6, letterSpacing: 1, textTransform: "uppercase" },
       orangeBar: { height: 5, background: "linear-gradient(90deg,#e8522a,#f4a035)" },
       metaRow: { display: "flex", borderBottom: "1px solid #e4e9f0", background: "#f8fafc" },
@@ -230,9 +231,7 @@ export default function InvoicePreviewModal({
       footer: { background: "#1a2e5a", color: "#a0b4d0", fontSize: 10, textAlign: "center", padding: "10px 20px", marginTop: "auto" },
     };
 
-    const svgString = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" rx="10" fill="#1a2e5a"/><circle cx="40" cy="34" r="18" fill="none" stroke="#e8522a" stroke-width="3"/><circle cx="40" cy="34" r="10" fill="none" stroke="#f4a035" stroke-width="2.5"/><circle cx="40" cy="34" r="4" fill="#e8522a"/><path d="M28 52 Q40 44 52 52" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/><path d="M22 58 Q40 48 58 58" stroke="#a0b4d0" stroke-width="1.5" stroke-linecap="round"/><text x="40" y="73" text-anchor="middle" fill="#ffffff" font-size="7" font-weight="700" font-family="Arial">SITARAM</text></svg>`;
-    const encodedLogo = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString)));
-    const LogoImg = () => <img src={encodedLogo} width="72" height="72" alt="Logo" style={{ display: "block" }} />;
+    const LogoImg = () => <img src={logoBase64} width="72" height="72" alt="Logo" style={{ display: "block", objectFit: "contain" }} />;
 
     const isPaid = invoice.status === "PAID";
     const statusStyle = isPaid ? styles.statusPaid : styles.statusUnpaid;
@@ -250,14 +249,12 @@ export default function InvoicePreviewModal({
         <div style={styles.header}>
           <div style={styles.headerLeft}>
             <div style={styles.logoBox}><LogoImg /></div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
               <div style={styles.companyName}>SITARAM CABLE & BROADBAND</div>
               <div style={styles.tagline}>Connecting Every Home</div>
               <div style={styles.contactInfo}>
-                ☎ {brand.phone} <br />
-                ■ {brand.address}<br />
-                WhatsApp Support: {brand.phone}<br />
-                UPI: {brand.upiId}
+                ☎ {brand.phone} &nbsp;|&nbsp; ■ {brand.address}<br />
+                WhatsApp Support: {brand.phone} &nbsp;|&nbsp; UPI: {brand.upiId}
               </div>
             </div>
           </div>

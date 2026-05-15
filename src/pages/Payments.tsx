@@ -650,7 +650,7 @@ export default function Payments() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Amount (₹)</label>
+                  <label className="text-sm font-medium text-foreground">Cash/UPI Received (₹)</label>
                   <Input 
                     type="number" 
                     value={formData.amount || ""} 
@@ -669,8 +669,19 @@ export default function Payments() {
                     placeholder="0.00" 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Payment Method</label>
+              </div>
+
+              {/* Live Preview of Total Cleared */}
+              <div className="p-3 bg-secondary/50 rounded-xl border border-dashed border-border flex justify-between items-center">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Credit to Customer</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] text-muted-foreground font-medium">₹</span>
+                  <span className="text-lg font-bold text-orange-600">{(formData.amount + formData.discount).toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Payment Method</label>
                   <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
                     {['Cash', 'UPI'].map(m => (
                       <button 

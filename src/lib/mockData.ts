@@ -150,10 +150,23 @@ export const formatDate = (dateStr: string) => {
   return `${d}/${m}/${y}`;
 };
 
-export const formatFullDate = (dateStr: string) => {
+export const formatFullDate = (dateStr: any) => {
   if (!dateStr) return "N/A";
-  const date = new Date(dateStr);
+  let date = new Date(dateStr);
+  
+  // If invalid, try parsing as YYYY-MM-DD manually
+  if (isNaN(date.getTime()) && typeof dateStr === 'string') {
+    const parts = dateStr.split(/[-/]/);
+    if (parts.length === 3) {
+      // Try YYYY, MM, DD
+      if (parts[0].length === 4) date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      // Try DD, MM, YYYY
+      else if (parts[2].length === 4) date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    }
+  }
+
   if (isNaN(date.getTime())) return "N/A";
+  
   return date.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'long',

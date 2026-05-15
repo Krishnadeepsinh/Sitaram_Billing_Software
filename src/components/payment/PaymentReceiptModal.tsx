@@ -3,9 +3,7 @@ import { Download, Loader2, Send, X, CheckCircle2, ShieldCheck, CreditCard, Acti
 import { Button } from "@/components/ui/button";
 import { formatDate, formatFullDate } from "@/lib/mockData";
 import { toast } from "sonner";
-import { InvoiceHeader } from "../invoice/InvoiceHeader";
-import { InvoiceCustomerBlock } from "../invoice/InvoiceCustomerBlock";
-import { numberToWords } from "@/lib/utils";
+import { QRCodeSVG } from "qrcode.react";
 
 type PaymentReceiptModalProps = {
   brand: {
@@ -71,24 +69,30 @@ export default function PaymentReceiptModal({
     const element = document.getElementById("receipt-content-print");
     if (!element) throw new Error("Document not ready");
 
-    element.style.display = "block";
-    element.style.position = "absolute";
-    element.style.left = "-9999px";
-    element.style.top = "0";
+    const parent = element.parentElement;
+    const originalParentStyle = parent ? parent.getAttribute("style") : "";
+    
+    if (parent) {
+      parent.style.display = "block";
+      parent.style.position = "fixed";
+      parent.style.top = "0";
+      parent.style.left = "-10000px";
+      parent.style.width = "794px";
+      parent.style.zIndex = "-9999";
+    }
 
     try {
       const { toPng } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
 
-      // Small delay to ensure DOM is painted after display: block
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Give more time for the off-screen element to layout properly
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const dataUrl = await toPng(element, {
-        quality: 1,
-        pixelRatio: 2, 
+        quality: 0.95,
+        pixelRatio: 1.5, 
         backgroundColor: "#ffffff",
         cacheBust: true,
-        includeQueryParams: true,
         style: {
           visibility: "visible",
           display: "block",
@@ -107,11 +111,11 @@ export default function PaymentReceiptModal({
 
       pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
       
-      element.style.display = "none";
+      if (parent) parent.setAttribute("style", originalParentStyle || "display: none");
       return pdf.output("blob");
     } catch (err) {
       console.error("PDF Gen Error:", err);
-      element.style.display = "none";
+      if (parent) parent.setAttribute("style", originalParentStyle || "display: none");
       throw err;
     }
   };
@@ -157,127 +161,219 @@ export default function PaymentReceiptModal({
     }
   };
 
-  const ReceiptContent = ({ id }: { id?: string }) => (
-    <div 
-      id={id}
-      className="bg-white relative font-sans flex flex-col min-h-[1122px] w-[794px] shrink-0"
-    >
-      <InvoiceHeader brand={brand} invoiceLabel="PAYMENT RECEIPT" />
+  const ReceiptContent = ({ id }: { id?: string }) => {
+    const parseAmount = (val: any) => {
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      const cleaned = String(val || '0').replace(/[^0-9.]/g, '');
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? 0 : num;
+    };
 
-      <div className="p-12 space-y-8 flex-1 flex flex-col">
-        {/* Receipt Meta Grid */}
-        <div className="grid grid-cols-4 gap-4">
-          {[
-            { label: "RECEIPT NO.", value: `REC-${payment.id.slice(-6).toUpperCase()}`, icon: ShieldCheck, color: "text-[#1B2B4B]", bg: "bg-[#F4F7FB]" },
-            { label: "PAYMENT DATE", value: formatFullDate(payment.date), icon: Calendar, color: "text-[#1B2B4B]", bg: "bg-[#F4F7FB]" },
-            { label: "METHOD", value: payment.method || "CASH", icon: CreditCard, color: "text-white", bg: "bg-[#1B2B4B]" },
-            { label: "ACCOUNT TYPE", value: isCableMode ? "CABLE TV" : "BROADBAND", icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" }
-          ].map((card, i) => (
-            <div key={i} className={`p-6 rounded-[1.5rem] flex flex-col gap-2 border border-black/5 shadow-sm ${card.bg}`}>
-              <div className="flex justify-between items-center">
-                <span className={`text-[7px] font-black uppercase tracking-[0.2em] ${i === 2 ? 'text-white/40' : 'text-[#94A3B8]'}`}>{card.label}</span>
-                <card.icon className={`h-3 w-3 ${i === 2 ? 'text-[#F47920]' : card.color}`} />
-              </div>
-              <span className={`text-[12px] font-black truncate ${card.color}`}>{card.value}</span>
+    const amount = parseAmount(payment?.amount);
+    
+    const numToWords = (n: number) => {
+      if (isNaN(n)) return "Zero Rupees Only";
+      const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+      const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+      const helper = (num: number): string => {
+        if (num < 20) return ones[num];
+        if (num < 100) return tens[Math.floor(num/10)] + (num%10 ? " " + ones[num%10] : "");
+        if (num < 1000) return ones[Math.floor(num/100)] + " Hundred" + (num%100 ? " " + helper(num%100) : "");
+        if (num < 100000) return helper(Math.floor(num/1000)) + " Thousand" + (num%1000 ? " " + helper(num%1000) : "");
+        return helper(Math.floor(num/100000)) + " Lakh" + (num%100000 ? " " + helper(num%100000) : "");
+      };
+      const result = helper(Math.floor(n));
+      return result ? result + " Rupees Only" : "Zero Rupees Only";
+    };
+
+    return (
+      <div 
+        id={id}
+        className="bg-white relative font-sans flex flex-col min-h-[1122px] w-[794px] shrink-0 overflow-hidden"
+        style={{ color: "#1E293B" }}
+      >
+        {/* 1. TOP NAVY BAND */}
+        <div className="bg-[#1A3C6E] p-12 flex justify-between items-start relative overflow-hidden h-[150px]">
+          <div className="absolute top-[-40px] right-[-40px] w-64 h-64 bg-white/5 rounded-full" />
+          <div className="absolute bottom-[-60px] right-40 w-40 h-40 bg-white/5 rounded-full" />
+          <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#0EA5E9]" />
+
+          <div className="flex gap-10 relative z-10 items-center">
+            <div className="bg-white p-4 rounded-2xl w-[40mm] h-[40mm] flex items-center justify-center shadow-2xl border border-white/20">
+              <img src="/logo.jpg" alt="Logo" className="w-full h-auto object-contain" />
             </div>
-          ))}
-        </div>
 
-        {/* Connection Strip */}
-        <div className="bg-[#F4F7FB] px-8 py-5 rounded-2xl border border-[#DDE4EF] flex justify-between items-center shadow-sm">
-           <div className="flex flex-col gap-1">
-              <span className="text-[7px] font-black text-[#94A3B8] uppercase tracking-widest">CUSTOMER ID</span>
-              <span className="text-[12px] font-black text-[#1B2B4B]">{subscriber?.id || "N/A"}</span>
-           </div>
-           <div className="flex flex-col flex-1 px-12 gap-1 border-x border-[#DDE4EF] mx-12">
-              <span className="text-[7px] font-black text-[#94A3B8] uppercase tracking-widest">SERVICE ADDRESS</span>
-              <span className="text-[12px] font-black text-[#1B2B4B] truncate">{subscriber?.area || "Veraval, Gujarat"} | {subscriber?.customerNo}</span>
-           </div>
-           <div className="flex flex-col items-end gap-1">
-              <span className="text-[7px] font-black text-[#94A3B8] uppercase tracking-widest">ACCOUNT STATUS</span>
-              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-100 rounded-full border border-emerald-200">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-emerald-700 text-[8px] font-black uppercase">ACTIVE</span>
+            <div className="text-white flex flex-col justify-center">
+              <h1 className="text-[24px] font-black tracking-tight leading-none mb-1">{brand.name}</h1>
+              <p className="text-[10px] text-blue-200 font-medium mb-6 tracking-[0.2em] uppercase opacity-80">Connecting Every Home</p>
+              
+              <div className="space-y-1.5 opacity-90">
+                <p className="text-[9px] flex items-center gap-2">📞 +91 98765 43210  |  📞 +91 91234 56789</p>
+                <p className="text-[9px]">📍 {brand.address || "Shop No. 5, Main Market, Veraval, Gujarat - 362265"}</p>
+                <p className="text-[9px]">💬 WhatsApp Support: +91 98765 43210</p>
+                <p className="text-[9px] font-bold text-blue-300">UPI: {brand.upiId}</p>
               </div>
-           </div>
-        </div>
+            </div>
+          </div>
 
-        <div className="flex gap-6">
-          <InvoiceCustomerBlock 
-            customerIdLabel={customerIdLabel} 
-            subscriber={subscriber} 
-            isCableMode={isCableMode} 
-          />
-          
-          {/* Received Amount Card (Navy) */}
-          <div className="flex-[0.4] bg-[#1B2B4B] p-10 rounded-[2.5rem] flex flex-col items-center justify-center text-center relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
-             <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.3em] mb-4">TOTAL AMOUNT PAID</p>
-             <p className="text-white text-5xl font-black tracking-tighter mb-4">₹{(Number(String(payment.amount).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}</p>
-             <p className="text-[#F47920] text-[9px] font-black uppercase tracking-widest bg-white/10 px-6 py-2 rounded-full border border-white/10">PAYMENT CONFIRMED</p>
+          <div className="flex flex-col items-end relative z-10">
+            <div className="bg-[#F47920] px-10 py-3.5 rounded-2xl shadow-[0_10px_30px_rgba(244,121,32,0.4)] border border-white/20 mb-4">
+              <span className="text-white text-[16px] font-black uppercase tracking-[0.2em]">RECEIPT</span>
+            </div>
           </div>
         </div>
 
-        {/* Allocation Details Table */}
-        <div className="flex-1">
-          <div className="bg-[#1B2B4B] rounded-t-3xl px-10 py-5 flex justify-between items-center">
-             <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">PAYMENT ALLOCATION DETAILS</span>
-             <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">AMOUNT (₹)</span>
+        <div className="h-2 bg-[#F47920]" />
+
+        <div className="p-12 space-y-8 flex-1">
+          {/* 2. META INFO BAR */}
+          <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-[5mm] px-10 py-6 grid grid-cols-4 gap-8 shadow-sm">
+            {[
+              { label: "Receipt No:", val: `REC-${payment.id.slice(-6).toUpperCase()}` },
+              { label: "Payment Date:", val: formatFullDate(payment.date) },
+              { label: "Payment Mode:", val: payment.method || "ONLINE / UPI" },
+              { label: "Status:", val: "SUCCESSFUL", color: "text-[#16A34A]" }
+            ].map((item, idx) => (
+              <div key={idx} className="flex flex-col">
+                <span className="text-[#64748B] text-[8px] font-black uppercase tracking-widest mb-1">{item.label}</span>
+                <span className={`text-[11px] font-black ${item.color || "text-[#1E293B]"}`}>{item.val}</span>
+              </div>
+            ))}
           </div>
-          <div className="border border-t-0 border-[#DDE4EF] rounded-b-3xl overflow-hidden shadow-sm">
-             <div className="px-10 py-8 flex justify-between items-center bg-white">
-                <div className="flex flex-col gap-2">
-                   <span className="text-[14px] font-black text-[#1B2B4B] uppercase tracking-tight">
-                     {isCableMode ? "Cable TV" : "Broadband"} Service Payment
-                   </span>
-                   <div className="flex items-center gap-2 text-[#64748B] text-[9px] font-bold uppercase tracking-widest">
-                     <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                     <span>Transaction Reference: {payment.id.slice(-12).toUpperCase()}</span>
+
+          {/* 3. TWO-COLUMN PANEL */}
+          <div className="grid grid-cols-12 gap-8">
+            <div className="col-span-7 bg-[#F8FAFC] border border-[#CBD5E1] rounded-[5mm] overflow-hidden flex flex-col shadow-sm">
+              <div className="bg-[#1A3C6E] px-6 py-3 flex items-center justify-between">
+                <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">CUSTOMER INFORMATION</span>
+                <div className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
+              </div>
+              <div className="p-6 space-y-3.5 flex-1 bg-white">
+                {[
+                  { label: "Full Name:", val: subscriber?.name || "N/A" },
+                  { label: "Customer ID:", val: subscriber?.customerId || subscriber?.id || "N/A" },
+                  { label: "Mobile No:", val: subscriber?.phone || "N/A" },
+                  { label: "Service Type:", val: isCableMode ? "Digital Cable TV" : "Broadband - Fiber Optic" },
+                  { label: "Transaction ID:", val: payment.id.toUpperCase() }
+                ].map((row, i) => (
+                  <div key={i} className="grid grid-cols-5 text-[10px] items-center">
+                    <span className="col-span-2 text-[#64748B] font-bold">{row.label}</span>
+                    <span className="col-span-3 text-[#1E293B] font-black truncate">{row.val}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="col-span-5 bg-[#F8FAFC] border border-[#CBD5E1] rounded-[5mm] overflow-hidden flex flex-col shadow-sm">
+              <div className="bg-[#1A3C6E] px-6 py-3">
+                <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">INSTALLATION ADDRESS</span>
+              </div>
+              <div className="p-6 space-y-6 flex-1 bg-white">
+                <p className="text-[11px] text-[#1E293B] font-bold leading-relaxed">
+                  {subscriber?.area || "House No. 12, Patel Colony, Near Ram Mandir"},<br />
+                  Veraval, Gujarat - 362265
+                </p>
+                <div className="bg-[#EFF6FF] border border-blue-100 px-4 py-3 rounded-2xl flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span className="text-[#1A3C6E] text-[9px] font-black uppercase">Zone: {subscriber?.towerId || "Zone-B | Tower: VRW-02"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. PAYMENT DETAILS TABLE */}
+          <div className="rounded-[5mm] border-2 border-[#1A3C6E]/10 overflow-hidden shadow-md">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#1A3C6E] text-white">
+                  <th className="px-6 py-4 text-[9px] font-black uppercase w-16 border-r border-white/10 text-center">#</th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase border-r border-white/10">Description</th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase border-r border-white/10 text-center">Transaction Ref</th>
+                  <th className="px-6 py-4 text-[9px] font-black uppercase text-right">Amount Paid (Rs.)</th>
+                </tr>
+              </thead>
+              <tbody className="text-[10.5px]">
+                <tr className="bg-white border-b border-[#E2E8F0] hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-5 text-center text-[#64748B] font-black border-r border-[#E2E8F0]">1</td>
+                  <td className="px-6 py-5 text-[#1E293B] font-black border-r border-[#E2E8F0]">{isCableMode ? "Digital Cable TV Subscription" : "High-Speed Broadband Subscription"}</td>
+                  <td className="px-6 py-5 text-[#1E293B] font-bold text-center border-r border-[#E2E8F0]">{payment.id.slice(-10).toUpperCase()}</td>
+                  <td className="px-6 py-5 text-right text-[#16A34A] font-black">{amount.toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 5. TOTALS SECTION */}
+          <div className="flex flex-col items-end space-y-3">
+            <div className="w-[85mm] space-y-2.5">
+              <div className="flex justify-between items-center text-[11px] px-3">
+                <span className="text-[#64748B] font-bold">Base Payment:</span>
+                <span className="text-[#1E293B] font-black">Rs. {amount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center text-[11px] px-3">
+                <span className="text-[#64748B] font-bold">Taxes / Fees:</span>
+                <span className="text-[#1E293B] font-black">Rs. 0.00</span>
+              </div>
+              <div className="bg-[#16A34A] rounded-[4mm] p-5 flex justify-between items-center shadow-xl border-t-4 border-emerald-300">
+                <span className="text-white text-[12px] font-black tracking-[0.2em] uppercase">TOTAL RECEIVED:</span>
+                <span className="text-white text-[18px] font-black">Rs. {amount.toFixed(2)}</span>
+              </div>
+            </div>
+            <p className="text-[9px] text-[#64748B] italic pr-3 mt-4 tracking-wide font-bold">
+              Amount In Words: <span className="text-[#16A34A] uppercase">{numToWords(amount)}</span>
+            </p>
+          </div>
+
+          {/* 6. VERIFICATION & CONFIRMATION SECTION */}
+          <div className="grid grid-cols-12 gap-8 pt-6">
+            <div className="col-span-8 bg-[#F0FDF4] border-2 border-[#BBF7D0] rounded-[5mm] p-8 shadow-sm">
+              <h3 className="text-[#16A34A] text-[11px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                <div className="w-1.5 h-6 bg-[#16A34A] rounded-full" />
+                PAYMENT CONFIRMATION
+              </h3>
+              <div className="space-y-4 text-[10.5px] text-[#14532D] font-bold">
+                <p>This is a computer-generated acknowledgement of the payment received from the customer for SITARAM CABLE & BROADBAND services. No physical signature is required.</p>
+                <div className="flex items-center gap-4 bg-white/50 p-4 rounded-2xl border border-emerald-100">
+                   <div className="h-12 w-12 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-lg border-2 border-white">
+                      <CheckCircle2 className="h-6 w-6" />
+                   </div>
+                   <div>
+                      <p className="text-[#064E3B] font-black">TRANSACTION VERIFIED</p>
+                      <p className="text-[9px] opacity-70">Payment ID: {payment.id}</p>
                    </div>
                 </div>
-                <span className="text-[18px] font-black text-[#1B2B4B]">₹{(Number(String(payment.amount).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}.00</span>
-             </div>
-             <div className="px-10 py-4 bg-[#F8FAFC] border-t border-[#DDE4EF]/50 flex justify-between items-center">
-                <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest">Additional Arrears Cleared</span>
-                <span className="text-[12px] font-bold text-[#64748B]">₹0.00</span>
-             </div>
-             <div className="px-10 py-4 bg-emerald-50 border-t border-emerald-100 flex justify-between items-center">
-                <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-2">
-                   <CheckCircle2 className="h-3 w-3" /> ALL DUES CLEARED
-                </span>
-                <span className="text-[12px] font-black text-emerald-700">BALANCE: ₹0.00</span>
-             </div>
+              </div>
+            </div>
+
+            <div className="col-span-4 bg-[#EFF6FF] border-2 border-[#BFDBFE] rounded-[5mm] p-8 flex flex-col items-center justify-center text-center shadow-sm">
+              <span className="text-[#1A3C6E] text-[10px] font-black uppercase tracking-[0.2em] mb-6">TRANSACTION QR</span>
+              <div className="bg-white p-5 rounded-[6mm] shadow-2xl border-4 border-white mb-6">
+                <QRCodeSVG
+                  value={`TRANSACTION_ID:${payment.id}|AMOUNT:${amount}|DATE:${payment.date}`}
+                  size={135}
+                  level="H"
+                />
+              </div>
+              <span className="text-[#1A3C6E] text-[9px] font-black uppercase tracking-widest bg-white px-4 py-2 rounded-full border border-blue-100">
+                SITARAM SECURE
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Amount in Words Card */}
-        <div className="p-8 rounded-2xl bg-[#FFF7ED] border border-[#FED7AA] shadow-sm">
-          <p className="text-[#F47920] text-[8px] font-black uppercase tracking-widest mb-3">AMOUNT RECEIVED IN WORDS</p>
-          <p className="text-[13px] font-black text-[#1B2B4B] italic uppercase leading-tight">
-            {numberToWords(Number(String(payment.amount).replace(/[^0-9.]/g, '')) || 0)} Rupees Only
+        {/* 7. BRAND FOOTER */}
+        <div className="bg-[#1A3C6E] py-5 px-10 flex items-center justify-between">
+          <p className="text-white/60 text-[9px] font-black uppercase tracking-[0.2em]">
+            Official Digital Receipt • SITARAM CABLE & BROADBAND
           </p>
-        </div>
-        
-        {/* Footer Area */}
-        <div className="pt-10 flex flex-col items-center">
-           <div className="flex items-center gap-6 w-full mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#DDE4EF] to-[#DDE4EF]" />
-              <p className="text-[28px] font-black text-[#1B2B4B] tracking-tighter opacity-90">Payment Success!</p>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent via-[#DDE4EF] to-[#DDE4EF]" />
-           </div>
-           <p className="text-[10px] font-black text-[#64748B] uppercase tracking-[0.5em] mb-2">OFFICIAL DIGITAL RECEIPT • SITARAM CABLE</p>
-           <div className="flex items-center gap-2 text-[8px] font-bold text-[#94A3B8] uppercase tracking-widest">
-              <ShieldCheck className="h-3 w-3 text-emerald-500" />
-              <span>Verified Transaction Confirmation</span>
-           </div>
+          <div className="flex gap-6 items-center text-white/80 text-[9px] font-black uppercase tracking-widest">
+             <ShieldCheck className="h-4 w-4 text-emerald-400" />
+             <span>Secure Transaction</span>
+          </div>
         </div>
       </div>
-
-      <div className="bg-[#1B2B4B] py-4 text-center text-white/40 text-[8px] font-black uppercase tracking-[0.4em]">
-        Computer Generated Electronic Receipt • No Physical Signature Required
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">

@@ -124,10 +124,10 @@ export default function Dashboard() {
     .map(sub => {
       const balance = ((payments || [])
         .filter(p => p.subscriberId === sub.id)
-        .reduce((sum, p) => sum + Number(p.amount) + (Number(p.discount) || 0), 0)) - 
+        .reduce((sum, p) => sum + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0)) - 
         ((invoices || [])
         .filter(i => i.subscriberId === sub.id)
-        .reduce((sum, i) => sum + Number(i.amount || 0), 0)) - 
+        .reduce((sum, i) => sum + (Number(i.amount) || 0), 0)) - 
         (Number(sub.openingBalance) || 0);
       
       const pendingInvoices = (invoices || []).filter(i => i.subscriberId === sub.id && i.status === 'pending');

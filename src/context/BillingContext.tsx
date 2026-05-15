@@ -719,7 +719,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (sub) {
           const plan = plansList.find(pl => pl.id === sub.planId);
           const currentBalance = Number(sub.balance) || 0;
-          const newBalance = currentBalance + amount + discount;
+          const newBalance = currentBalance + (Number(amount) || 0) + (Number(discount) || 0);
           
           let updatedMonths = [...(sub.unpaidMonths || [])];
           if (plan && plan.price > 0) {
@@ -744,12 +744,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             }
           ];
 
-          if (pData.invoiceId && discount > 0) {
-            batch.push({
-              sql: 'UPDATE invoices SET amount = amount - ?, discount = COALESCE(discount, 0) + ? WHERE id = ?',
-              args: [discount, discount, pData.invoiceId]
-            });
-          }
+
 
           // Mark invoices as paid based on custom priority:
           // 1. Specifically selected invoice (if any)
@@ -764,15 +759,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           });
           const subInvoices = subInvoicesRes.rows.map(r => mapRow(subInvoicesRes.columns, r));
 
-          // Manually adjust the specific invoice in memory if it was updated in this call
-          if (pData.invoiceId && discount > 0) {
-            subInvoices.forEach(inv => {
-              if (String(inv.id) === pData.invoiceId) {
-                inv.amount = Number(inv.amount) - discount;
-                inv.discount = (Number(inv.discount) || 0) + discount;
-              }
-            });
-          }
+
 
           const totalInvoiced = subInvoices.reduce((s, i) => s + Number(i.amount || 0), 0);
           // totalPaid is the absolute sum of all money ever received

@@ -94,10 +94,10 @@ export default function Subscribers() {
     for (const sub of subscribers) {
       const totalInvoiced = invoices
         .filter(i => i.subscriberId === sub.id)
-        .reduce((s, i) => s + Number(i.amount || 0), 0);
+        .reduce((s, i) => s + (Number(i.amount) || 0), 0);
       const totalPaid = payments
         .filter(p => p.subscriberId === sub.id)
-        .reduce((s, p) => s + Number(p.amount || 0), 0);
+        .reduce((s, p) => s + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
       map[sub.id] = totalPaid - totalInvoiced - (Number(sub.openingBalance) || 0);
     }
     return map;

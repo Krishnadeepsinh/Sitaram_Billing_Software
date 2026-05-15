@@ -56,7 +56,7 @@ export default function Payments() {
       .reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
     const totalPaid = (payments || [])
       .filter((payment) => payment.subscriberId === subscriberId)
-      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+      .reduce((sum, payment) => sum + Number(payment.amount || 0) + (Number(payment.discount) || 0), 0);
     const effectiveBalance = totalPaid - totalInvoiced - Number(sub.openingBalance || 0);
 
     return effectiveBalance < 0 ? Math.abs(effectiveBalance) : 0;
@@ -237,14 +237,16 @@ export default function Payments() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.subscriberId || formData.amount <= 0) return toast.error("Invalid input protocol");
+    if (!formData.subscriberId || (Number(formData.amount || 0) + Number(formData.discount || 0)) <= 0) return toast.error("Invalid input protocol");
      try {
       setIsSubmitting(true);
-      // The cash amount is the total bill minus discount
-      const cashAmount = formData.amount - formData.discount;
+      // The amount recorded in the DB is the actual cash collected
+      const cashAmount = Number(formData.amount || 0) - Number(formData.discount || 0);
+      const discount = Number(formData.discount || 0);
       const newPay = await recordPayment({ 
         ...formData, 
         amount: cashAmount, 
+        discount: discount,
         date: new Date().toISOString(), 
         agent: "System Admin" 
       });

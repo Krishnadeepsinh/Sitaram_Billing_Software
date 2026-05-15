@@ -152,28 +152,96 @@ export default function Expenses() {
           <span className="text-[9px] uppercase font-bold text-muted-foreground px-1">From</span>
           <select value={months[filterStartDate.getMonth()]} onChange={e => {
             const idx = months.indexOf(e.target.value);
-            const d = new Date(filterStartDate); d.setMonth(idx); setFilterStartDate(d);
+            const d = new Date(filterStartDate);
+            d.setMonth(idx);
+            if (d > filterEndDate) {
+              setFilterStartDate(d);
+              const end = new Date(d);
+              end.setMonth(d.getMonth() + 1);
+              end.setDate(0);
+              end.setHours(23, 59, 59, 999);
+              setFilterEndDate(end);
+            } else {
+              setFilterStartDate(d);
+            }
           }} className="bg-transparent text-xs text-foreground outline-none appearance-none cursor-pointer px-1">
-            {months.map(m => <option key={m} value={m}>{m}</option>)}
+            {months.map((m, idx) => (
+              <option 
+                key={m} 
+                value={m}
+                disabled={filterStartDate.getFullYear() === filterEndDate.getFullYear() && idx > filterEndDate.getMonth()}
+              >
+                {m}
+              </option>
+            ))}
           </select>
           <select value={filterStartDate.getFullYear()} onChange={e => {
-            const d = new Date(filterStartDate); d.setFullYear(Number(e.target.value)); setFilterStartDate(d);
+            const d = new Date(filterStartDate);
+            d.setFullYear(Number(e.target.value));
+            if (d > filterEndDate) {
+              setFilterStartDate(d);
+              const end = new Date(d);
+              end.setMonth(d.getMonth() + 1);
+              end.setDate(0);
+              end.setHours(23, 59, 59, 999);
+              setFilterEndDate(end);
+            } else {
+              setFilterStartDate(d);
+            }
           }} className="bg-transparent text-xs text-foreground outline-none appearance-none cursor-pointer w-14">
-            {years.map(y => <option key={y} value={y}>{y}</option>)}
+            {years.map(y => (
+              <option key={y} value={y} disabled={y > filterEndDate.getFullYear()}>
+                {y}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex items-center gap-1 bg-secondary rounded-lg border border-border px-1 py-1">
           <span className="text-[9px] uppercase font-bold text-muted-foreground px-1">To</span>
           <select value={months[filterEndDate.getMonth()]} onChange={e => {
             const idx = months.indexOf(e.target.value);
-            const d = new Date(filterEndDate); d.setMonth(idx+1); d.setDate(0); d.setHours(23,59,59,999); setFilterEndDate(d);
+            const d = new Date(filterEndDate);
+            d.setMonth(idx + 1);
+            d.setDate(0);
+            d.setHours(23, 59, 59, 999);
+            if (d < filterStartDate) {
+              setFilterEndDate(d);
+              const start = new Date(d);
+              start.setDate(1);
+              start.setHours(0, 0, 0, 0);
+              setFilterStartDate(start);
+            } else {
+              setFilterEndDate(d);
+            }
           }} className="bg-transparent text-xs text-foreground outline-none appearance-none cursor-pointer px-1">
-            {months.map(m => <option key={m} value={m}>{m}</option>)}
+            {months.map((m, idx) => (
+              <option 
+                key={m} 
+                value={m}
+                disabled={filterEndDate.getFullYear() === filterStartDate.getFullYear() && idx < filterStartDate.getMonth()}
+              >
+                {m}
+              </option>
+            ))}
           </select>
           <select value={filterEndDate.getFullYear()} onChange={e => {
-            const d = new Date(filterEndDate); d.setFullYear(Number(e.target.value)); setFilterEndDate(d);
+            const d = new Date(filterEndDate);
+            d.setFullYear(Number(e.target.value));
+            if (d < filterStartDate) {
+              setFilterEndDate(d);
+              const start = new Date(d);
+              start.setDate(1);
+              start.setHours(0, 0, 0, 0);
+              setFilterStartDate(start);
+            } else {
+              setFilterEndDate(d);
+            }
           }} className="bg-transparent text-xs text-foreground outline-none appearance-none cursor-pointer w-14">
-            {years.map(y => <option key={y} value={y}>{y}</option>)}
+            {years.map(y => (
+              <option key={y} value={y} disabled={y < filterStartDate.getFullYear()}>
+                {y}
+              </option>
+            ))}
           </select>
         </div>
         <div className="ml-auto flex items-center gap-4">

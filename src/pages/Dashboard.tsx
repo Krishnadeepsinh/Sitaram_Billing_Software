@@ -48,29 +48,62 @@ export default function Dashboard() {
     const monthIndex = months.indexOf(monthName);
     const newDate = new Date(filterStartDate);
     newDate.setMonth(monthIndex);
-    setFilterStartDate(newDate);
+    if (newDate > filterEndDate) {
+      setFilterStartDate(newDate);
+      const end = new Date(newDate);
+      end.setMonth(newDate.getMonth() + 1);
+      end.setDate(0);
+      end.setHours(23, 59, 59, 999);
+      setFilterEndDate(end);
+    } else {
+      setFilterStartDate(newDate);
+    }
   };
 
   const handleStartYearChange = (year: string) => {
     const newDate = new Date(filterStartDate);
     newDate.setFullYear(parseInt(year));
-    setFilterStartDate(newDate);
+    if (newDate > filterEndDate) {
+      setFilterStartDate(newDate);
+      const end = new Date(newDate);
+      end.setMonth(newDate.getMonth() + 1);
+      end.setDate(0);
+      end.setHours(23, 59, 59, 999);
+      setFilterEndDate(end);
+    } else {
+      setFilterStartDate(newDate);
+    }
   };
 
   const handleEndMonthChange = (monthName: string) => {
     const monthIndex = months.indexOf(monthName);
     const newDate = new Date(filterEndDate);
-    newDate.setMonth(monthIndex);
     newDate.setMonth(monthIndex + 1);
     newDate.setDate(0);
     newDate.setHours(23, 59, 59, 999);
-    setFilterEndDate(newDate);
+    if (newDate < filterStartDate) {
+      setFilterEndDate(newDate);
+      const start = new Date(newDate);
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      setFilterStartDate(start);
+    } else {
+      setFilterEndDate(newDate);
+    }
   };
 
   const handleEndYearChange = (year: string) => {
     const newDate = new Date(filterEndDate);
     newDate.setFullYear(parseInt(year));
-    setFilterEndDate(newDate);
+    if (newDate < filterStartDate) {
+      setFilterEndDate(newDate);
+      const start = new Date(newDate);
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      setFilterStartDate(start);
+    } else {
+      setFilterEndDate(newDate);
+    }
   };
 
   const recent = [...payments].sort((a, b) => +new Date(b.date) - +new Date(a.date)).slice(0, 5);
@@ -158,7 +191,15 @@ export default function Dashboard() {
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
               <SelectContent>
-                {months.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                {months.map((m, idx) => (
+                  <SelectItem 
+                    key={m} 
+                    value={m}
+                    disabled={filterStartDate.getFullYear() === filterEndDate.getFullYear() && idx > filterEndDate.getMonth()}
+                  >
+                    {m}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <div className="h-4 w-px bg-border" />
@@ -167,7 +208,15 @@ export default function Dashboard() {
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent>
-                {years.map((y) => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                {years.map((y) => (
+                  <SelectItem 
+                    key={y} 
+                    value={y.toString()}
+                    disabled={y > filterEndDate.getFullYear()}
+                  >
+                    {y}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -179,7 +228,15 @@ export default function Dashboard() {
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
               <SelectContent>
-                {months.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                {months.map((m, idx) => (
+                  <SelectItem 
+                    key={m} 
+                    value={m}
+                    disabled={filterEndDate.getFullYear() === filterStartDate.getFullYear() && idx < filterStartDate.getMonth()}
+                  >
+                    {m}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <div className="h-4 w-px bg-border" />
@@ -188,7 +245,15 @@ export default function Dashboard() {
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent>
-                {years.map((y) => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                {years.map((y) => (
+                  <SelectItem 
+                    key={y} 
+                    value={y.toString()}
+                    disabled={y < filterStartDate.getFullYear()}
+                  >
+                    {y}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

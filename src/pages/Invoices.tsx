@@ -354,7 +354,15 @@ export default function Invoices() {
                 setFilterStartDate(d);
               }
             }} className="h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
-              {months.map(m => <option key={m} value={m}>{m.slice(0,3)}</option>)}
+              {months.map((m, idx) => (
+                <option 
+                  key={m} 
+                  value={m} 
+                  disabled={filterStartDate.getFullYear() === filterEndDate.getFullYear() && idx > filterEndDate.getMonth()}
+                >
+                  {m.slice(0,3)}
+                </option>
+              ))}
             </select>
             <select value={filterStartDate.getFullYear()} onChange={(e) => {
               const d = new Date(filterStartDate); 
@@ -370,7 +378,11 @@ export default function Invoices() {
                 setFilterStartDate(d);
               }
             }} className="w-14 h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
-              {years.map(y => <option key={y} value={y}>{y}</option>)}
+              {years.map(y => (
+                <option key={y} value={y} disabled={y > filterEndDate.getFullYear()}>
+                  {y}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex items-center gap-1 bg-secondary rounded-lg border border-border px-2 py-1">
@@ -391,7 +403,15 @@ export default function Invoices() {
                 setFilterEndDate(d);
               }
             }} className="h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
-              {months.map(m => <option key={m} value={m}>{m.slice(0,3)}</option>)}
+              {months.map((m, idx) => (
+                <option 
+                  key={m} 
+                  value={m} 
+                  disabled={filterEndDate.getFullYear() === filterStartDate.getFullYear() && idx < filterStartDate.getMonth()}
+                >
+                  {m.slice(0,3)}
+                </option>
+              ))}
             </select>
             <select value={filterEndDate.getFullYear()} onChange={(e) => {
               const d = new Date(filterEndDate); 
@@ -406,7 +426,11 @@ export default function Invoices() {
                 setFilterEndDate(d);
               }
             }} className="w-14 h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
-              {years.map(y => <option key={y} value={y}>{y}</option>)}
+              {years.map(y => (
+                <option key={y} value={y} disabled={y < filterStartDate.getFullYear()}>
+                  {y}
+                </option>
+              ))}
             </select>
           </div>
           <button onClick={resetDateRange} className="text-xs font-semibold text-orange-500 hover:text-orange-600 whitespace-nowrap">Reset</button>

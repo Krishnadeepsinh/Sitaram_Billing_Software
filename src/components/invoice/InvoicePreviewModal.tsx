@@ -386,9 +386,9 @@ export default function InvoicePreviewModal({
               ].map((item, i) => (
                 <div style={styles.payItem} key={i}>
                   <span style={styles.payNum}>{i + 1}.</span>
-                  <div style={{ display: "flex", flexWrap: "nowrap", gap: 6 }}>
-                    <span style={{ fontWeight: 600, color: "#7a8fa6" }}>{item.label}:</span>
-                    <span style={{ fontWeight: 700 }}>{item.value}</span>
+                  <div style={{ display: "flex" }}>
+                    <span style={{ fontWeight: 600, color: "#7a8fa6", width: 150, flexShrink: 0 }}>{item.label}:</span>
+                    <span style={{ fontWeight: 700, flex: 1 }}>{item.value}</span>
                   </div>
                 </div>
               ))}

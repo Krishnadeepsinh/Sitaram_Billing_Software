@@ -8,6 +8,10 @@ from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
+try:
+    from unidecode import unidecode
+except ImportError:
+    def unidecode(s): return s
 import qrcode
 from PIL import Image
 
@@ -26,6 +30,15 @@ LABEL = colors.HexColor("#94A3B8")
 ORANGE_BG = colors.HexColor("#FFF7ED")
 ORANGE_BD = colors.HexColor("#FED7AA")
 WHITE = colors.HexColor("#FFFFFF")
+
+def safe_str(s):
+    """Transliterates Unicode to Latin to avoid ReportLab font artifacts"""
+    if not s: return ""
+    try:
+        res = unidecode(str(s))
+        return res if res.strip() else str(s)
+    except:
+        return str(s)
 
 def rrect(c, x, y, w, h, r, fill=False, stroke=False, sw=0.5):
     """Stable rounded rect implementation using standard roundRect to avoid artifacts"""
@@ -237,11 +250,11 @@ def generate_invoice_pdf(buffer, data):
     
     c.setFont("Helvetica-Bold", 14)
     c.setFillColor(DARK)
-    c.drawString(margin + 24*mm, y_pos + 31*mm, data.get('customerName', 'VALUED CUSTOMER'))
+    c.drawString(margin + 24*mm, y_pos + 31*mm, safe_str(data.get('customerName', 'VALUED CUSTOMER')))
     
     c.setFont("Helvetica", 9)
     c.setFillColor(DARK)
-    addr_val = data.get('customerAddress', '')
+    addr_val = safe_str(data.get('customerAddress', ''))
     addr = str(addr_val).split('\n') if addr_val else []
     c.drawString(margin + 5*mm, y_pos + 25*mm, addr[0] if len(addr) > 0 else 'No Address Provided')
     c.setFillColor(GREY)
@@ -252,7 +265,7 @@ def generate_invoice_pdf(buffer, data):
     area = data.get('customerArea', data.get('brand', {}).get('address', 'Bhavnagar, Gujarat'))
     c.setFont("Helvetica-Bold", 7.5)
     c.setFillColor(NAVY)
-    c.drawString(margin + 5*mm, y_pos + 15*mm, f"{area.upper()}, GJ")
+    c.drawString(margin + 5*mm, y_pos + 15*mm, f"{safe_str(area).upper()}, GJ")
     
     # Dynamic Fields: STB/ID and Mobile - only show if valid
     stb_val = str(data.get('stbNumber') or '').strip()
@@ -393,7 +406,7 @@ def generate_invoice_pdf(buffer, data):
     c.setFont("Helvetica-Bold", 9.5)
     words = data.get('amountInWords', 'Zero Rupees Only')
     if not words or words == 'N/A': words = "Zero Rupees Only"
-    c.drawString(margin + 35*mm, y_pos + 4*mm, words)
+    c.drawString(margin + 35*mm, y_pos + 4*mm, safe_str(words))
 
     # Final Footer Section
     y_pos = 40*mm
@@ -404,7 +417,7 @@ def generate_invoice_pdf(buffer, data):
     c.setFillColor(GREY)
     c.setFont("Helvetica", 8.5)
     brand_title = brand.get('name', 'SITARAM CABLE & BROADBAND').upper()
-    c.drawCentredString(width/2, y_pos - 13*mm, f"FOR CHOOSING {brand_title}")
+    c.drawCentredString(width/2, y_pos - 13*mm, f"FOR CHOOSING {safe_str(brand_title)}")
     
     # Bottom Strip
     footer_h = 9*mm
@@ -482,11 +495,11 @@ def generate_receipt_pdf(buffer, data):
     c.setFillColor(DARK)
     c.drawString(margin + 5*mm, y_pos + 32*mm, f"#{cust_no}")
     c.setFont("Helvetica-Bold", 13)
-    c.drawString(margin + 22*mm, y_pos + 32*mm, data.get('customerName', 'N/A'))
+    c.drawString(margin + 22*mm, y_pos + 32*mm, safe_str(data.get('customerName', 'N/A')))
     
     c.setFont("Helvetica", 8.5)
     c.setFillColor(GREY)
-    addr_val = data.get('customerAddress', 'N/A')
+    addr_val = safe_str(data.get('customerAddress', 'N/A'))
     addr = str(addr_val).split('\n') if addr_val else ['N/A']
     c.drawString(margin + 5*mm, y_pos + 26*mm, addr[0] if len(addr) > 0 else 'N/A')
     c.drawString(margin + 5*mm, y_pos + 21*mm, addr[1] if len(addr) > 1 else '')

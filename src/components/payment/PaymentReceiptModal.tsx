@@ -274,10 +274,10 @@ export default function PaymentReceiptModal({
         borderRadius: "0 0 4px 4px",
         background: "#fcfdff",
       },
-      infoRow: { display: "flex", marginBottom: 8, fontSize: 14 },
-      infoKey: { color: "#7a8fa6", fontWeight: 600, width: 140, flexShrink: 0, fontSize: 12 },
-      infoVal: { color: "#1a2e5a", fontWeight: 600 },
-      addressText: { color: "#1a2e5a", fontWeight: 500, lineHeight: 1.7, fontSize: 14 },
+      infoRow: { display: "flex", marginBottom: 10, fontSize: 13, lineHeight: 1.4 },
+      infoKey: { color: "#7a8fa6", fontWeight: 600, width: 110, flexShrink: 0, fontSize: 12 },
+      infoVal: { color: "#1a2e5a", fontWeight: 700, flex: 1, wordBreak: "break-word" },
+      addressText: { color: "#1a2e5a", fontWeight: 500, lineHeight: 1.6, fontSize: 14 },
       allocBox: {
         border: "1px solid #dce4ef",
         borderRadius: 4,
@@ -300,6 +300,7 @@ export default function PaymentReceiptModal({
         fontSize: 13,
         borderBottom: "1px solid #eef1f6",
         color: "#4a5568",
+        lineHeight: 1.5,
       },
       allocRowTotal: {
         display: "flex",
@@ -310,6 +311,7 @@ export default function PaymentReceiptModal({
         color: "#1a2e5a",
         borderBottom: "1px solid #eef1f6",
         background: "#f0f4fa",
+        lineHeight: 1.5,
       },
       allocRowBalance: {
         display: "flex",
@@ -319,6 +321,7 @@ export default function PaymentReceiptModal({
         fontWeight: 700,
         color: "#1b5e20",
         background: "#e8f5e9",
+        lineHeight: 1.5,
       },
       verifiedArea: {
         display: "flex",

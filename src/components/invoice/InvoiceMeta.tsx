@@ -2,11 +2,7 @@ import { formatDate } from "@/lib/mockData";
 
 type InvoiceMetaProps = {
   invoice: any;
-  subscriber: any;
   billingPeriodLabel: string;
-  invoiceStatusLabel: string;
-  rechargeDate?: string;
-  expiryDate?: string;
 };
 
 export function InvoiceMeta({
@@ -14,31 +10,31 @@ export function InvoiceMeta({
   billingPeriodLabel,
 }: InvoiceMetaProps) {
   return (
-    <div className="grid grid-cols-4 gap-4 py-8">
+    <div className="grid grid-cols-4 gap-3 py-6">
       {/* INVOICE NO */}
-      <div className="rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 flex flex-col justify-between h-[72px] transition-all hover:shadow-sm">
-        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Reference No.</p>
-        <p className="text-sm font-black text-slate-900 tracking-tight">{invoice.number}</p>
+      <div className="rounded-2xl border border-[#DDE4EF] bg-[#F4F7FB] px-5 py-4 flex flex-col justify-between h-[68px]">
+        <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[#94A3B8]">REFERENCE NO.</p>
+        <p className="text-sm font-black text-[#1E293B] tracking-tight">{invoice.number}</p>
       </div>
       
       {/* INVOICE DATE */}
-      <div className="rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 flex flex-col justify-between h-[72px] transition-all hover:shadow-sm">
-        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Issue Date</p>
-        <p className="text-sm font-bold text-slate-700">{formatDate(invoice.date)}</p>
+      <div className="rounded-2xl border border-[#DDE4EF] bg-[#F4F7FB] px-5 py-4 flex flex-col justify-between h-[68px]">
+        <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[#94A3B8]">ISSUE DATE</p>
+        <p className="text-sm font-bold text-[#1E293B]">{formatDate(invoice.date)}</p>
       </div>
       
       {/* BILLING PERIOD */}
-      <div className="rounded-2xl bg-[#0f172a] px-5 py-4 flex flex-col justify-between h-[72px] shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-1 h-full bg-[#F47920]" />
-        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-orange-400/80">Service Period</p>
+      <div className="rounded-2xl bg-[#1B2B4B] px-5 py-4 flex flex-col justify-between h-[68px] shadow-lg relative overflow-hidden">
+        <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[#F47920]">SERVICE PERIOD</p>
         <p className="text-sm font-black text-white tracking-tight leading-tight">{billingPeriodLabel}</p>
       </div>
       
       {/* DUE DATE */}
-      <div className="rounded-2xl border border-rose-100 bg-rose-50/30 px-5 py-4 flex flex-col justify-between h-[72px] transition-all hover:shadow-sm">
-        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-rose-400">Due By</p>
-        <p className="text-sm font-black text-rose-600 tracking-tight">{formatDate(invoice.dueDate)}</p>
+      <div className="rounded-2xl border border-[#DDE4EF] bg-[#F4F7FB] px-5 py-4 flex flex-col justify-between h-[68px]">
+        <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[#DC2626]">DUE BY</p>
+        <p className="text-sm font-black text-[#DC2626] tracking-tight">{formatDate(invoice.dueDate)}</p>
       </div>
     </div>
   );
 }
+

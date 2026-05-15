@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { Download, Loader2, Send, X } from "lucide-react";
+import { Download, Loader2, Send, X, ShieldCheck, CreditCard, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/mockData";
 import { toast } from "sonner";
@@ -7,8 +7,7 @@ import { InvoiceHeader } from "./InvoiceHeader";
 import { InvoiceMeta } from "./InvoiceMeta";
 import { InvoiceCustomerBlock } from "./InvoiceCustomerBlock";
 import { InvoiceTotals } from "./InvoiceTotals";
-import { getBillingPeriodLabel, getInvoiceLabel, getInvoiceLineItem, getInvoiceServiceDates, getInvoiceStatusLabel } from "./invoicePreviewUtils";
-import { numberToWords } from "@/lib/utils";
+import { getBillingPeriodLabel, getInvoiceLabel, getInvoiceLineItem } from "./invoicePreviewUtils";
 
 type InvoicePreviewModalProps = {
   brand: {
@@ -50,33 +49,19 @@ export default function InvoicePreviewModal({
   useEffect(() => {
     const handleResize = () => {
       if (!containerRef.current || !contentRef.current) return;
-      
-      const containerWidth = containerRef.current.offsetWidth - 32;
+      const containerWidth = containerRef.current.offsetWidth - 48;
       const targetWidth = 794;
       const newScale = Math.min(1, Math.max(0.3, containerWidth / targetWidth));
-      
       setScale(newScale);
-      
-      // Update content height after a tiny delay to ensure render is complete
       setTimeout(() => {
         if (contentRef.current) {
           setContentHeight(contentRef.current.offsetHeight);
         }
-      }, 50);
+      }, 100);
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
-    
-    // Additional checks to ensure height is correct after images/QR load
-    const timer1 = setTimeout(handleResize, 500);
-    const timer2 = setTimeout(handleResize, 2000);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const subscriber = useMemo(
@@ -84,56 +69,42 @@ export default function InvoicePreviewModal({
     [invoice.subscriberId, subscribers],
   );
   const invoiceLabel = getInvoiceLabel(invoice, isCableMode);
-  const invoiceStatusLabel = getInvoiceStatusLabel(invoice, isCableMode);
   const billingPeriodLabel = getBillingPeriodLabel(invoice);
   const lineItem = getInvoiceLineItem(invoice, subscriber, plans, isCableMode);
-  const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
 
   const generatePreviewPdfBlob = async () => {
-    const element = document.getElementById("invoice-content");
-    if (!element) {
-      throw new Error("Invoice document not ready.");
-    }
+    const element = document.getElementById("invoice-content-print");
+    if (!element) throw new Error("Invoice document not ready.");
+    
+    // Temporarily show the print version for capturing
+    element.style.display = "block";
+    element.style.position = "absolute";
+    element.style.left = "-9999px";
+    element.style.top = "0";
 
     const html2pdf = (await import("html2pdf.js")).default;
     const options = {
       margin: 0,
-      filename: `${invoice?.number || "INV"}.pdf`,
+      filename: `Sitaram_${invoiceLabel}_${invoice?.number || "INV"}.pdf`,
       image: { type: "jpeg" as const, quality: 1.0 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        logging: false,
+      html2canvas: { 
+        scale: 3, 
+        useCORS: true, 
+        logging: false, 
         letterRendering: true,
-        windowWidth: 794,
-        onclone: (doc: Document) => {
-          const el = doc.getElementById("invoice-content");
-          if (el) {
-            el.style.transform = "none";
-            el.style.margin = "0";
-            el.style.padding = "40px";
-            el.style.width = "794px";
-            el.style.backgroundColor = "white";
-            el.style.color = "black";
-            const allText = el.querySelectorAll("*");
-            allText.forEach((node: any) => {
-              if (node.style) {
-                node.style.color = "black";
-                node.style.borderColor = "#eee";
-              }
-            });
-          }
-        }
+        windowWidth: 794 
       },
       jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
     };
 
-    const pdfBlob = await html2pdf().set(options).from(element).toPdf().output("blob");
-    if (!pdfBlob || pdfBlob.size < 1000) {
-      throw new Error("PDF generation failed - file is empty.");
+    try {
+      const blob = await html2pdf().set(options).from(element).toPdf().output("blob");
+      element.style.display = "none";
+      return blob;
+    } catch (err) {
+      element.style.display = "none";
+      throw err;
     }
-
-    return pdfBlob as Blob;
   };
 
   const handleDownloadPDF = async () => {
@@ -141,220 +112,214 @@ export default function InvoicePreviewModal({
     try {
       const { saveAs } = await import("file-saver");
       const blob = await generatePreviewPdfBlob();
-      saveAs(blob, `Invoice_${invoice.invoiceNumber || invoice.number || "INV"}.pdf`);
-      
+      saveAs(blob, `Invoice_${invoice.number}.pdf`);
       toast.success("Professional Invoice downloaded");
     } catch (error) {
-      console.error("PDF Generation Error:", error);
-      toast.error("Failed to generate professional PDF");
+      toast.error("Failed to generate PDF");
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleSharePDF = async () => {
-    if (!window.isSecureContext) {
-      toast.error("Sharing is only available on secure (HTTPS) connections.");
-      return;
-    }
-
     setIsProcessing(true);
-    const toastId = toast.loading("Generating official PDF...");
-    const fileName = `${invoice?.number || "INV"}.pdf`;
-
     try {
       const { saveAs } = await import("file-saver");
       const pdfBlob = await generatePreviewPdfBlob();
-      const file = new File([pdfBlob], fileName, { type: "application/pdf" });
-      const message = `*INVOICE: ${invoice.number}*
-Hello ${subscriber?.name || "Customer"},
-Please find attached your invoice for *${billingPeriodLabel}*.
-Amount: Rs. ${invoice.amount}
-Recharge Date: ${serviceDates.rechargeDate ? formatDate(serviceDates.rechargeDate) : "-"}
-Expiry Date: ${serviceDates.expiryDate ? formatDate(serviceDates.expiryDate) : "-"}
-Due Date: ${formatDate(invoice.dueDate)}`;
+      const file = new File([pdfBlob], `Invoice_${invoice.number}.pdf`, { type: "application/pdf" });
+      const message = `*INVOICE: ${invoice.number}*\nHello ${subscriber?.name || "Customer"},\nPlease find attached your invoice for *${billingPeriodLabel}*.\nAmount: Rs. ${invoice.amount}\nDue Date: ${formatDate(invoice.dueDate)}`;
 
-      const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-      const canShareFile = isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] });
-
-      if (canShareFile) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: `Invoice ${invoice.number}`,
-            text: message,
-          });
-          toast.dismiss(toastId);
-          toast.success("Bill and message shared successfully!");
-        } catch (shareError: any) {
-          if (shareError.name === "AbortError") {
-            toast.dismiss(toastId);
-            toast.info("Sharing cancelled");
-          } else {
-            throw shareError;
-          }
-        }
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Invoice ${invoice.number}`, text: message });
       } else {
-        saveAs(pdfBlob, fileName);
-
+        saveAs(pdfBlob, `Invoice_${invoice.number}.pdf`);
         const cleanPhone = String(subscriber?.phone || "").replace(/\D/g, "");
-        const phoneWithCountry = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-        const isDesktop = !/Android|iPhone|iPad/i.test(navigator.userAgent);
-        const waBase = isDesktop ? "https://web.whatsapp.com/send" : "https://wa.me";
-        const whatsappUrl = `${waBase}/${phoneWithCountry}?text=${encodeURIComponent(message)}`;
-        const whatsappWindow = window.open(whatsappUrl, "_blank");
-
-        if (!whatsappWindow) {
-          toast.error("Popup blocked. Please allow popups for this site to open WhatsApp.");
-        }
-
-        toast.dismiss(toastId);
-        toast.success("Bill downloaded. Please drag the PDF into the WhatsApp window.");
+        const waUrl = `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, "_blank");
+        toast.success("Bill downloaded & WhatsApp opened");
       }
     } catch (error) {
-      console.error("Share flow error:", error);
-      toast.dismiss(toastId);
-      toast.error("Could not prepare the PDF for sharing.");
+      toast.error("Could not share PDF");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-slate-50 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
-      <div className="bg-white text-black w-full max-w-3xl rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-500 relative z-10 max-h-[95vh]">
-        <div className="px-8 py-6 bg-slate-50/50 flex justify-between items-center border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Official Document Preview</span>
+  const InvoiceContent = ({ id }: { id?: string }) => (
+    <div 
+      id={id}
+      className="bg-white relative font-sans flex flex-col min-h-[1122px] w-[794px] shrink-0"
+    >
+      <InvoiceHeader brand={brand} invoiceLabel={invoiceLabel} />
+
+      <div className="p-12 space-y-8 flex-1 flex flex-col">
+        <InvoiceMeta billingPeriodLabel={billingPeriodLabel} invoice={invoice} />
+
+        {/* Info Strips Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-[#F4F7FB] px-6 py-4 rounded-2xl border border-[#DDE4EF] flex items-center gap-4">
+            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-[#DDE4EF]">
+              <ShieldCheck className="h-5 w-5 text-[#1B2B4B]" />
+            </div>
+            <div>
+              <p className="text-[7px] font-black text-[#94A3B8] uppercase tracking-widest">CUSTOMER IDENTITY</p>
+              <p className="text-[11px] font-black text-[#1B2B4B]">{subscriber?.id || "N/A"}</p>
+            </div>
           </div>
-          <button
-            onClick={onClose}
-            className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-slate-400 hover:text-slate-900"
-          >
-            <X className="h-5 w-5" />
+          <div className="bg-[#FEF2F2] px-6 py-4 rounded-2xl border border-[#FCA5A5] flex items-center gap-4">
+            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-[#FCA5A5]">
+              <Calendar className="h-5 w-5 text-[#EF4444]" />
+            </div>
+            <div>
+              <p className="text-[7px] font-black text-[#EF4444] uppercase tracking-widest">PAYMENT STATUS</p>
+              <p className="text-[11px] font-black text-[#B91C1C]">UNPAID - PLEASE REMIT</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-6">
+          <InvoiceCustomerBlock 
+            customerIdLabel={customerIdLabel} 
+            subscriber={subscriber} 
+            isCableMode={isCableMode} 
+          />
+          
+          <div className="flex-[0.4] bg-[#1B2B4B] p-8 rounded-[2rem] flex flex-col items-center justify-center text-center relative overflow-hidden shadow-2xl">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+             <p className="text-white/60 text-[9px] font-bold uppercase tracking-[0.3em] mb-4">TOTAL PAYABLE</p>
+             <p className="text-white text-5xl font-black tracking-tighter mb-4">₹{Number(invoice.amount).toLocaleString()}</p>
+             <p className="text-[#F47920] text-[10px] font-black uppercase tracking-widest bg-white/10 px-4 py-1.5 rounded-full">DUE BY {formatDate(invoice.dueDate)}</p>
+          </div>
+        </div>
+
+        {/* Modern Table Section */}
+        <div className="flex-1">
+          <div className="bg-[#1B2B4B] rounded-t-3xl px-10 py-5 grid grid-cols-12 gap-4">
+             <span className="col-span-6 text-white text-[9px] font-black uppercase tracking-[0.2em]">SERVICE DESCRIPTION</span>
+             <span className="col-span-3 text-center text-white text-[9px] font-black uppercase tracking-[0.2em]">PERIOD</span>
+             <span className="col-span-3 text-right text-white text-[9px] font-black uppercase tracking-[0.2em]">SUBTOTAL</span>
+          </div>
+          <div className="border-x border-b border-[#DDE4EF] rounded-b-3xl overflow-hidden bg-white shadow-sm">
+             <div className="px-10 py-10 grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-6 flex flex-col gap-2">
+                   <span className="text-[14px] font-black text-[#1B2B4B] uppercase tracking-tight">{lineItem.description}</span>
+                   <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-[#F47920]" />
+                      <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-widest">
+                        {isCableMode ? "High Definition Digital Television" : "High Speed Fiber Optic Internet"}
+                      </span>
+                   </div>
+                </div>
+                <div className="col-span-3 text-center">
+                   <span className="text-[11px] font-black text-[#1B2B4B] py-1.5 px-4 bg-[#F4F7FB] rounded-full border border-[#DDE4EF]">
+                     {billingPeriodLabel}
+                   </span>
+                </div>
+                <div className="col-span-3 text-right">
+                   <span className="text-[16px] font-black text-[#1B2B4B]">₹{Number(lineItem.price).toLocaleString()}.00</span>
+                </div>
+             </div>
+             
+             {/* Previous Dues Row (if any) */}
+             <div className="px-10 py-4 bg-[#F8FAFC] border-t border-[#DDE4EF]/50 grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-9 flex items-center gap-3">
+                   <div className="h-1 w-1 rounded-full bg-[#64748B]" />
+                   <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-widest">Additional Charges / Previous Balance</span>
+                </div>
+                <div className="col-span-3 text-right">
+                   <span className="text-[11px] font-bold text-[#64748B]">₹0.00</span>
+                </div>
+             </div>
+          </div>
+        </div>
+
+        <InvoiceTotals brand={brand} invoice={invoice} invoices={invoices} />
+        
+        {/* Footer Area */}
+        <div className="pt-10 flex flex-col items-center">
+           <div className="flex items-center gap-6 w-full mb-10">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#DDE4EF] to-[#DDE4EF]" />
+              <p className="text-[32px] font-black text-[#1B2B4B] tracking-tighter opacity-90">Thank You!</p>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent via-[#DDE4EF] to-[#DDE4EF]" />
+           </div>
+           <p className="text-[10px] font-black text-[#64748B] uppercase tracking-[0.5em] mb-2">SITARAM CABLE & BROADBAND • VERAVAL</p>
+           <div className="flex items-center gap-2 text-[9px] font-bold text-[#94A3B8] uppercase tracking-widest">
+              <ShieldCheck className="h-3 w-3" />
+              <span>Verified Merchant • Secure Payment System</span>
+           </div>
+        </div>
+      </div>
+
+      <div className="bg-[#1B2B4B] py-4 text-center text-white/40 text-[8px] font-black uppercase tracking-[0.4em]">
+        Computer Generated Electronic Document • Valid without Signature
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col relative z-10 max-h-[96vh]">
+        {/* Preview Header */}
+        <div className="px-10 py-6 bg-white flex justify-between items-center border-b border-slate-100">
+          <div className="flex items-center gap-4">
+            <div className="h-3 w-3 rounded-full bg-[#F47920] shadow-[0_0_10px_#F47920] animate-pulse" />
+            <div className="flex flex-col">
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1B2B4B]">High-Fidelity Preview</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Document Ready for Export</span>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-all group">
+            <X className="h-6 w-6 text-slate-300 group-hover:text-slate-900" />
           </button>
         </div>
 
-        <div ref={containerRef} className="flex-1 overflow-auto bg-slate-100 flex justify-center p-4">
+        <div ref={containerRef} className="flex-1 overflow-auto bg-[#EDF1F7] flex justify-center p-12 scrollbar-hide">
           <div 
-            id="invoice-content" 
             ref={contentRef}
-            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 sm:shadow-xl origin-top transition-transform duration-300"
+            className="origin-top transition-all duration-500 ease-out shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)]"
             style={{ 
               transform: `scale(${scale})`, 
               marginBottom: `${(scale - 1) * contentHeight}px`,
-              marginLeft: `${((scale - 1) * 794) / 2}px`,
-              marginRight: `${((scale - 1) * 794) / 2}px`
             }}
           >
-            <InvoiceHeader brand={brand} invoiceLabel={invoiceLabel} />
-
-            <div className="p-10 space-y-10 flex-1 flex flex-col">
-              <InvoiceMeta
-                billingPeriodLabel={billingPeriodLabel}
-                invoice={invoice}
-              />
-
-              <div className="flex gap-8 min-h-[180px]">
-                <InvoiceCustomerBlock 
-                  customerIdLabel={customerIdLabel} 
-                  subscriber={subscriber} 
-                  isCableMode={isCableMode} 
-                />
-                
-                {/* Status Box (35%) */}
-                <div className="flex-[0.35] bg-orange-50/50 p-10 rounded-[2.5rem] border border-orange-100 flex flex-col justify-center text-center relative overflow-hidden group transition-all hover:shadow-sm">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-12 -mt-12 blur-3xl transition-colors group-hover:bg-orange-500/10" />
-                  <p className="text-orange-500 text-[9px] font-black mb-5 uppercase tracking-[0.4em] relative z-10">Invoice Status</p>
-                  <div className={`text-sm font-black py-4 rounded-2xl border uppercase tracking-[0.2em] relative z-10 shadow-sm ${
-                    invoice.status === 'paid' 
-                      ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
-                      : invoice.status === 'overdue'
-                      ? 'bg-rose-50 text-rose-600 border-rose-100'
-                      : 'bg-white text-orange-600 border-orange-100'
-                  }`}>
-                    {invoice.status}
-                  </div>
-                  <div className="mt-8 space-y-1 relative z-10">
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Valid Until</p>
-                    <p className="text-base text-slate-700 font-black tracking-tight">{formatDate(invoice.dueDate)}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Table Section */}
-              <div className="flex-1 pt-4">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 w-1/2">Service Summary</th>
-                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-center">Billing Span</th>
-                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-center">Qty</th>
-                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-right">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100/60">
-                    <tr className="group">
-                      <td className="py-12 px-8">
-                        <div className="flex flex-col gap-2">
-                          <p className="font-black text-slate-900 text-lg tracking-tight leading-tight">{lineItem.description}</p>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] text-slate-400 font-black uppercase tracking-widest">
-                              {isCableMode ? "Digital TV Subscription" : "Premium Fiber Internet"}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-12 px-8 text-center">
-                        <span className="px-4 py-2 rounded-full bg-slate-50 text-slate-600 font-black text-[11px] tracking-tight border border-slate-100">
-                          {billingPeriodLabel}
-                        </span>
-                      </td>
-                      <td className="py-12 px-8 text-center text-slate-900 font-black text-base">01</td>
-                      <td className="py-12 px-8 text-right text-slate-900 font-black text-xl tracking-tighter">
-                        ₹{Number(lineItem.price).toLocaleString()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <InvoiceTotals brand={brand} invoice={invoice} invoices={invoices} payments={payments} />
-            </div>
-
-            <div className="bg-[#0f172a] py-6 text-center text-slate-500 text-[9px] w-full font-black uppercase tracking-[0.6em] mt-auto">
-              Computer Generated Document • No Physical Signature Required
-            </div>
+            <InvoiceContent id="invoice-content" />
           </div>
         </div>
 
-        <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 h-16 rounded-[1.5rem] font-black text-slate-500 uppercase tracking-widest text-[11px] bg-white border-slate-200 hover:bg-slate-100 transition-all"
+        {/* Hidden Container for PDF Generation (to ensure Scale 1:1) */}
+        <div style={{ display: "none" }}>
+          <InvoiceContent id="invoice-content-print" />
+        </div>
+
+        {/* Action Bar */}
+        <div className="p-10 bg-white border-t border-slate-100 flex gap-6">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="h-16 px-10 rounded-2xl font-black text-slate-400 uppercase tracking-[0.2em] text-[10px] hover:bg-slate-50 hover:text-slate-900 border-slate-200"
           >
-            Cancel Preview
+            Discard
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleSharePDF}
-            disabled={isProcessing}
-            className="flex-1 h-16 rounded-[1.5rem] font-black text-orange-600 uppercase tracking-widest text-[11px] bg-orange-50 border-orange-100 hover:bg-orange-100 shadow-sm transition-all flex items-center justify-center gap-2"
-          >
-            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            WhatsApp Bill
-          </Button>
-          <Button
-            onClick={handleDownloadPDF}
-            disabled={isProcessing}
-            className="flex-1 h-16 rounded-[1.5rem] font-black text-white uppercase tracking-widest text-[11px] bg-[#0f172a] hover:bg-slate-900 shadow-2xl transition-all flex items-center justify-center gap-2"
-          >
-            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            Download PDF
-          </Button>
+          <div className="flex-1 flex gap-4">
+            <Button 
+              variant="outline" 
+              onClick={handleSharePDF} 
+              disabled={isProcessing}
+              className="flex-1 h-16 rounded-2xl font-black text-[#F47920] uppercase tracking-[0.2em] text-[10px] bg-orange-50/50 border-orange-100 hover:bg-orange-50 transition-all flex gap-3 items-center justify-center"
+            >
+              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />} 
+              Share via WhatsApp
+            </Button>
+            <Button 
+              onClick={handleDownloadPDF} 
+              disabled={isProcessing}
+              className="flex-1 h-16 rounded-2xl font-black text-white uppercase tracking-[0.2em] text-[10px] bg-[#1B2B4B] hover:bg-[#243352] shadow-xl shadow-slate-200 transition-all flex gap-3 items-center justify-center"
+            >
+              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />} 
+              Download Professional PDF
+            </Button>
+          </div>
         </div>
       </div>
     </div>

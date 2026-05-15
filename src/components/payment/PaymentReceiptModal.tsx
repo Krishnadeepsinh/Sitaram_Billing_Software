@@ -1,11 +1,10 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { Download, Loader2, Send, X, CheckCircle2 } from "lucide-react";
+import { Download, Loader2, Send, X, CheckCircle2, ShieldCheck, CreditCard, Transaction } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/mockData";
 import { toast } from "sonner";
 import { InvoiceHeader } from "../invoice/InvoiceHeader";
 import { InvoiceCustomerBlock } from "../invoice/InvoiceCustomerBlock";
-import { getInvoiceServiceDates } from "../invoice/invoicePreviewUtils";
 import { numberToWords } from "@/lib/utils";
 
 type PaymentReceiptModalProps = {
@@ -48,28 +47,19 @@ export default function PaymentReceiptModal({
   useEffect(() => {
     const handleResize = () => {
       if (!containerRef.current || !contentRef.current) return;
-      
-      const containerWidth = containerRef.current.offsetWidth - 32;
+      const containerWidth = containerRef.current.offsetWidth - 48;
       const targetWidth = 794;
       const newScale = Math.min(1, Math.max(0.3, containerWidth / targetWidth));
-      
       setScale(newScale);
-      
       setTimeout(() => {
         if (contentRef.current) {
           setContentHeight(contentRef.current.offsetHeight);
         }
-      }, 50);
+      }, 100);
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
-    const timer1 = setTimeout(handleResize, 500);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      clearTimeout(timer1);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const subscriber = useMemo(
@@ -77,378 +67,269 @@ export default function PaymentReceiptModal({
     [payment.subscriberId, subscribers],
   );
 
-  const paymentItems = useMemo(() => {
-    if (!payment || !subscribers.length) return [];
+  const generatePreviewPdfBlob = async () => {
+    const element = document.getElementById("receipt-content-print");
+    if (!element) throw new Error("Receipt document not ready.");
     
-    const sub = subscribers.find(s => s.id === payment.subscriberId);
-    const plan = plans.find(p => p.id === sub?.planId);
-    
-    // Logic to determine what this payment covers
-    const chronoInvoices = invoices
-      .filter(inv => inv.subscriberId === payment.subscriberId)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Position hiddenly for high-res capture
+    element.style.display = "block";
+    element.style.position = "absolute";
+    element.style.left = "-9999px";
+    element.style.top = "0";
 
-    const subPayments = payments.filter(p => p.subscriberId === payment.subscriberId);
-    const prevTotalPaid = subPayments
-      .filter(p => new Date(p.date).getTime() < new Date(payment.date).getTime() || 
-                  (new Date(p.date).getTime() === new Date(payment.date).getTime() && p.id < payment.id))
-      .reduce((s, p) => s + Number(p.amount), 0);
+    const html2pdf = (await import("html2pdf.js")).default;
+    const options = {
+      margin: 0,
+      filename: `Sitaram_Receipt_${payment.id.slice(-6).toUpperCase()}.pdf`,
+      image: { type: "jpeg" as const, quality: 1.0 },
+      html2canvas: { 
+        scale: 3, 
+        useCORS: true, 
+        logging: false, 
+        letterRendering: true,
+        windowWidth: 794 
+      },
+      jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
+    };
 
-    let historyLeft = prevTotalPaid;
-    const openingBal = Number(sub?.openingBalance || 0);
-    const alreadyCoveredOpening = Math.max(0, Math.min(openingBal, historyLeft));
-    historyLeft -= alreadyCoveredOpening;
-    const remainingOpeningDue = openingBal - alreadyCoveredOpening;
-
-    const invoiceRemainingDues = new Map<string, { remaining: number, coveredByHistory: number }>();
-    for (const inv of chronoInvoices) {
-      const invAmount = Number(inv.amount || 0);
-      const coveredByHistory = Math.max(0, Math.min(invAmount, historyLeft));
-      historyLeft -= coveredByHistory;
-      invoiceRemainingDues.set(inv.id, { remaining: invAmount - coveredByHistory, coveredByHistory });
+    try {
+      const blob = await html2pdf().set(options).from(element).toPdf().output("blob");
+      element.style.display = "none";
+      return blob;
+    } catch (err) {
+      element.style.display = "none";
+      throw err;
     }
-
-    const items: any[] = [];
-    let remainingCurrentPayment = Number(payment.amount);
-
-    if (remainingOpeningDue > 0 && remainingCurrentPayment > 0) {
-      const amt = Math.min(remainingOpeningDue, remainingCurrentPayment);
-      items.push({ 
-        desc: "Previous Dues / Opening Balance", 
-        period: "\u2014", 
-        qty: "\u2014", 
-        total: amt 
-      });
-      remainingCurrentPayment -= amt;
-    }
-
-    for (const inv of chronoInvoices) {
-      const dues = invoiceRemainingDues.get(inv.id);
-      if (!dues || dues.remaining <= 0 || remainingCurrentPayment <= 0) continue;
-      const amt = Math.min(dues.remaining, remainingCurrentPayment);
-      
-      if (inv.type === 'legacy') {
-        items.push({ 
-          desc: "Previous Year Arrears", 
-          period: inv.billingPeriod || formatDate(inv.date), 
-          qty: "\u2014", 
-          total: amt 
-        });
-      } else {
-        const dates = getInvoiceServiceDates(inv, sub, plans);
-        const planName = plan?.name || "Standard Plan";
-        const cleanedPlanName = isCableMode 
-          ? planName.replace(/\d+\s*(mbps|gbps|kbps)/gi, "").replace(/\[\d+\s*(mbps|gbps|kbps)\]/gi, "").replace(/\(\d+\s*(mbps|gbps|kbps)\)/gi, "").replace(/\s+/g, " ").trim() 
-          : planName;
-          
-        items.push({ 
-          desc: `${isCableMode ? "Cable TV" : "Broadband"} Service - ${cleanedPlanName}`, 
-          period: `${formatDate(dates.rechargeDate)} - ${formatDate(dates.expiryDate)}`, 
-          qty: "1", 
-          total: amt 
-        });
-      }
-      remainingCurrentPayment -= amt;
-    }
-
-    if (remainingCurrentPayment > 0.5) {
-      items.push({ 
-        desc: "Advance / Security Deposit", 
-        period: "Future Billing", 
-        qty: "\u2014", 
-        total: remainingCurrentPayment 
-      });
-    }
-
-    return items;
-  }, [payment, subscribers, plans, invoices, payments, isCableMode]);
-
-  const selectedPaymentServiceDates = useMemo(() => {
-    const associatedInvoice = invoices.find(inv => inv.id === payment.invoiceId) || 
-                             invoices.filter(inv => inv.subscriberId === payment.subscriberId)
-                                     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-    
-    return getInvoiceServiceDates(associatedInvoice, subscriber, plans);
-  }, [payment, subscriber, invoices, plans]);
+  };
 
   const handleDownloadPDF = async () => {
     setIsProcessing(true);
     try {
-      const payload = {
-        type: 'receipt',
-        number: payment.id.slice(-8).toUpperCase(),
-        date: formatDate(payment.date),
-        method: payment.method,
-        amount: payment.amount,
-        customerNo: subscriber?.customerNo || '-',
-        customerName: subscriber?.name || 'N/A',
-        customerAddress: `${subscriber?.area || ''}\nBhavnagar, Gujarat`,
-        stbNumber: subscriber?.customerId || subscriber?.customerUsername || 'N/A',
-        customerMobile: subscriber?.phone || 'N/A',
-        amountInWords: numberToWords(Number(payment.amount)),
-        isCableMode: isCableMode,
-        brand: {
-          name: brand.name,
-          address: brand.address,
-          phone: brand.phone,
-          upiId: brand.upiId
-        },
-        items: paymentItems.map(item => ({
-          desc: item.desc,
-          subDesc: item.subDesc || '',
-          period: item.period,
-          qty: item.qty,
-          total: item.total
-        }))
-      };
-
-      const response = await fetch('/api/generate_pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate PDF");
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Receipt_${payload.number}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      
+      const { saveAs } = await import("file-saver");
+      const blob = await generatePreviewPdfBlob();
+      saveAs(blob, `Receipt_${payment.id.slice(-6).toUpperCase()}.pdf`);
       toast.success("Professional Receipt downloaded");
     } catch (error) {
-      console.error("Receipt Generation Error:", error);
-      toast.error("Failed to generate professional Receipt");
+      toast.error("Failed to generate PDF");
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleSharePDF = async () => {
-    if (!contentRef.current) return;
     setIsProcessing(true);
-    const toastId = toast.loading("Preparing receipt...");
-    const fileName = `Receipt_${payment.id.slice(-8).toUpperCase()}.pdf`;
-
     try {
-      const html2pdf = (await import("html2pdf.js")).default;
-      const pdfBlob = await html2pdf().set({
-        margin: 0,
-        filename: fileName,
-        image: { type: "jpeg", quality: 1.0 },
-        html2canvas: { scale: 2, useCORS: true, windowWidth: 794 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      }).from(contentRef.current).toPdf().output("blob");
-
+      const { saveAs } = await import("file-saver");
+      const pdfBlob = await generatePreviewPdfBlob();
+      const fileName = `Receipt_${payment.id.slice(-6).toUpperCase()}.pdf`;
       const file = new File([pdfBlob], fileName, { type: "application/pdf" });
-      const message = `*PAYMENT RECEIPT*
-Hello ${subscriber?.name || "Customer"},
-Thank you for your payment of *Rs. ${payment.amount}*.
-Transaction ID: ${payment.id.slice(-8).toUpperCase()}
-Date: ${formatDate(payment.date)}
-Method: ${payment.method}
+      const message = `*PAYMENT RECEIPT: ${payment.id.slice(-6).toUpperCase()}*\nHello ${subscriber?.name || "Customer"},\nThank you for your payment of *Rs. ${payment.amount}*.\nDate: ${formatDate(payment.date)}\nMethod: ${payment.method}\n\nThank you for choosing ${brand.name}!`;
 
-Thank you for choosing ${brand.name}!`;
-
-      const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-      if (isMobile && navigator.share && navigator.canShare({ files: [file] })) {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: "Payment Receipt", text: message });
       } else {
+        saveAs(pdfBlob, fileName);
         const cleanPhone = String(subscriber?.phone || "").replace(/\D/g, "");
-        const phoneWithCountry = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-        const waBase = /Android|iPhone|iPad/i.test(navigator.userAgent) ? "https://wa.me" : "https://web.whatsapp.com/send";
-        window.open(`${waBase}/${phoneWithCountry}?text=${encodeURIComponent(message)}`, "_blank");
-        toast.info("Message opened in WhatsApp. Please attach the downloaded receipt.");
+        const waUrl = `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, "_blank");
+        toast.success("Receipt downloaded & WhatsApp opened");
       }
-      toast.dismiss(toastId);
     } catch (error) {
-      toast.dismiss(toastId);
-      toast.error("Could not share receipt.");
+      toast.error("Could not share receipt");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-slate-50 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
-      <div className="bg-white text-black w-full max-w-3xl rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-500 relative z-10 max-h-[95vh]">
-        <div className="px-8 py-6 bg-slate-50/50 flex justify-between items-center border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Official Payment Receipt</span>
+  const ReceiptContent = ({ id }: { id?: string }) => (
+    <div 
+      id={id}
+      className="bg-white relative font-sans flex flex-col min-h-[1122px] w-[794px] shrink-0"
+    >
+      <InvoiceHeader brand={brand} invoiceLabel="PAYMENT RECEIPT" />
+
+      <div className="p-12 space-y-8 flex-1 flex flex-col">
+        {/* Receipt Meta Grid */}
+        <div className="grid grid-cols-4 gap-4">
+          {[
+            { label: "RECEIPT NO.", value: `REC-${payment.id.slice(-6).toUpperCase()}`, icon: ShieldCheck, color: "text-[#1B2B4B]", bg: "bg-[#F4F7FB]" },
+            { label: "PAYMENT DATE", value: formatDate(payment.date), icon: CheckCircle2, color: "text-[#1B2B4B]", bg: "bg-[#F4F7FB]" },
+            { label: "METHOD", value: payment.method, icon: CreditCard, color: "text-white", bg: "bg-[#1B2B4B]" },
+            { label: "STATUS", value: "SUCCESSFUL", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" }
+          ].map((card, i) => (
+            <div key={i} className={`p-6 rounded-[1.5rem] flex flex-col gap-2 border border-black/5 shadow-sm ${card.bg}`}>
+              <div className="flex justify-between items-center">
+                <span className={`text-[7px] font-black uppercase tracking-[0.2em] ${i === 2 ? 'text-white/40' : 'text-[#94A3B8]'}`}>{card.label}</span>
+                <card.icon className={`h-3 w-3 ${i === 2 ? 'text-[#F47920]' : card.color}`} />
+              </div>
+              <span className={`text-[12px] font-black truncate ${card.color}`}>{card.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Connection Strip */}
+        <div className="bg-[#F4F7FB] px-8 py-5 rounded-2xl border border-[#DDE4EF] flex justify-between items-center shadow-sm">
+           <div className="flex flex-col gap-1">
+              <span className="text-[7px] font-black text-[#94A3B8] uppercase tracking-widest">CUSTOMER ID</span>
+              <span className="text-[12px] font-black text-[#1B2B4B]">{subscriber?.id || "N/A"}</span>
+           </div>
+           <div className="flex flex-col flex-1 px-12 gap-1 border-x border-[#DDE4EF] mx-12">
+              <span className="text-[7px] font-black text-[#94A3B8] uppercase tracking-widest">SERVICE ADDRESS</span>
+              <span className="text-[12px] font-black text-[#1B2B4B] truncate">{subscriber?.area || "Veraval, Gujarat"} | {subscriber?.customerNo}</span>
+           </div>
+           <div className="flex flex-col items-end gap-1">
+              <span className="text-[7px] font-black text-[#94A3B8] uppercase tracking-widest">ACCOUNT STATUS</span>
+              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-100 rounded-full border border-emerald-200">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-emerald-700 text-[8px] font-black uppercase">ACTIVE</span>
+              </div>
+           </div>
+        </div>
+
+        <div className="flex gap-6">
+          <InvoiceCustomerBlock 
+            customerIdLabel={customerIdLabel} 
+            subscriber={subscriber} 
+            isCableMode={isCableMode} 
+          />
+          
+          {/* Received Amount Card (Navy) */}
+          <div className="flex-[0.4] bg-[#1B2B4B] p-10 rounded-[2.5rem] flex flex-col items-center justify-center text-center relative overflow-hidden shadow-2xl">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+             <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.3em] mb-4">TOTAL AMOUNT PAID</p>
+             <p className="text-white text-5xl font-black tracking-tighter mb-4">₹{Number(payment.amount).toLocaleString()}</p>
+             <p className="text-[#F47920] text-[9px] font-black uppercase tracking-widest bg-white/10 px-6 py-2 rounded-full border border-white/10">PAYMENT CONFIRMED</p>
           </div>
-          <button
-            onClick={onClose}
-            className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-slate-400 hover:text-slate-900"
-          >
-            <X className="h-5 w-5" />
+        </div>
+
+        {/* Allocation Details Table */}
+        <div className="flex-1">
+          <div className="bg-[#1B2B4B] rounded-t-3xl px-10 py-5 flex justify-between items-center">
+             <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">PAYMENT ALLOCATION DETAILS</span>
+             <span className="text-white text-[9px] font-black uppercase tracking-[0.2em]">AMOUNT (₹)</span>
+          </div>
+          <div className="border border-t-0 border-[#DDE4EF] rounded-b-3xl overflow-hidden shadow-sm">
+             <div className="px-10 py-8 flex justify-between items-center bg-white">
+                <div className="flex flex-col gap-2">
+                   <span className="text-[14px] font-black text-[#1B2B4B] uppercase tracking-tight">
+                     {isCableMode ? "Cable TV" : "Broadband"} Service Payment
+                   </span>
+                   <div className="flex items-center gap-2 text-[#64748B] text-[9px] font-bold uppercase tracking-widest">
+                     <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                     <span>Transaction Reference: {payment.id.slice(-12).toUpperCase()}</span>
+                   </div>
+                </div>
+                <span className="text-[18px] font-black text-[#1B2B4B]">₹{Number(payment.amount).toLocaleString()}.00</span>
+             </div>
+             <div className="px-10 py-4 bg-[#F8FAFC] border-t border-[#DDE4EF]/50 flex justify-between items-center">
+                <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest">Additional Arrears Cleared</span>
+                <span className="text-[12px] font-bold text-[#64748B]">₹0.00</span>
+             </div>
+             <div className="px-10 py-4 bg-emerald-50 border-t border-emerald-100 flex justify-between items-center">
+                <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-2">
+                  <CheckCircle2 className="h-3 w-3" /> ALL DUES CLEARED
+                </span>
+                <span className="text-[12px] font-black text-emerald-700">BALANCE: ₹0.00</span>
+             </div>
+          </div>
+        </div>
+
+        {/* Amount in Words Card */}
+        <div className="p-8 rounded-2xl bg-[#FFF7ED] border border-[#FED7AA] shadow-sm">
+          <p className="text-[#F47920] text-[8px] font-black uppercase tracking-widest mb-3">AMOUNT RECEIVED IN WORDS</p>
+          <p className="text-[13px] font-black text-[#1B2B4B] italic uppercase leading-tight">
+            {numberToWords(Number(payment.amount))} Rupees Only
+          </p>
+        </div>
+        
+        {/* Footer Area */}
+        <div className="pt-10 flex flex-col items-center">
+           <div className="flex items-center gap-6 w-full mb-8">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#DDE4EF] to-[#DDE4EF]" />
+              <p className="text-[28px] font-black text-[#1B2B4B] tracking-tighter opacity-90">Payment Success!</p>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent via-[#DDE4EF] to-[#DDE4EF]" />
+           </div>
+           <p className="text-[10px] font-black text-[#64748B] uppercase tracking-[0.5em] mb-2">OFFICIAL DIGITAL RECEIPT • SITARAM CABLE</p>
+           <div className="flex items-center gap-2 text-[8px] font-bold text-[#94A3B8] uppercase tracking-widest">
+              <ShieldCheck className="h-3 w-3 text-emerald-500" />
+              <span>Verified Transaction Confirmation</span>
+           </div>
+        </div>
+      </div>
+
+      <div className="bg-[#1B2B4B] py-4 text-center text-white/40 text-[8px] font-black uppercase tracking-[0.4em]">
+        Computer Generated Electronic Receipt • No Physical Signature Required
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col relative z-10 max-h-[96vh]">
+        {/* Preview Header */}
+        <div className="px-10 py-6 bg-white flex justify-between items-center border-b border-slate-100">
+          <div className="flex items-center gap-4">
+            <div className="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_10px_#10B981] animate-pulse" />
+            <div className="flex flex-col">
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1B2B4B]">Digital Receipt Preview</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Transaction Confirmed</span>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-all group">
+            <X className="h-6 w-6 text-slate-300 group-hover:text-slate-900" />
           </button>
         </div>
 
-        <div ref={containerRef} className="flex-1 overflow-auto bg-slate-100 flex justify-center p-4">
+        <div ref={containerRef} className="flex-1 overflow-auto bg-[#EDF1F7] flex justify-center p-12 scrollbar-hide">
           <div 
-            id="receipt-content" 
             ref={contentRef}
-            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 sm:shadow-xl origin-top transition-transform duration-300"
+            className="origin-top transition-all duration-500 ease-out shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)]"
             style={{ 
               transform: `scale(${scale})`, 
               marginBottom: `${(scale - 1) * contentHeight}px`,
-              marginLeft: `${((scale - 1) * 794) / 2}px`,
-              marginRight: `${((scale - 1) * 794) / 2}px`
             }}
           >
-            <InvoiceHeader brand={brand} invoiceLabel="Payment Receipt" />
-
-            <div className="p-10 space-y-10 flex-1 flex flex-col">
-              {/* Receipt Metadata Grid */}
-              <div className="grid grid-cols-4 gap-4">
-                <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Receipt No.</span>
-                  <span className="text-sm font-black text-slate-900 tracking-tight">#{payment.id.slice(-8).toUpperCase()}</span>
-                </div>
-                <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Payment Date</span>
-                  <span className="text-sm font-black text-slate-900 tracking-tight">{formatDate(payment.date)}</span>
-                </div>
-                <div className="p-5 rounded-3xl bg-[#0f172a] flex flex-col gap-1">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Method</span>
-                  <span className="text-sm font-black text-white tracking-tight leading-tight">{payment.method}</span>
-                </div>
-                <div className="p-5 rounded-3xl bg-emerald-50 border border-emerald-100 flex flex-col gap-1">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Status</span>
-                  <span className="text-sm font-black text-emerald-600 uppercase tracking-widest">Success</span>
-                </div>
-              </div>
-
-              <div className="flex gap-8 min-h-[180px]">
-                <InvoiceCustomerBlock 
-                  customerIdLabel={customerIdLabel} 
-                  subscriber={subscriber} 
-                  isCableMode={isCableMode} 
-                />
-                
-                {/* Received Box (35%) */}
-                <div className="flex-[0.35] bg-emerald-50/50 p-10 rounded-[2.5rem] border border-emerald-100 flex flex-col justify-center text-center relative overflow-hidden group transition-all hover:shadow-sm">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 blur-3xl" />
-                  <p className="text-emerald-600 text-[9px] font-black mb-5 uppercase tracking-[0.4em] relative z-10">Total Received</p>
-                  <div className="text-3xl font-black text-[#0f172a] tracking-tighter leading-none relative z-10">
-                    ₹{Number(payment.amount).toLocaleString()}
-                  </div>
-                  <div className="mt-8 flex items-center justify-center gap-2 relative z-10">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Verified</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Transaction Detail Table */}
-              <div className="flex-1 pt-4">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 w-1/2">Payment Description</th>
-                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-center">Service Period</th>
-                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-center">Qty</th>
-                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-right">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100/60">
-                    {paymentItems.map((item, idx) => (
-                      <tr key={idx} className="group">
-                        <td className="py-10 px-8">
-                          <div className="flex flex-col gap-2">
-                            <p className="font-black text-slate-900 text-lg tracking-tight leading-tight">{item.desc}</p>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[11px] text-slate-400 font-black uppercase tracking-widest">
-                                {isCableMode ? "Digital TV" : "Broadband"} • {payment.method}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-10 px-8 text-center">
-                          <span className="px-4 py-2 rounded-full bg-slate-50 text-slate-600 font-black text-[11px] tracking-tight border border-slate-100">
-                            {item.period}
-                          </span>
-                        </td>
-                        <td className="py-10 px-8 text-center text-slate-900 font-black text-base">{item.qty}</td>
-                        <td className="py-10 px-8 text-right text-slate-900 font-black text-xl tracking-tighter">
-                          ₹{Number(item.total).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Summary Section */}
-              <div className="flex justify-between items-end pt-10">
-                <div className="max-w-[400px]">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Amount in Words</p>
-                  <p className="text-sm font-black text-slate-600 italic tracking-tight capitalize leading-relaxed">
-                    {numberToWords(Number(payment.amount))} Only
-                  </p>
-                </div>
-                <div className="w-72 space-y-4">
-                  <div className="flex justify-between items-center px-4">
-                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Net Received</span>
-                    <span className="text-2xl font-black text-[#0f172a] tracking-tighter">₹{Number(payment.amount).toLocaleString()}</span>
-                  </div>
-                  <div className="p-6 rounded-[1.5rem] bg-[#0f172a] text-center">
-                    <p className="text-[9px] font-black text-orange-500 uppercase tracking-[0.4em] mb-1">Receipt Status</p>
-                    <p className="text-sm font-black text-white uppercase tracking-widest">Payment Confirmed</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="mt-auto pt-10 text-center">
-                <div className="inline-flex flex-col items-center">
-                  <div className="h-px w-24 bg-slate-100 mb-4" />
-                  <p className="text-xl font-black text-[#0f172a] tracking-tighter">Thank You!</p>
-                  <p className="text-[10px] font-black text-slate-400 mt-2 uppercase tracking-[0.3em]">Authorized Digital Receipt</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#0f172a] py-6 text-center text-slate-500 text-[9px] w-full font-black uppercase tracking-[0.6em] mt-auto">
-              Computer Generated Receipt • Official Confirmation of Payment
-            </div>
+            <ReceiptContent id="receipt-content" />
           </div>
         </div>
 
-        <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 h-16 rounded-[1.5rem] font-black text-slate-500 uppercase tracking-widest text-[11px] bg-white border-slate-200 hover:bg-slate-100 transition-all"
+        {/* Hidden Container for PDF Generation */}
+        <div style={{ display: "none" }}>
+          <ReceiptContent id="receipt-content-print" />
+        </div>
+
+        {/* Action Bar */}
+        <div className="p-10 bg-white border-t border-slate-100 flex gap-6">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="h-16 px-10 rounded-2xl font-black text-slate-400 uppercase tracking-[0.2em] text-[10px] hover:bg-slate-50 hover:text-slate-900 border-slate-200"
           >
-            Close Receipt
+            Close Preview
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleSharePDF}
-            disabled={isProcessing}
-            className="flex-1 h-16 rounded-[1.5rem] font-black text-emerald-600 uppercase tracking-widest text-[11px] bg-emerald-50 border-emerald-100 hover:bg-emerald-100 shadow-sm transition-all flex items-center justify-center gap-2"
-          >
-            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            WhatsApp Receipt
-          </Button>
-          <Button
-            onClick={handleDownloadPDF}
-            disabled={isProcessing}
-            className="flex-1 h-16 rounded-[1.5rem] font-black text-white uppercase tracking-widest text-[11px] bg-[#0f172a] hover:bg-slate-900 shadow-2xl transition-all flex items-center justify-center gap-2"
-          >
-            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            Download PDF
-          </Button>
+          <div className="flex-1 flex gap-4">
+            <Button 
+              variant="outline" 
+              onClick={handleSharePDF} 
+              disabled={isProcessing}
+              className="flex-1 h-16 rounded-2xl font-black text-emerald-600 uppercase tracking-[0.2em] text-[10px] bg-emerald-50/50 border-emerald-100 hover:bg-emerald-50 transition-all flex gap-3 items-center justify-center"
+            >
+              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />} 
+              Share via WhatsApp
+            </Button>
+            <Button 
+              onClick={handleDownloadPDF} 
+              disabled={isProcessing}
+              className="flex-1 h-16 rounded-2xl font-black text-white uppercase tracking-[0.2em] text-[10px] bg-[#1B2B4B] hover:bg-[#243352] shadow-xl shadow-slate-200 transition-all flex gap-3 items-center justify-center"
+            >
+              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />} 
+              Download Digital Receipt
+            </Button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+

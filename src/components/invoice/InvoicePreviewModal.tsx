@@ -355,7 +355,7 @@ export default function InvoicePreviewModal({
               <div style={{ border: "1px solid #dce4ef", borderRadius: "4px 4px 0 0", overflow: "hidden" }}>
                 <div style={styles.totalRow}>
                   <span style={{ whiteSpace: "nowrap" }}>Plan Amount:</span>
-                  <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
+                  <span style={{ whiteSpace: "nowrap" }}>Rs. {(amount + discount).toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
                   <div style={styles.totalRow}>

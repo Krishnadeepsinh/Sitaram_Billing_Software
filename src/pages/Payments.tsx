@@ -43,6 +43,7 @@ export default function Payments() {
   const [formData, setFormData] = useState({
     subscriberId: "",
     amount: 0,
+    discount: 0,
     method: "Cash" as const,
   });
 
@@ -63,7 +64,7 @@ export default function Payments() {
 
   const closeAddModal = () => {
     setIsAddOpen(false);
-    setFormData({ subscriberId: "", amount: 0, method: "Cash" });
+    setFormData({ subscriberId: "", amount: 0, discount: 0, method: "Cash" });
     if (searchParams.get("subscriberId")) {
       const nextParams = new URLSearchParams(searchParams);
       nextParams.delete("subscriberId");
@@ -81,6 +82,7 @@ export default function Payments() {
     setFormData({
       subscriberId,
       amount: getSubscriberDueAmount(subscriberId),
+      discount: 0,
       method: "Cash",
     });
     setIsAddOpen(true);
@@ -653,6 +655,16 @@ export default function Payments() {
                     type="number" 
                     value={formData.amount || ""} 
                     onChange={(e) => setFormData({...formData, amount: Number(e.target.value)})} 
+                    className="h-10 bg-input border-border rounded-lg px-3 text-sm text-foreground focus-visible:border-orange-400" 
+                    placeholder="0.00" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Discount (₹)</label>
+                  <Input 
+                    type="number" 
+                    value={formData.discount || ""} 
+                    onChange={(e) => setFormData({...formData, discount: Number(e.target.value)})} 
                     className="h-10 bg-input border-border rounded-lg px-3 text-sm text-foreground focus-visible:border-orange-400" 
                     placeholder="0.00" 
                   />

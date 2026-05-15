@@ -318,15 +318,14 @@ export default function Payments() {
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="hidden lg:flex items-center gap-4 px-4 py-2 rounded-lg bg-slate-900 border border-white/10">
-            <div className="flex flex-col">
-              <span className="text-xs text-slate-400">Cash</span>
-              <span className="text-sm font-medium text-white">₹{cashTotal.toLocaleString()}</span>
+          <div className="hidden lg:flex items-center gap-2">
+            <div className="flex flex-col items-end justify-center px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <span className="text-[9px] uppercase font-black tracking-widest text-amber-500/70 mb-0.5">Cash</span>
+              <span className="text-sm font-bold text-amber-500 leading-none">₹{cashTotal.toLocaleString()}</span>
             </div>
-            <div className="w-px h-6 bg-white/10" />
-            <div className="flex flex-col">
-              <span className="text-xs text-slate-400">UPI</span>
-              <span className="text-sm font-medium text-white">₹{upiTotal.toLocaleString()}</span>
+            <div className="flex flex-col items-start justify-center px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <span className="text-[9px] uppercase font-black tracking-widest text-blue-500/70 mb-0.5">UPI</span>
+              <span className="text-sm font-bold text-blue-500 leading-none">₹{upiTotal.toLocaleString()}</span>
             </div>
           </div>
           <Button 

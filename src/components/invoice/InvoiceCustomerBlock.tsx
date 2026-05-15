@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 type InvoiceCustomerBlockProps = {
   subscriber: any;
   customerIdLabel: string;
@@ -19,7 +21,7 @@ export function InvoiceCustomerBlock({ subscriber, customerIdLabel, isCableMode 
   const customerNo = subscriber?.customerNo || subscriber?.customerId || subscriber?.code || "-";
 
   return (
-    <div className="flex-[0.6] bg-[#F4F7FB] p-[5mm] rounded-[4mm] border border-[#DDE4EF] flex flex-col h-[45mm] relative overflow-hidden">
+    <div className="flex-[0.6] bg-[#F4F7FB] p-[5mm] rounded-[4mm] border border-[#DDE4EF] flex flex-col min-h-[45mm] relative overflow-hidden">
       {/* Decorative Brand Accent */}
       <div className="absolute top-0 right-0 w-[12mm] h-[12mm] bg-orange-500/5 rounded-full -mr-[4mm] -mt-[4mm] blur-xl" />
       
@@ -35,7 +37,10 @@ export function InvoiceCustomerBlock({ subscriber, customerIdLabel, isCableMode 
           <span className="text-[9pt] font-black text-[#64748B] opacity-50">#</span>
           <span className="text-[11pt] font-black text-[#1B2B4B]">{customerNo}</span>
         </div>
-        <h2 className="text-[14pt] font-bold text-[#1E293B] tracking-tight truncate leading-tight mt-0.5">
+        <h2 className={cn(
+          "text-[14pt] font-bold text-[#1E293B] tracking-tight leading-tight mt-0.5",
+          /[\u0a80-\u0aff]/.test(subscriber?.name || "") && "gujarati text-[16pt] leading-[1.2]"
+        )}>
           {subscriber?.name || "Valued Customer"}
         </h2>
       </div>

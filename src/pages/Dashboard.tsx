@@ -31,8 +31,10 @@ export default function Dashboard() {
     plans: plansList, 
     isLoading, 
     companySettings,
-    dashboardDate,
-    setDashboardDate 
+    filterStartDate,
+    setFilterStartDate,
+    filterEndDate,
+    setFilterEndDate 
   } = useBilling();
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -42,17 +44,34 @@ export default function Dashboard() {
   ];
   const years = Array.from({ length: 5 }, (_, i) => 2023 + i);
 
-  const handleMonthChange = (monthName: string) => {
+  const handleStartMonthChange = (monthName: string) => {
     const monthIndex = months.indexOf(monthName);
-    const newDate = new Date(dashboardDate);
+    const newDate = new Date(filterStartDate);
     newDate.setMonth(monthIndex);
-    setDashboardDate(newDate);
+    setFilterStartDate(newDate);
   };
 
-  const handleYearChange = (year: string) => {
-    const newDate = new Date(dashboardDate);
+  const handleStartYearChange = (year: string) => {
+    const newDate = new Date(filterStartDate);
     newDate.setFullYear(parseInt(year));
-    setDashboardDate(newDate);
+    setFilterStartDate(newDate);
+  };
+
+  const handleEndMonthChange = (monthName: string) => {
+    const monthIndex = months.indexOf(monthName);
+    const newDate = new Date(filterEndDate);
+    newDate.setMonth(monthIndex);
+    // Set to last day of that month
+    newDate.setMonth(monthIndex + 1);
+    newDate.setDate(0);
+    newDate.setHours(23, 59, 59, 999);
+    setFilterEndDate(newDate);
+  };
+
+  const handleEndYearChange = (year: string) => {
+    const newDate = new Date(filterEndDate);
+    newDate.setFullYear(parseInt(year));
+    setFilterEndDate(newDate);
   };
 
   const recent = [...payments].sort((a, b) => +new Date(b.date) - +new Date(a.date)).slice(0, 5);
@@ -138,25 +157,47 @@ export default function Dashboard() {
         </div>
         
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900 p-1">
-            <Select value={months[dashboardDate.getMonth()]} onValueChange={handleMonthChange}>
-              <SelectTrigger className="h-9 w-[130px] border-none bg-transparent text-sm font-medium text-white focus:ring-0">
-                <Calendar className="mr-2 h-4 w-4 text-slate-400" />
-                <SelectValue placeholder="Month" />
-              </SelectTrigger>
-              <SelectContent className="border-white/10 bg-slate-900">
-                {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="h-5 w-px bg-white/10" />
-            <Select value={dashboardDate.getFullYear().toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="h-9 w-[90px] border-none bg-transparent text-sm font-medium text-white focus:ring-0">
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent className="border-white/10 bg-slate-900">
-                {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
-              </SelectContent>
-            </Select>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
+            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1">
+              <span className="text-[9px] uppercase font-bold text-slate-500 px-2">From</span>
+              <Select value={months[filterStartDate.getMonth()]} onValueChange={handleStartMonthChange}>
+                <SelectTrigger className="h-8 w-[110px] border-none bg-transparent text-xs font-medium text-white focus:ring-0 px-2">
+                  <SelectValue placeholder="Month" />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-slate-900">
+                  {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={filterStartDate.getFullYear().toString()} onValueChange={handleStartYearChange}>
+                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent text-xs font-medium text-white focus:ring-0 px-2">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-slate-900">
+                  {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1">
+              <span className="text-[9px] uppercase font-bold text-slate-500 px-2">To</span>
+              <Select value={months[filterEndDate.getMonth()]} onValueChange={handleEndMonthChange}>
+                <SelectTrigger className="h-8 w-[110px] border-none bg-transparent text-xs font-medium text-white focus:ring-0 px-2">
+                  <SelectValue placeholder="Month" />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-slate-900">
+                  {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={filterEndDate.getFullYear().toString()} onValueChange={handleEndYearChange}>
+                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent text-xs font-medium text-white focus:ring-0 px-2">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-slate-900">
+                  {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <Button 

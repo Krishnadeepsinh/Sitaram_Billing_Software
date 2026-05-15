@@ -308,7 +308,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
                 subscriber={subscriber}
               />
 
-              <div className="flex gap-[4mm] h-[45mm]">
+              <div className="flex gap-[4mm] min-h-[45mm]">
                 <InvoiceCustomerBlock customerIdLabel={customerIdLabel} subscriber={subscriber} isCableMode={isCableMode} />
                 
                 {/* Status Box (40%) */}

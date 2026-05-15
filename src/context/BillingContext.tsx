@@ -145,8 +145,10 @@ interface BillingContextType {
     active: number;
     expired: number;
   };
-  dashboardDate: Date;
-  setDashboardDate: (date: Date) => void;
+  filterStartDate: Date;
+  filterEndDate: Date;
+  setFilterStartDate: (date: Date) => void;
+  setFilterEndDate: (date: Date) => void;
   companySettings: CompanySettings;
   updateCompanySettings: (settings: CompanySettings) => Promise<void>;
   refreshData: () => Promise<void>;
@@ -176,7 +178,19 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     upiId: BRAND_UPI,
   });
   const [isLoading, setIsLoading]     = useState(true);
-  const [dashboardDate, setDashboardDate] = useState(new Date());
+  const [filterStartDate, setFilterStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(1);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+  const [filterEndDate, setFilterEndDate] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    d.setDate(0); // Last day of current month
+    d.setHours(23, 59, 59, 999);
+    return d;
+  });
 
   // ── Fetch: Turso DB ─────────────────────────────────────────────────────────
   const fetchFromDB = useCallback(async () => {
@@ -1838,11 +1852,19 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     
     const monthRevenue    = payments
-      .filter(p => p.date && new Date(p.date).getMonth() === dDate.getMonth() && new Date(p.date).getFullYear() === dDate.getFullYear())
+      .filter(p => {
+        if (!p.date) return false;
+        const d = new Date(p.date);
+        return d >= filterStartDate && d <= filterEndDate;
+      })
       .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     
     const monthExpenses   = expenses
-      .filter(e => e.date && new Date(e.date).getMonth() === dDate.getMonth() && new Date(e.date).getFullYear() === dDate.getFullYear())
+      .filter(e => {
+        if (!e.date) return false;
+        const d = new Date(e.date);
+        return d >= filterStartDate && d <= filterEndDate;
+      })
       .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
     
     // Pending dues = sum of unpaid invoice amounts (single source of truth)
@@ -1873,7 +1895,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       active: subscribers.filter(s => s.status === 'active').length, 
       expired: subscribers.filter(s => s.status === 'expired').length 
     };
-  }, [subscribers, payments, expenses, invoices, dashboardDate]);
+  }, [subscribers, payments, expenses, invoices, filterStartDate, filterEndDate]);
 
   const updateCompanySettings = async (settings: CompanySettings) => {
     const cleanedSettings = {
@@ -1933,7 +1955,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       generateInvoice, deleteInvoice, bulkDeleteInvoices, runBulkBilling, runAutoLegacyBilling,
       recordPayment, deletePayment,
       addExpense, deleteExpense,
-      stats, dashboardDate, setDashboardDate, companySettings, updateCompanySettings,
+      stats, filterStartDate, setFilterStartDate, filterEndDate, setFilterEndDate, companySettings, updateCompanySettings,
       refreshData: fetchData,
       recalculateBalances,
       importBackupData: async (data: any) => {

@@ -48,7 +48,11 @@ export default function Invoices() {
   const activeBusinessMode = useBusinessMode();
   const isCableMode = activeBusinessMode === "cable";
   const customerIdLabel = isCableMode ? "STB" : "CID";
-  const { invoices, subscribers, payments, plans: plansList, generateInvoice, runBulkBilling, runAutoLegacyBilling, deleteInvoice, bulkDeleteInvoices, recordPayment, companySettings, recalculateBalances } = useBilling();
+  const { 
+    invoices, subscribers, payments, plans: plansList, generateInvoice, runBulkBilling, 
+    runAutoLegacyBilling, deleteInvoice, bulkDeleteInvoices, recordPayment, companySettings, 
+    recalculateBalances, filterStartDate, setFilterStartDate, filterEndDate, setFilterEndDate 
+  } = useBilling();
   const brand = getBrandSettings(companySettings);
   
   const [q, setQ] = useState("");
@@ -72,10 +76,6 @@ export default function Invoices() {
   const [rechargeDate, setRechargeDate] = useState(new Date().toISOString().slice(0, 10));
   const [planMonths, setPlanMonths] = useState(1);
   const [billingType, setBillingType] = useState<"plan" | "legacy">("plan");
-  const [filterMonth, setFilterMonth] = useState<number | "all">(new Date().getMonth());
-  const [filterYear, setFilterYear] = useState<number | "all">(new Date().getFullYear());
-  const [filterEndMonth, setFilterEndMonth] = useState<number | "all">(new Date().getMonth());
-  const [filterEndYear, setFilterEndYear] = useState<number | "all">(new Date().getFullYear());
   const [sortBy, setSortBy] = useState<"date" | "customerNo">("customerNo");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [payDiscount, setPayDiscount] = useState(0);
@@ -84,13 +84,13 @@ export default function Invoices() {
   const autoBillingRun = useRef(false);
   
   useEffect(() => {
-    if (filterMonth === 0 && !autoBillingRun.current) {
+    if (filterStartDate.getMonth() === 0 && !autoBillingRun.current) {
       autoBillingRun.current = true;
       runAutoLegacyBilling().finally(() => {});
-    } else if (filterMonth !== 0) {
+    } else if (filterStartDate.getMonth() !== 0) {
       autoBillingRun.current = false;
     }
-  }, [filterMonth, runAutoLegacyBilling]);
+  }, [filterStartDate, runAutoLegacyBilling]);
 
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const years = [2024, 2025, 2026, 2027, 2028, 2029];
@@ -131,23 +131,13 @@ export default function Invoices() {
       const matchArea = areaF === "all" || sub?.area === areaF;
       
       const invDate = new Date(inv.date);
-      const invTime = invDate.getFullYear() * 12 + invDate.getMonth();
-      
-      const startMonth = filterMonth === "all" ? 0 : Number(filterMonth);
-      const startYear = filterYear === "all" ? 0 : Number(filterYear);
-      const startTime = filterYear === "all" ? -1 : startYear * 12 + startMonth;
-      
-      const endMonthVal = filterEndMonth === "all" ? 11 : Number(filterEndMonth);
-      const endYearVal = filterEndYear === "all" ? 9999 : Number(filterEndYear);
-      const endTime = filterEndYear === "all" ? 999999 : endYearVal * 12 + endMonthVal;
-
-      const inRange = filterMonth === "all" || (invTime >= startTime && invTime <= endTime);
-      const isPastUnpaid = inv.status !== "paid" && invTime < startTime;
+      const inRange = invDate >= filterStartDate && invDate <= filterEndDate;
+      const isPastUnpaid = inv.status !== "paid" && invDate < filterStartDate;
       const matchPeriod = inRange || isPastUnpaid;
 
       return matchQ && matchStatus && matchType && matchPeriod && matchArea;
     });
-  }, [debouncedQ, statusF, typeF, areaF, filterMonth, filterYear, filterEndMonth, filterEndYear, invoices, subMap, planMap]);
+  }, [debouncedQ, statusF, typeF, areaF, filterStartDate, filterEndDate, invoices, subMap, planMap]);
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -328,26 +318,44 @@ export default function Invoices() {
               Reset
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex gap-1.5 p-1 bg-slate-950 border border-white/10 rounded-lg">
-              <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value === "all" ? "all" : Number(e.target.value))} className="flex-1 h-8 bg-transparent border-none text-xs text-slate-300 outline-none appearance-none px-2">
-                <option value="all">Start</option>
-                {months.map((m, i) => <option key={m} value={i} className="bg-slate-900">{m.slice(0, 3)}</option>)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex gap-1 p-1 bg-slate-950 border border-white/10 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">From</span>
+              <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
+                const monthIndex = months.indexOf(e.target.value);
+                const d = new Date(filterStartDate);
+                d.setMonth(monthIndex);
+                setFilterStartDate(d);
+              }} className="flex-1 h-8 bg-transparent border-none text-xs text-slate-300 outline-none appearance-none px-2">
+                {months.map(m => <option key={m} value={m} className="bg-slate-900">{m.slice(0, 3)}</option>)}
               </select>
               <div className="w-px h-4 my-auto bg-white/10" />
-              <select value={filterYear} onChange={(e) => setFilterYear(e.target.value === "all" ? "all" : Number(e.target.value))} className="w-16 h-8 bg-transparent border-none text-xs text-slate-300 outline-none appearance-none px-2">
-                <option value="all">Year</option>
+              <select value={filterStartDate.getFullYear()} onChange={(e) => {
+                const d = new Date(filterStartDate);
+                d.setFullYear(Number(e.target.value));
+                setFilterStartDate(d);
+              }} className="w-16 h-8 bg-transparent border-none text-xs text-slate-300 outline-none appearance-none px-2">
                 {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
               </select>
             </div>
-            <div className="flex gap-1.5 p-1 bg-slate-950 border border-white/10 rounded-lg">
-              <select value={filterEndMonth} onChange={(e) => setFilterEndMonth(e.target.value === "all" ? "all" : Number(e.target.value))} className="flex-1 h-8 bg-transparent border-none text-xs text-slate-300 outline-none appearance-none px-2">
-                <option value="all">End</option>
-                {months.map((m, i) => <option key={m} value={i} className="bg-slate-900">{m.slice(0, 3)}</option>)}
+            <div className="flex gap-1 p-1 bg-slate-950 border border-white/10 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">To</span>
+              <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
+                const monthIndex = months.indexOf(e.target.value);
+                const d = new Date(filterEndDate);
+                d.setMonth(monthIndex + 1);
+                d.setDate(0);
+                d.setHours(23, 59, 59, 999);
+                setFilterEndDate(d);
+              }} className="flex-1 h-8 bg-transparent border-none text-xs text-slate-300 outline-none appearance-none px-2">
+                {months.map(m => <option key={m} value={m} className="bg-slate-900">{m.slice(0, 3)}</option>)}
               </select>
               <div className="w-px h-4 my-auto bg-white/10" />
-              <select value={filterEndYear} onChange={(e) => setFilterEndYear(e.target.value === "all" ? "all" : Number(e.target.value))} className="w-16 h-8 bg-transparent border-none text-xs text-slate-300 outline-none appearance-none px-2">
-                <option value="all">Year</option>
+              <select value={filterEndDate.getFullYear()} onChange={(e) => {
+                const d = new Date(filterEndDate);
+                d.setFullYear(Number(e.target.value));
+                setFilterEndDate(d);
+              }} className="w-16 h-8 bg-transparent border-none text-xs text-slate-300 outline-none appearance-none px-2">
                 {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
               </select>
             </div>

@@ -197,13 +197,14 @@ export default function Reports() {
     subscribers = [], 
     companySettings = {}, 
     expenses = [], 
-    isLoading: billingLoading = false 
+    isLoading: billingLoading = false,
+    filterStartDate,
+    setFilterStartDate,
+    filterEndDate,
+    setFilterEndDate
   } = billing || {};
 
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedEndMonth, setSelectedEndMonth] = useState(new Date().getMonth());
-  const [selectedEndYear, setSelectedEndYear] = useState(new Date().getFullYear());
+
   const [selectedArea, setSelectedArea] = useState("All Addresses");
   const [selectedMethod, setSelectedMethod] = useState("All Methods");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -243,10 +244,7 @@ export default function Reports() {
     return payments.filter(p => {
       if (!p || !p.date) return false;
       const d = new Date(p.date);
-      const payTime = d.getFullYear() * 12 + d.getMonth();
-      const startTime = selectedYear * 12 + selectedMonth;
-      const endTime = selectedEndYear * 12 + selectedEndMonth;
-      if (!(payTime >= startTime && payTime <= endTime)) return false;
+      if (!(d >= filterStartDate && d <= filterEndDate)) return false;
       if (selectedMethod !== "All Methods" && p.method !== selectedMethod) return false;
       if (selectedArea === "All Addresses") return true;
       const sub = subscribers.find(sub => sub.id === p.subscriberId);
@@ -256,24 +254,21 @@ export default function Reports() {
       const subB = subscribers.find(s => s.id === b.subscriberId);
       return (subA?.customerNo || 0) - (subB?.customerNo || 0);
     });
-  }, [payments, selectedMonth, selectedYear, selectedEndMonth, selectedEndYear, selectedArea, selectedMethod, subscribers]);
+  }, [payments, filterStartDate, filterEndDate, selectedArea, selectedMethod, subscribers]);
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter(e => {
       if (!e || !e.date) return false;
       const d = new Date(e.date);
-      const expTime = d.getFullYear() * 12 + d.getMonth();
-      const startTime = selectedYear * 12 + selectedMonth;
-      const endTime = selectedEndYear * 12 + selectedEndMonth;
-      return expTime >= startTime && expTime <= endTime;
+      return d >= filterStartDate && d <= filterEndDate;
     });
-  }, [expenses, selectedMonth, selectedYear, selectedEndMonth, selectedEndYear]);
+  }, [expenses, filterStartDate, filterEndDate]);
 
   const monthNameLong = useMemo(() => {
-    const start = new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
-    const end = new Date(selectedEndYear, selectedEndMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
+    const start = filterStartDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+    const end = filterEndDate.toLocaleString('default', { month: 'long', year: 'numeric' });
     return start === end ? start : `${start} — ${end}`;
-  }, [selectedMonth, selectedYear, selectedEndMonth, selectedEndYear]);
+  }, [filterStartDate, filterEndDate]);
 
   const monthStats = useMemo(() => {
     const revenue = filteredPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
@@ -367,18 +362,44 @@ export default function Reports() {
 
       {/* Filters */}
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
-        <div className="relative group">
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
-          <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="h-9 w-full appearance-none rounded-lg border border-white/10 bg-slate-900 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <option key={i} value={i} className="bg-slate-900">{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
-            ))}
+        <div className="flex gap-1 p-1 bg-slate-900 border border-white/10 rounded-lg">
+          <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">From</span>
+          <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
+            const monthIndex = months.indexOf(e.target.value);
+            const d = new Date(filterStartDate);
+            d.setMonth(monthIndex);
+            setFilterStartDate(d);
+          }} className="flex-1 h-9 bg-transparent border-none text-sm text-white outline-none appearance-none px-2">
+            {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+          </select>
+          <div className="w-px h-4 my-auto bg-white/10" />
+          <select value={filterStartDate.getFullYear()} onChange={(e) => {
+            const d = new Date(filterStartDate);
+            d.setFullYear(Number(e.target.value));
+            setFilterStartDate(d);
+          }} className="w-16 h-9 bg-transparent border-none text-sm text-white outline-none appearance-none px-2">
+            {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
           </select>
         </div>
-        <div className="relative group">
-          <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
-          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="h-9 w-full appearance-none rounded-lg border border-white/10 bg-slate-900 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-            {[2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+        <div className="flex gap-1 p-1 bg-slate-900 border border-white/10 rounded-lg">
+          <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">To</span>
+          <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
+            const monthIndex = months.indexOf(e.target.value);
+            const d = new Date(filterEndDate);
+            d.setMonth(monthIndex + 1);
+            d.setDate(0);
+            d.setHours(23, 59, 59, 999);
+            setFilterEndDate(d);
+          }} className="flex-1 h-9 bg-transparent border-none text-sm text-white outline-none appearance-none px-2">
+            {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+          </select>
+          <div className="w-px h-4 my-auto bg-white/10" />
+          <select value={filterEndDate.getFullYear()} onChange={(e) => {
+            const d = new Date(filterEndDate);
+            d.setFullYear(Number(e.target.value));
+            setFilterEndDate(d);
+          }} className="w-16 h-9 bg-transparent border-none text-sm text-white outline-none appearance-none px-2">
+            {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
           </select>
         </div>
         <div className="relative group">

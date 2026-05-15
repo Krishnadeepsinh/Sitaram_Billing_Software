@@ -198,8 +198,13 @@ def draw_shared_header(c, doc_type, brand, data):
     draw_string(c, text_x, header_y + 28*mm, "OFFICIAL DOCUMENT")
     
     c.setFillColor(WHITE)
-    c.setFont("Helvetica-Bold", 18)
-    draw_string(c, text_x, header_y + 20*mm, brand.get('name', 'SITARAM CABLE & BROADBAND').upper())
+    brand_name = brand.get('name', 'SITARAM CABLE & BROADBAND').upper()
+    # Dynamic font size to prevent overlap with right box
+    title_fs = 18
+    if len(brand_name) > 22: title_fs = 15
+    if len(brand_name) > 28: title_fs = 13
+    c.setFont("Helvetica-Bold", title_fs)
+    draw_string(c, text_x, header_y + 20*mm, brand_name)
     
     c.setFillColor(LABEL)
     c.setFont("Helvetica", 7.5)

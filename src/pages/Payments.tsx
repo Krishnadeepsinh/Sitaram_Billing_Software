@@ -23,7 +23,10 @@ export default function Payments() {
   const activeBusinessMode = useBusinessMode();
   const isCableMode = activeBusinessMode === "cable";
   const customerIdLabel = isCableMode ? "STB" : "CID";
-  const { payments, subscribers, plans, invoices, recordPayment, deletePayment, isLoading, companySettings, refreshData } = useBilling();
+  const { 
+    payments, subscribers, plans, invoices, recordPayment, deletePayment, isLoading, 
+    companySettings, refreshData, filterStartDate, setFilterStartDate, filterEndDate, setFilterEndDate 
+  } = useBilling();
   const brand = getBrandSettings(companySettings);
   const [q, setQ] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -156,9 +159,6 @@ export default function Payments() {
     return linked ? getInvoiceServiceDates(linked, sub, plans) : { rechargeDate: "", expiryDate: "" };
   }, [selectedPayment, subscribers, invoices, plans]);
 
-  const [formData, setFormData] = useState({ subscriberId: "", amount: 0, method: "Cash" as "Cash" | "UPI" });
-  const [filterMonth, setFilterMonth] = useState<number | "all">(new Date().getMonth());
-  const [filterYear, setFilterYear] = useState<number | "all">(new Date().getFullYear());
   const [areaF, setAreaF] = useState<string>("all");
   const [methodF, setMethodF] = useState<string>("all");
 
@@ -177,7 +177,7 @@ export default function Payments() {
         (p.id || "").toLowerCase().includes(t)
       );
       const payDate = new Date(p.date);
-      const matchMonth = filterMonth === "all" || (payDate.getMonth() === filterMonth && payDate.getFullYear() === filterYear);
+      const matchMonth = payDate >= filterStartDate && payDate <= filterEndDate;
       const matchArea = areaF === "all" || sub?.area === areaF;
       const matchMethod = methodF === "all" || p.method === methodF;
       return matchQ && matchMonth && matchArea && matchMethod;
@@ -339,14 +339,45 @@ export default function Payments() {
         </div>
 
         <div className="lg:col-span-4 flex items-center gap-2">
-          <div className="flex h-10 w-full items-center gap-2 rounded-lg border border-white/10 bg-slate-900 px-3">
-            <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value === "all" ? "all" : Number(e.target.value))} className="flex-1 bg-transparent text-sm text-slate-300 outline-none appearance-none cursor-pointer">
-              {months.map((m, i) => <option key={m} value={i} className="bg-slate-900">{m}</option>)}
-            </select>
-            <div className="h-4 w-px bg-white/10" />
-            <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} className="w-20 bg-transparent text-sm text-slate-300 outline-none appearance-none cursor-pointer text-center">
-              {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
-            </select>
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1 flex-1">
+              <span className="text-[9px] uppercase font-bold text-slate-500 px-2">From</span>
+              <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
+                const monthIndex = months.indexOf(e.target.value);
+                const d = new Date(filterStartDate);
+                d.setMonth(monthIndex);
+                setFilterStartDate(d);
+              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer flex-1">
+                {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+              </select>
+              <select value={filterStartDate.getFullYear()} onChange={(e) => {
+                const d = new Date(filterStartDate);
+                d.setFullYear(Number(e.target.value));
+                setFilterStartDate(d);
+              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer w-14">
+                {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+              </select>
+            </div>
+            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1 flex-1">
+              <span className="text-[9px] uppercase font-bold text-slate-500 px-2">To</span>
+              <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
+                const monthIndex = months.indexOf(e.target.value);
+                const d = new Date(filterEndDate);
+                d.setMonth(monthIndex + 1);
+                d.setDate(0);
+                d.setHours(23, 59, 59, 999);
+                setFilterEndDate(d);
+              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer flex-1">
+                {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+              </select>
+              <select value={filterEndDate.getFullYear()} onChange={(e) => {
+                const d = new Date(filterEndDate);
+                d.setFullYear(Number(e.target.value));
+                setFilterEndDate(d);
+              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer w-14">
+                {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 

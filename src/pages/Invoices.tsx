@@ -481,7 +481,7 @@ export default function Invoices() {
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-slate-800 tabular-nums">{formatCurrency(inv.amount)}</p>
-                  {dueAmount > 0 && <p className="text-xs text-red-500 mt-0.5">Due: {formatCurrency(dueAmount)}</p>}
+                  {inv.status !== 'paid' && dueAmount > 0 && <p className="text-xs text-red-500 mt-0.5">Due: {formatCurrency(dueAmount)}</p>}
                 </div>
               </div>
               <div className="flex gap-2 pt-2 border-t border-slate-100">
@@ -571,7 +571,7 @@ export default function Invoices() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex flex-col items-end">
                         <span className="font-bold text-foreground font-mono-num tabular-nums">{formatCurrency(inv.amount)}</span>
-                        {dueAmount > 0 && <span className="text-xs text-red-500 mt-0.5">Due: {formatCurrency(dueAmount)}</span>}
+                        {inv.status !== 'paid' && dueAmount > 0 && <span className="text-xs text-red-500 mt-0.5">Due: {formatCurrency(dueAmount)}</span>}
                       </div>
                     </td>
                     <td className="px-4 py-3">

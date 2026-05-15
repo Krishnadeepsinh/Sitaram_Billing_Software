@@ -469,7 +469,10 @@ export default function Invoices() {
                   />
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800"><Highlight text={sub?.name || "Unknown"} query={q} /></h3>
-                    <p className="text-xs text-slate-400"><Highlight text={inv.number} query={q} /></p>
+                    <div className="flex flex-col">
+                      <p className="text-xs text-slate-400"><Highlight text={inv.number} query={q} /></p>
+                      {inv.billingPeriod && <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-tight">{inv.billingPeriod}</p>}
+                    </div>
                   </div>
                 </div>
                 <StatusBadge status={inv.status} />
@@ -557,6 +560,11 @@ export default function Invoices() {
                           <span><Highlight text={sub?.area || "No Area"} query={q} /></span>
                           {inv.type === 'legacy' && <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 text-[10px]">Legacy</span>}
                         </div>
+                        {inv.billingPeriod && (
+                          <div className="text-[10px] text-indigo-600 font-bold mt-1 uppercase tracking-tight">
+                            {inv.billingPeriod}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3">

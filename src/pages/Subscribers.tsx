@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import * as XLSX from 'xlsx';
-import { formatCurrency, formatDate } from "@/lib/mockData";
+import { formatCurrency, formatDate, formatMonthRanges } from "@/lib/mockData";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -98,10 +98,32 @@ export default function Subscribers() {
       const totalPaid = payments
         .filter(p => p.subscriberId === sub.id)
         .reduce((s, p) => s + Number(p.amount || 0), 0);
-      map[sub.id] = totalPaid - totalInvoiced - Number(sub.openingBalance || 0);
+      map[sub.id] = totalPaid - totalInvoiced - (Number(sub.openingBalance) || 0);
     }
     return map;
   }, [subscribers, invoices, payments]);
+
+  const getOverdueMonthsDisplay = (subId: string) => {
+    const pendingInvoices = invoices
+      .filter(i => i.subscriberId === subId && i.status === 'pending')
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    if (pendingInvoices.length === 0) return "";
+    
+    // Check if any is legacy
+    const hasLegacy = pendingInvoices.some(i => i.type === 'legacy');
+    
+    // Collect months from plan invoices
+    const planDates = pendingInvoices
+      .filter(i => i.type === 'plan')
+      .map(i => new Date(i.date));
+    
+    let display = formatMonthRanges(planDates);
+    if (hasLegacy) {
+      display = display ? `Prev + ${display}` : "Previous Dues";
+    }
+    return display;
+  };
 
   const filtered = useMemo(() => {
     return subscribers.filter((s) => {
@@ -273,9 +295,21 @@ export default function Subscribers() {
 
   const subPayments = useMemo(() => {
     if (!historySub) return [];
-    return payments.filter(p => p.subscriberId === historySub.id)
-      .sort((a, b) => +new Date(b.date) - +new Date(a.date));
+    return payments.filter(p => p.subscriberId === historySub.id);
   }, [historySub, payments]);
+
+  const subInvoices = useMemo(() => {
+    if (!historySub) return [];
+    return invoices.filter(i => i.subscriberId === historySub.id);
+  }, [historySub, invoices]);
+
+  const chronologicalLedger = useMemo(() => {
+    const combined = [
+      ...subPayments.map(p => ({ ...p, ledgerType: 'payment' as const })),
+      ...subInvoices.map(i => ({ ...i, ledgerType: 'invoice' as const }))
+    ];
+    return combined.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  }, [subPayments, subInvoices]);
 
   return (
     <div className="space-y-6 pb-16 md:pb-6">
@@ -312,59 +346,51 @@ export default function Subscribers() {
       </div>
 
       {/* Filters */}
-      <div className="app-card p-4 flex flex-col md:flex-row gap-3">
+      <div className="app-card p-3 flex flex-col lg:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, ID, phone..."
-            className="h-9 rounded-lg bg-input border-border pl-10 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+            placeholder="Search by name, ID, phone or area..."
+            className="h-10 rounded-xl bg-input border-border pl-10 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 w-full"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
-          {q && (
-            <button
-              onClick={() => setQ("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground transition-colors"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          )}
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <select
-            className="h-9 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none"
-            value={statusF}
-            onChange={(e: any) => setStatusF(e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-          <select
-            className="h-9 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none"
-            value={areaF}
-            onChange={(e) => setAreaF(e.target.value)}
-          >
-            <option value="all">All Areas</option>
-            {areas.filter(a => a !== "all").map(a => <option key={a} value={a}>{a}</option>)}
-          </select>
-          <select
-            className="h-9 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none"
-            value={planF}
-            onChange={(e) => setPlanF(e.target.value)}
-          >
-            <option value="all">All Plans</option>
-            {dbPlans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-          <div className="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-secondary/30">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-border bg-secondary/30 shrink-0">
             <Switch
               id="dues-only"
               checked={showDuesOnly}
               onCheckedChange={setShowDuesOnly}
               className="data-[state=checked]:bg-orange-500"
             />
-            <Label htmlFor="dues-only" className="cursor-pointer text-sm text-muted-foreground whitespace-nowrap">Overdue Only</Label>
+            <Label htmlFor="dues-only" className="cursor-pointer text-xs font-bold uppercase tracking-tight text-muted-foreground whitespace-nowrap">Overdue Only</Label>
           </div>
+          <select
+            className="h-10 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none min-w-[120px]"
+            value={statusF}
+            onChange={(e: any) => setStatusF(e.target.value)}
+          >
+            <option value="all">Status: All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select
+            className="h-10 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none min-w-[120px]"
+            value={areaF}
+            onChange={(e) => setAreaF(e.target.value)}
+          >
+            <option value="all">Area: All</option>
+            {areas.filter(a => a !== "all").map(a => <option key={a} value={a}>{a}</option>)}
+          </select>
+          <select
+            className="h-10 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none min-w-[120px]"
+            value={planF}
+            onChange={(e) => setPlanF(e.target.value)}
+          >
+            <option value="all">Plan: All</option>
+            {dbPlans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
         </div>
       </div>
 
@@ -428,6 +454,11 @@ export default function Subscribers() {
                           {formatCurrency(balance)}
                         </span>
                         <span className="text-xs text-muted-foreground mt-0.5">{plan?.name || "Unassigned"}</span>
+                        {balance < -0.01 && (
+                          <div className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-tight leading-tight">
+                            {getOverdueMonthsDisplay(s.id)}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -558,6 +589,11 @@ export default function Subscribers() {
                   <span className={cn("font-medium", balance >= 0 ? "text-green-600" : "text-red-600")}>
                     {formatCurrency(balance)}
                   </span>
+                  {balance < -0.01 && (
+                    <div className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-tight">
+                      {getOverdueMonthsDisplay(s.id)}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -603,21 +639,40 @@ export default function Subscribers() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar">
-              {subPayments.length === 0 ? (
+              {chronologicalLedger.length === 0 ? (
                 <div className="py-12 text-center text-slate-400">
                   <Wallet className="h-10 w-10 mx-auto mb-3 text-slate-500" />
-                  <p>No payment records found.</p>
+                  <p>No activity records found.</p>
                 </div>
               ) : (
-                subPayments.map(p => (
-                  <div key={p.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+                chronologicalLedger.map(item => (
+                  <div key={item.id} className={cn(
+                    "p-4 rounded-xl border flex items-center justify-between",
+                    item.ledgerType === 'payment' ? "bg-green-50 border-green-100" : "bg-slate-50 border-slate-200"
+                  )}>
                     <div className="flex flex-col">
-                      <span className="font-semibold text-slate-700">{formatCurrency(p.amount)}</span>
-                      <span className="text-xs text-slate-400 uppercase tracking-wider">{p.method}</span>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("font-bold text-base", item.ledgerType === 'payment' ? "text-green-700" : "text-slate-700")}>
+                          {item.ledgerType === 'payment' ? "+" : "-"}{formatCurrency(item.amount)}
+                        </span>
+                        {item.ledgerType === 'invoice' && item.discount > 0 && (
+                          <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
+                            Disc: {formatCurrency(item.discount)}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                        {item.ledgerType === 'payment' ? `Payment (${item.method})` : `Invoice (${item.number})`}
+                      </span>
+                      {item.ledgerType === 'invoice' && item.billingPeriod && (
+                        <span className="text-[10px] text-indigo-600 font-bold mt-1 uppercase">
+                          {item.billingPeriod}
+                        </span>
+                      )}
                     </div>
                     <div className="text-right flex flex-col items-end">
-                      <span className="text-sm text-slate-700">{formatDate(p.date)}</span>
-                      <span className="text-xs text-slate-500 font-mono">{p.id.slice(0, 8)}</span>
+                      <span className="text-sm font-medium text-slate-600">{formatDate(item.date)}</span>
+                      <span className="text-[10px] text-slate-400 font-mono">#{item.id.slice(-6).toUpperCase()}</span>
                     </div>
                   </div>
                 ))

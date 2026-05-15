@@ -341,33 +341,35 @@ export default function Payments() {
       {/* Filters */}
       <div className="app-card p-3 flex flex-col lg:flex-row gap-3">
         {/* Search + Area + Method */}
-        <div className="flex-1 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+        <div className="flex-1 flex flex-col sm:flex-row gap-3 min-w-0">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by ID, name or area..."
-              className="h-9 bg-input border-border pl-9 text-sm rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+              className="h-9 bg-input border-border pl-9 text-sm rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 w-full"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
-          <select
-            value={areaF}
-            onChange={(e) => setAreaF(e.target.value)}
-            className="h-9 bg-input border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-400 sm:w-40 appearance-none"
-          >
-            <option value="all">All Areas</option>
-            {areas.map(a => <option key={a} value={a}>{a}</option>)}
-          </select>
-          <select
-            value={methodF}
-            onChange={(e) => setMethodF(e.target.value)}
-            className="h-9 bg-input border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-400 sm:w-36 appearance-none"
-          >
-            <option value="all">All Modes</option>
-            <option value="Cash">Cash</option>
-            <option value="UPI">UPI</option>
-          </select>
+          <div className="flex gap-2 shrink-0">
+            <select
+              value={areaF}
+              onChange={(e) => setAreaF(e.target.value)}
+              className="h-9 bg-input border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-400 w-full sm:w-40 appearance-none"
+            >
+              <option value="all">All Areas</option>
+              {areas.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+            <select
+              value={methodF}
+              onChange={(e) => setMethodF(e.target.value)}
+              className="h-9 bg-input border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-400 w-full sm:w-36 appearance-none"
+            >
+              <option value="all">All Modes</option>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+            </select>
+          </div>
         </div>
         {/* Date Range */}
         <div className="flex items-center gap-2">
@@ -504,8 +506,12 @@ export default function Payments() {
                          </div>
                          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="h-3 w-3" /> {sub?.area || "N/A"}</div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex flex-col items-end">
                          <div className="font-bold text-foreground font-mono-num">₹{Number(p.amount).toLocaleString()}</div>
+                         {(Number(p.discount || 0) > 0) && (
+                           <div className="text-[10px] font-bold text-orange-500 bg-orange-50 px-1.5 rounded leading-tight">-{formatCurrency(Number(p.discount))} DISC</div>
+                         )}
+                      </div>
                          <div className={cn("text-[10px] font-semibold mt-1 px-1.5 py-0.5 rounded w-fit ml-auto", p.method === 'Cash' ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600")}>
                            {p.method}
                          </div>
@@ -593,8 +599,12 @@ export default function Payments() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex flex-col items-end gap-1">
+                      <div className="flex flex-col items-end gap-0.5">
                         <span className="text-foreground font-bold font-mono-num">₹{Number(p.amount).toLocaleString()}</span>
+                        {(Number(p.discount || 0) > 0) && (
+                          <span className="text-[10px] font-bold text-orange-500 bg-orange-50 px-1.5 rounded">-{formatCurrency(Number(p.discount))} DISC</span>
+                        )}
+                      </div>
                         <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-semibold",
                           p.method === 'Cash' ? "text-amber-600 bg-amber-50" : "text-blue-600 bg-blue-50")}>
                           {p.method}

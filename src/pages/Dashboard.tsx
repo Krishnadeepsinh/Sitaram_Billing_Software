@@ -293,23 +293,25 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: "New Payment", icon: Wallet, to: "/payments", color: "text-orange-600", bg: "bg-orange-50 border-orange-200" },
-          { label: "Subscribers", icon: Users, to: "/subscribers", color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
-          { label: "Billing", icon: FileText, to: "/invoices", color: "text-green-600", bg: "bg-green-50 border-green-200" },
-          { label: "Reports", icon: BarChart3, to: "/reports", color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
+          { label: "New Payment", icon: Wallet, to: "/payments", color: "text-orange-600", bg: "bg-orange-50 border-orange-200 shadow-orange-100/50" },
+          { label: "Subscribers", icon: Users, to: "/subscribers", color: "text-blue-600", bg: "bg-blue-50 border-blue-200 shadow-blue-100/50" },
+          { label: "Billing", icon: FileText, to: "/invoices", color: "text-green-600", bg: "bg-green-50 border-green-200 shadow-green-100/50" },
+          { label: "Reports", icon: BarChart3, to: "/reports", color: "text-purple-600", bg: "bg-purple-50 border-purple-200 shadow-purple-100/50" },
         ].map((action, i) => (
           <Link
             key={i}
             to={action.to}
             className={cn(
-              "flex items-center justify-center gap-2 rounded-xl border p-3 transition-all hover:shadow-sm",
+              "flex flex-col items-center justify-center gap-3 rounded-2xl border p-4 transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-95 group shadow-sm",
               action.bg
             )}
           >
-            <action.icon className={cn("h-4 w-4", action.color)} />
-            <span className={cn("text-sm font-medium", action.color)}>{action.label}</span>
+            <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110", action.bg.replace("bg-", "bg-white/60 "))}>
+              <action.icon className={cn("h-5 w-5", action.color)} />
+            </div>
+            <span className={cn("text-xs font-bold uppercase tracking-wider", action.color)}>{action.label}</span>
           </Link>
         ))}
       </div>
@@ -363,7 +365,12 @@ export default function Dashboard() {
                           <span className="text-xs text-muted-foreground">{formatDate(p.date)}</span>
                         </div>
                       </div>
-                      <p className="text-sm font-semibold font-mono-num text-green-600">+{formatCurrency(p.amount)}</p>
+                      <div className="text-right flex flex-col items-end">
+                        <p className="text-sm font-bold font-mono-num text-green-600">+{formatCurrency(p.amount)}</p>
+                        {(p.discount > 0) && (
+                          <p className="text-[10px] font-bold text-orange-500 bg-orange-50 px-1 rounded">-{formatCurrency(p.discount)} DISC</p>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

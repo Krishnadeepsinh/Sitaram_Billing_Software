@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/mockData";
 import { toast } from "sonner";
 import { InvoiceHeader } from "../invoice/InvoiceHeader";
-import { Logo } from "@/components/Logo";
+import { InvoiceCustomerBlock } from "../invoice/InvoiceCustomerBlock";
+import { getInvoiceServiceDates } from "../invoice/invoicePreviewUtils";
 
 type PaymentReceiptModalProps = {
   brand: {
@@ -18,6 +19,10 @@ type PaymentReceiptModalProps = {
   payment: any;
   subscribers: any[];
   onClose: () => void;
+  isCableMode: boolean;
+  plans: any[];
+  invoices: any[];
+  payments: any[];
 };
 
 export default function PaymentReceiptModal({
@@ -26,6 +31,10 @@ export default function PaymentReceiptModal({
   payment,
   subscribers,
   onClose,
+  isCableMode,
+  plans,
+  invoices,
+  payments,
 }: PaymentReceiptModalProps) {
   if (!payment) return null;
   
@@ -66,6 +75,87 @@ export default function PaymentReceiptModal({
     () => subscribers.find((item) => item.id === payment.subscriberId),
     [payment.subscriberId, subscribers],
   );
+
+  const paymentItems = useMemo(() => {
+    if (!payment || !subscribers.length) return [];
+    
+    const sub = subscribers.find(s => s.id === payment.subscriberId);
+    const plan = plans.find(p => p.id === sub?.planId);
+    
+    // Logic to determine what this payment covers
+    const chronoInvoices = invoices
+      .filter(inv => inv.subscriberId === payment.subscriberId)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    const subPayments = payments.filter(p => p.subscriberId === payment.subscriberId);
+    const prevTotalPaid = subPayments
+      .filter(p => new Date(p.date).getTime() < new Date(payment.date).getTime() || 
+                  (new Date(p.date).getTime() === new Date(payment.date).getTime() && p.id < payment.id))
+      .reduce((s, p) => s + Number(p.amount), 0);
+
+    let historyLeft = prevTotalPaid;
+    const openingBal = Number(sub?.openingBalance || 0);
+    const alreadyCoveredOpening = Math.max(0, Math.min(openingBal, historyLeft));
+    historyLeft -= alreadyCoveredOpening;
+    const remainingOpeningDue = openingBal - alreadyCoveredOpening;
+
+    const invoiceRemainingDues = new Map<string, { remaining: number, coveredByHistory: number }>();
+    for (const inv of chronoInvoices) {
+      const invAmount = Number(inv.amount || 0);
+      const coveredByHistory = Math.max(0, Math.min(invAmount, historyLeft));
+      historyLeft -= coveredByHistory;
+      invoiceRemainingDues.set(inv.id, { remaining: invAmount - coveredByHistory, coveredByHistory });
+    }
+
+    const items: any[] = [];
+    let remainingCurrentPayment = Number(payment.amount);
+
+    if (remainingOpeningDue > 0 && remainingCurrentPayment > 0) {
+      const amt = Math.min(remainingOpeningDue, remainingCurrentPayment);
+      items.push({ 
+        desc: "Previous Dues / Opening Balance", 
+        period: "\u2014", 
+        qty: "\u2014", 
+        total: amt 
+      });
+      remainingCurrentPayment -= amt;
+    }
+
+    for (const inv of chronoInvoices) {
+      const dues = invoiceRemainingDues.get(inv.id);
+      if (!dues || dues.remaining <= 0 || remainingCurrentPayment <= 0) continue;
+      const amt = Math.min(dues.remaining, remainingCurrentPayment);
+      
+      if (inv.type === 'legacy') {
+        items.push({ 
+          desc: "Previous Year Arrears", 
+          period: formatDate(inv.date), 
+          qty: "\u2014", 
+          total: amt 
+        });
+      } else {
+        const dates = getInvoiceServiceDates(inv, sub, plans);
+        items.push({ 
+          desc: `${isCableMode ? "Cable TV" : "Broadband"} Service - ${plan?.name || "Standard Plan"}`, 
+          period: `${formatDate(dates.rechargeDate)} - ${formatDate(dates.expiryDate)}`, 
+          qty: "1", 
+          total: amt 
+        });
+      }
+      remainingCurrentPayment -= amt;
+    }
+
+    if (remainingCurrentPayment > 0.5) {
+      items.push({ 
+        desc: "Advance / Security Deposit", 
+        period: "Future Billing", 
+        qty: "\u2014", 
+        total: remainingCurrentPayment 
+      });
+    }
+
+    return items;
+  }, [payment, subscribers, plans, invoices, payments, isCableMode]);
 
   const handleDownloadPDF = async () => {
     if (!contentRef.current) return;
@@ -118,7 +208,9 @@ Hello ${subscriber?.name || "Customer"},
 Thank you for your payment of *Rs. ${payment.amount}*.
 Transaction ID: ${payment.id.slice(-8).toUpperCase()}
 Date: ${formatDate(payment.date)}
-Method: ${payment.method}`;
+Method: ${payment.method}
+
+Thank you for choosing ${brand.name}!`;
 
       const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
       if (isMobile && navigator.share && navigator.canShare({ files: [file] })) {
@@ -146,7 +238,7 @@ Method: ${payment.method}`;
         <div className="px-8 py-6 bg-slate-50/50 flex justify-between items-center border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Payment Acknowledgement</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Official Payment Receipt</span>
           </div>
           <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white border border-transparent hover:border-slate-200 transition-all text-slate-400 hover:text-slate-900">
             <X className="h-5 w-5" />
@@ -157,18 +249,17 @@ Method: ${payment.method}`;
           <div 
             id="receipt-content" 
             ref={contentRef}
-            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 origin-top"
+            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 origin-top shadow-2xl"
             style={{ 
               transform: `scale(${scale})`, 
               marginBottom: `${(scale - 1) * contentHeight}px`
             }}
           >
-            {/* Professional Header - Exact match to Invoice */}
             <InvoiceHeader brand={brand} invoiceLabel="Payment Receipt" />
 
-            <div className="p-10 space-y-8 flex-1 flex flex-col">
+            <div className="p-8 space-y-6 flex-1 flex flex-col">
               {/* Receipt Metadata */}
-              <div className="grid grid-cols-4 gap-4 border-b border-slate-100 pb-8">
+              <div className="grid grid-cols-4 gap-4">
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Receipt No</p>
                   <p className="text-sm font-black text-[#1e3a5f]">#{payment.id.slice(-8).toUpperCase()}</p>
@@ -177,7 +268,7 @@ Method: ${payment.method}`;
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Payment Date</p>
                   <p className="text-sm font-black text-[#1e3a5f]">{formatDate(payment.date)}</p>
                 </div>
-                <div className="bg-[#1e3a5f] p-4 rounded-2xl border border-[#1e3a5f] text-center shadow-lg">
+                <div className="bg-[#1e3a5f] p-4 rounded-2xl border border-[#1e3a5f] text-center">
                   <p className="text-[9px] font-black uppercase tracking-widest text-blue-200 mb-1">Method</p>
                   <p className="text-sm font-black text-white">{payment.method}</p>
                 </div>
@@ -188,91 +279,81 @@ Method: ${payment.method}`;
               </div>
 
               {/* Customer Info */}
-              <div className="flex gap-6 items-start">
-                <div className="flex-1 bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="h-12 w-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-[#1e3a5f]">
-                      <CheckCircle2 className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Payment From</p>
-                      <h3 className="text-xl font-black text-slate-900">{subscriber?.name}</h3>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200/50">
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{customerIdLabel}</p>
-                      <p className="text-sm font-black text-[#1e3a5f]">{subscriber?.customerNo}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Area / Zone</p>
-                      <p className="text-sm font-black text-[#1e3a5f]">{subscriber?.area || 'General'}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="w-64 bg-slate-900 p-6 rounded-[2rem] text-white flex flex-col justify-between">
-                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-300 mb-1">Amount Paid</p>
-                    <p className="text-4xl font-black tracking-tight text-white">₹{Number(payment.amount).toLocaleString()}</p>
-                   </div>
-                   <div className="mt-6 pt-4 border-t border-white/10">
-                    <p className="text-[10px] font-bold text-blue-200/50 uppercase italic">Paid in Full</p>
-                   </div>
+              <div className="flex gap-4">
+                <InvoiceCustomerBlock customerIdLabel={customerIdLabel} subscriber={subscriber} />
+                <div className="w-48 bg-slate-900 p-6 rounded-[2rem] text-white flex flex-col justify-center text-center">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-300 mb-1">Total Paid</p>
+                  <p className="text-3xl font-black tracking-tight text-white">₹{Number(payment.amount).toLocaleString()}</p>
                 </div>
               </div>
 
-              {/* Transaction Detail Table */}
+              {/* Transaction Detail Table - Matches Invoice Style */}
               <div className="flex-1">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-[#1e3a5f] text-white">
-                      <th className="py-3 px-6 text-left font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500 rounded-tl-xl">Transaction Description</th>
-                      <th className="py-3 px-6 text-right font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500 rounded-tr-xl">Amount</th>
+                      <th className="py-2.5 px-4 text-left font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500">Service Description</th>
+                      <th className="py-2.5 px-4 text-center font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500">Service Period</th>
+                      <th className="py-2.5 px-4 text-center font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500">Qty</th>
+                      <th className="py-2.5 px-4 text-right font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 border-x border-b border-slate-100 rounded-b-xl overflow-hidden">
-                    <tr>
-                      <td className="py-8 px-6">
-                        <p className="font-black text-slate-900 text-lg">Internet Service Subscription</p>
-                        <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wide">
-                          Payment for account {subscriber?.username || subscriber?.customerNo}
-                        </p>
-                        <p className="text-[11px] text-slate-400 mt-2 italic font-medium leading-relaxed max-w-md">
-                          This receipt confirms the successful transfer of funds towards your service account balance. 
-                          The amount has been credited to your ledger effective {formatDate(payment.date)}.
-                        </p>
-                      </td>
-                      <td className="py-8 px-6 text-right align-top">
-                        <p className="text-2xl font-black text-slate-900">₹{Number(payment.amount).toLocaleString()}</p>
-                      </td>
-                    </tr>
+                  <tbody className="divide-y divide-slate-100 border-b border-slate-100">
+                    {paymentItems.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="py-4 px-4">
+                          <p className="font-black text-slate-900 text-sm">{item.desc}</p>
+                          <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-wide">
+                            {isCableMode ? "Cable Television" : "Broadband Internet"} Service
+                          </p>
+                        </td>
+                        <td className="py-4 px-4 text-center text-slate-600 font-bold text-xs">{item.period}</td>
+                        <td className="py-4 px-4 text-center text-slate-900 font-black text-sm">{item.qty}</td>
+                        <td className="py-4 px-4 text-right text-slate-900 font-black text-base">₹{Number(item.total).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                    {paymentItems.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="py-8 px-4 text-center text-slate-400 font-bold italic">
+                          Standard Subscription Payment Acknowledgement
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Professional Footer */}
-              <div className="pt-10 flex justify-between items-end border-t-2 border-slate-100 border-dashed">
-                <div className="space-y-4">
-                  <Logo size="md" showText={true} />
-                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                    <p>Digital Transaction Receipt</p>
-                    <p>Generated on {new Date().toLocaleString()}</p>
+              {/* Summary Section */}
+              <div className="flex justify-end pt-4">
+                <div className="w-64 space-y-2">
+                  <div className="flex justify-between items-center text-slate-500 font-bold text-xs">
+                    <span>Subtotal</span>
+                    <span>₹{Number(payment.amount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-500 font-bold text-xs">
+                    <span>Discount</span>
+                    <span>₹0.00</span>
+                  </div>
+                  <div className="h-px bg-slate-100 my-1" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#1e3a5f] font-black text-sm uppercase tracking-wider">Net Received</span>
+                    <span className="text-[#1e3a5f] font-black text-xl">₹{Number(payment.amount).toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="inline-block text-center space-y-2">
-                    <div className="h-16 w-48 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center italic text-slate-300 text-[10px]">
-                      Digital Signature Verified
-                    </div>
-                    <p className="text-[10px] font-black text-[#1e3a5f] uppercase tracking-widest">Authorized Signatory</p>
-                  </div>
+              </div>
+
+              {/* Professional Footer */}
+              <div className="mt-auto pt-6 text-center">
+                <div className="inline-flex flex-col items-center">
+                  <div className="h-px w-16 bg-slate-100 mb-3" />
+                  <p className="text-base font-display font-black text-[#1e3a5f] tracking-tight">Payment Confirmed</p>
+                  <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-[0.2em]">Authorized Digital Receipt</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-[#1e3a5f] border-t-2 border-orange-500 py-4 text-center text-white text-[10px] w-full">
-              <p className="font-black tracking-widest uppercase opacity-80">Thank you for your business!</p>
+              <p className="font-black tracking-widest uppercase opacity-80">This is a system generated receipt</p>
             </div>
           </div>
         </div>

@@ -563,6 +563,10 @@ export default function Payments() {
           payment={selectedPayment}
           subscribers={subscribers}
           onClose={() => setIsReceiptOpen(false)}
+          isCableMode={isCableMode}
+          plans={plans}
+          invoices={invoices}
+          payments={payments}
         />
       )}
 

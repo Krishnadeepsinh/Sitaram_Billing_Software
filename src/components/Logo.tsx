@@ -26,7 +26,7 @@ export function Logo({ className, iconClassName, showText = true, showModeLabel 
   return (
     <div className={cn("flex items-center gap-3", className)}>
       <div className={cn(
-        "relative flex shrink-0 items-center justify-center overflow-hidden border border-white/10 bg-slate-900/80 backdrop-blur-md p-1.5 shadow-2xl",
+        "relative flex shrink-0 items-center justify-center overflow-hidden border border-slate-200 bg-white p-1.5 shadow-sm",
         currentSize.box,
         iconClassName
       )}>
@@ -41,22 +41,22 @@ export function Logo({ className, iconClassName, showText = true, showModeLabel 
         <div className="flex flex-col leading-none">
           <span className={cn(
             "font-display font-black tracking-tight",
-            variant === "white" ? "text-slate-50" : "text-foreground",
+            variant === "white" ? "text-white" : "text-[#1B2B4B]",
             currentSize.text
           )}>
             SITARAM
           </span>
           <span className={cn(
             "font-bold uppercase tracking-[0.14em] mt-0.5",
-            variant === "white" ? "text-slate-300/60" : "text-muted-foreground",
+            variant === "white" ? "text-white/60" : "text-orange-500",
             currentSize.sub
           )}>
             Cable & Broadband
           </span>
           {showModeLabel && (
             <span className={cn(
-              "mt-1 w-fit rounded-full border font-black uppercase tracking-[0.12em]",
-              variant === "white" ? "border-white/10 bg-white/5 text-slate-300" : "border-primary/20 bg-primary/10 text-primary",
+              "mt-1 w-fit rounded-full border font-semibold uppercase tracking-wider",
+              variant === "white" ? "border-white/20 bg-white/10 text-white/80" : "border-orange-200 bg-orange-50 text-orange-600",
               currentSize.badge
             )}>
               {modeLabel}
@@ -67,4 +67,3 @@ export function Logo({ className, iconClassName, showText = true, showModeLabel 
     </div>
   );
 }
-

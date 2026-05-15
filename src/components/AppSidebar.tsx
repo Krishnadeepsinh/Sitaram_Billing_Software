@@ -50,39 +50,39 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r border-white/10 bg-slate-950 text-white w-64 hidden md:flex flex-col">
-      <SidebarHeader className="border-b border-white/10 bg-slate-950 p-0 shrink-0">
+    <Sidebar className="border-r border-slate-100 bg-white w-64 hidden md:flex flex-col">
+      <SidebarHeader className="border-b border-slate-100 bg-white p-0 shrink-0">
         <div className="flex flex-col gap-4 p-5">
-          <Logo showText={true} size="sm" variant="white" />
+          <Logo showText={true} size="sm" variant="default" />
           <button 
             onClick={() => setActiveBusinessMode(activeBusinessMode === "cable" ? "broadband" : "cable")}
-            className="group flex items-center justify-between px-3 py-2 rounded-lg bg-slate-900 border border-white/10 hover:border-indigo-500/50 hover:bg-slate-800 transition-all cursor-pointer w-full"
+            className="group flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-orange-300 hover:bg-orange-50/50 transition-all cursor-pointer w-full"
           >
             <div className="flex items-center gap-2">
-              <div className={cn("w-2 h-2 rounded-full", activeBusinessMode === "cable" ? "bg-amber-500" : "bg-indigo-500")} />
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors">
+              <div className={cn("w-2 h-2 rounded-full", activeBusinessMode === "cable" ? "bg-orange-500" : "bg-blue-500")} />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 group-hover:text-slate-800 transition-colors">
                 {activeBusinessMode === "cable" ? "CABLE" : "BROADBAND"}
               </span>
             </div>
-            <ArrowRightLeft className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" />
+            <ArrowRightLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-500 transition-colors" />
           </button>
         </div>
       </SidebarHeader>
 
       <SidebarContent className="bg-transparent space-y-6 pt-5 overflow-y-auto overflow-x-hidden no-scrollbar flex-1">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-5 mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+          <SidebarGroupLabel className="px-5 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             OPERATIONS
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="px-3 gap-1">
+            <SidebarMenu className="px-3 gap-0.5">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} className={cn(
                     "rounded-lg h-10 px-3 transition-colors group",
                     isActive(item.url) 
-                      ? "bg-indigo-500/15 border-l-2 border-indigo-500 text-indigo-400 font-medium" 
-                      : "hover:bg-slate-900 text-slate-400 hover:text-white"
+                      ? "bg-orange-50 border-l-2 border-orange-500 text-orange-600 font-medium" 
+                      : "hover:bg-slate-50 text-slate-600 hover:text-slate-800"
                   )}>
                     <NavLink to={item.url} end={item.url === "/"} onClick={handleLinkClick} className="flex items-center gap-3 w-full">
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -96,18 +96,18 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-5 mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+          <SidebarGroupLabel className="px-5 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             ANALYTICS & ADMIN
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="px-3 gap-1">
+            <SidebarMenu className="px-3 gap-0.5">
               {analyticsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} className={cn(
                     "rounded-lg h-10 px-3 transition-colors group",
                     isActive(item.url) 
-                      ? "bg-indigo-500/15 border-l-2 border-indigo-500 text-indigo-400 font-medium" 
-                      : "hover:bg-slate-900 text-slate-400 hover:text-white"
+                      ? "bg-orange-50 border-l-2 border-orange-500 text-orange-600 font-medium" 
+                      : "hover:bg-slate-50 text-slate-600 hover:text-slate-800"
                   )}>
                     <NavLink to={item.url} onClick={handleLinkClick} className="flex items-center gap-3 w-full">
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -121,16 +121,16 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <div className="mt-auto p-4 border-t border-white/10 bg-slate-950 shrink-0">
+      <div className="mt-auto p-4 border-t border-slate-100 bg-white shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-white">
+            <span className="text-sm font-medium text-slate-700">
               {activeBusinessMode === "cable" ? "CABLE DB" : "BROADBAND DB"}
             </span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <div className={cn("w-2 h-2 rounded-full", hasTursoDB ? "bg-emerald-500" : "bg-amber-500")} />
-              <span className="text-xs text-slate-400">
-                {hasTursoDB ? 'Securely Synced' : 'Local Storage'}
+              <div className={cn("w-2 h-2 rounded-full", hasTursoDB ? "bg-green-500" : "bg-amber-500")} />
+              <span className="text-xs text-slate-500">
+                {hasTursoDB ? 'Synced' : 'Local Storage'}
               </span>
             </div>
           </div>

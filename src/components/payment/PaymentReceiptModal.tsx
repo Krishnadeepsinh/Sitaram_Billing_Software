@@ -275,9 +275,9 @@ Thank you for choosing ${brand.name}!`;
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={onClose} />
-      <div className="bg-white text-black w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-500 relative z-10 max-h-[95vh]">
+    <div className="fixed inset-0 bg-slate-50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
+      <div className="bg-white text-black w-full max-w-3xl rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-500 relative z-10 max-h-[95vh]">
         <div className="px-8 py-6 bg-slate-50/50 flex justify-between items-center border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -292,7 +292,7 @@ Thank you for choosing ${brand.name}!`;
           <div 
             id="receipt-content" 
             ref={contentRef}
-            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 origin-top shadow-2xl"
+            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 origin-top shadow-xl"
             style={{ 
               transform: `scale(${scale})`, 
               marginBottom: `${(scale - 1) * contentHeight}px`,
@@ -320,7 +320,7 @@ Thank you for choosing ${brand.name}!`;
                 {/* METHOD (Highlighted) */}
                 <div className="rounded-[4mm] bg-[#1B2B4B] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
                   <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#94A3B8]">Method</p>
-                  <p className="text-[9pt] font-bold text-white leading-tight">{payment.method}</p>
+                  <p className="text-[9pt] font-bold text-slate-800 leading-tight">{payment.method}</p>
                 </div>
                 
                 {/* STATUS */}
@@ -386,7 +386,7 @@ Thank you for choosing ${brand.name}!`;
               <div className="flex-1">
                 <table className="w-full text-[8.5pt]">
                   <thead>
-                    <tr className="bg-[#1B2B4B] text-white">
+                    <tr className="bg-[#1B2B4B] text-slate-800">
                       <th className="py-3 px-4 text-left font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[110mm]">Service Description</th>
                       <th className="py-3 px-4 text-center font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[30mm]">Service Period</th>
                       <th className="py-3 px-4 text-center font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[15mm]">Qty</th>
@@ -440,7 +440,7 @@ Thank you for choosing ${brand.name}!`;
               </div>
             </div>
 
-            <div className="bg-[#1B2B4B] border-t-[1.2mm] border-[#F47920] py-4 text-center text-white text-[7.5pt] w-full">
+            <div className="bg-[#1B2B4B] border-t-[1.2mm] border-[#F47920] py-4 text-center text-slate-800 text-[7.5pt] w-full">
               <p className="font-bold tracking-widest uppercase opacity-90">This is a system generated receipt</p>
             </div>
           </div>
@@ -456,7 +456,7 @@ Thank you for choosing ${brand.name}!`;
           </Button>
           <Button
             onClick={handleSharePDF}
-            className="flex-1 h-12 sm:h-14 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-emerald-100 flex items-center justify-center gap-3"
+            className="flex-1 h-12 sm:h-14 bg-emerald-600 text-slate-800 hover:bg-emerald-700 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
           >
             <Send className="h-5 w-5" />
             WhatsApp Receipt
@@ -464,7 +464,7 @@ Thank you for choosing ${brand.name}!`;
           <Button
             onClick={handleDownloadPDF}
             disabled={isProcessing}
-            className="flex-1 h-12 sm:h-14 bg-slate-900 text-white hover:bg-black rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-slate-200 flex items-center justify-center gap-3"
+            className="flex-1 h-12 sm:h-14 bg-white text-slate-800 hover:bg-black rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
           >
             {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             Download Receipt

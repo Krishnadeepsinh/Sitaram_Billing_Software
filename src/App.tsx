@@ -24,15 +24,9 @@ const queryClient = new QueryClient();
 
 const RouteLoader = () => (
   <div className="min-h-[60vh] flex items-center justify-center p-12">
-    <div className="flex flex-col items-center gap-6 p-12 rounded-[3rem] bg-slate-900/20 border border-white/5 backdrop-blur-3xl animate-in zoom-in-95 duration-700">
-      <div className="relative h-20 w-20 rounded-3xl bg-slate-950 flex items-center justify-center shadow-inner border border-white/5">
-        <div className="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full animate-pulse" />
-        <Loader2 className="h-10 w-10 text-blue-500 animate-spin relative z-10" />
-      </div>
-      <div className="space-y-2 text-center">
-        <p className="text-[11px] font-black tracking-[0.5em] text-blue-500 uppercase italic">Dispatching_Module</p>
-        <p className="text-[9px] font-black tracking-[0.2em] text-slate-700 uppercase italic">Retrieving Encrypted Registry Data</p>
-      </div>
+    <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-white border border-slate-200 shadow-sm animate-in zoom-in-95 duration-300">
+      <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
+      <p className="text-sm font-medium text-slate-500">Loading module...</p>
     </div>
   </div>
 );
@@ -71,22 +65,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (status === "checking") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 relative overflow-hidden">
-        {/* Industrial background element */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-blue-600/10 blur-[120px] rounded-full" />
-        
-        <div className="flex flex-col items-center gap-8 p-16 rounded-[4rem] bg-slate-900/40 border border-white/5 backdrop-blur-[80px] shadow-2xl relative z-10">
-          <div className="relative">
-            <div className="absolute -inset-4 bg-blue-500/20 blur-2xl rounded-full animate-pulse" />
-            <div className="h-24 w-24 rounded-[2rem] bg-slate-950 border border-white/10 flex items-center justify-center shadow-inner relative z-10">
-               <ShieldCheck className="h-12 w-12 text-blue-500 animate-pulse" />
-            </div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-white border border-slate-200 shadow-lg">
+          <div className="h-16 w-16 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center">
+            <ShieldCheck className="h-8 w-8 text-orange-500 animate-pulse" />
           </div>
-          <div className="space-y-3 text-center">
-            <h2 className="text-xl font-black tracking-[0.3em] text-white uppercase italic">Security_Handshake</h2>
-            <p className="text-[10px] font-black tracking-[0.2em] text-slate-600 uppercase italic flex items-center justify-center gap-2">
-               <Activity className="h-3 w-3 text-blue-500" /> Verifying Terminal Authentication Status
-            </p>
+          <div className="space-y-1 text-center">
+            <h2 className="text-sm font-bold text-slate-800">Verifying Session</h2>
+            <p className="text-xs text-slate-500">Checking authentication...</p>
           </div>
         </div>
       </div>

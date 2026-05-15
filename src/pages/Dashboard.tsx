@@ -140,59 +140,49 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 pb-20">
       {/* Header section */}
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 border-b border-white/10 pb-6">
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-6">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
-            <div className={cn(
-              "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border animate-in fade-in zoom-in duration-300",
-              businessMode === "cable" 
-                ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
-                : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
-            )}>
-              {businessMode} Mode
-            </div>
-          </div>
-          <p className="text-sm text-slate-400">Overview of your operations and revenue.</p>
+          <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+          <p className="text-sm text-slate-500">Overview of your operations and revenue.</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-col sm:flex-row items-center gap-2">
-            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1">
-              <span className="text-[9px] uppercase font-bold text-slate-500 px-2">From</span>
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
+              <span className="text-[9px] uppercase font-bold text-slate-400 px-2">From</span>
               <Select value={months[filterStartDate.getMonth()]} onValueChange={handleStartMonthChange}>
-                <SelectTrigger className="h-8 w-[110px] border-none bg-transparent text-xs font-medium text-white focus:ring-0 px-2">
+                <SelectTrigger className="h-8 w-[110px] border-none bg-transparent text-xs font-medium text-slate-700 focus:ring-0 px-2">
                   <SelectValue placeholder="Month" />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-slate-900">
+                <SelectContent className="border-slate-200 bg-white">
                   {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={filterStartDate.getFullYear().toString()} onValueChange={handleStartYearChange}>
-                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent text-xs font-medium text-white focus:ring-0 px-2">
+                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent text-xs font-medium text-slate-700 focus:ring-0 px-2">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-slate-900">
+                <SelectContent className="border-slate-200 bg-white">
                   {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1">
-              <span className="text-[9px] uppercase font-bold text-slate-500 px-2">To</span>
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
+              <span className="text-[9px] uppercase font-bold text-slate-400 px-2">To</span>
               <Select value={months[filterEndDate.getMonth()]} onValueChange={handleEndMonthChange}>
-                <SelectTrigger className="h-8 w-[110px] border-none bg-transparent text-xs font-medium text-white focus:ring-0 px-2">
+                <SelectTrigger className="h-8 w-[110px] border-none bg-transparent text-xs font-medium text-slate-700 focus:ring-0 px-2">
                   <SelectValue placeholder="Month" />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-slate-900">
+                <SelectContent className="border-slate-200 bg-white">
                   {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={filterEndDate.getFullYear().toString()} onValueChange={handleEndYearChange}>
-                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent text-xs font-medium text-white focus:ring-0 px-2">
+                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent text-xs font-medium text-slate-700 focus:ring-0 px-2">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-slate-900">
+                <SelectContent className="border-slate-200 bg-white">
                   {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -202,7 +192,7 @@ export default function Dashboard() {
           <Button 
             onClick={handleDownloadReport}
             disabled={isGenerating}
-            className="h-11 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors px-6"
+            className="h-10 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors px-5"
           >
             {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
             Export Report
@@ -213,74 +203,66 @@ export default function Dashboard() {
       {/* KPI Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Today's Collection", value: formatCurrency(s.collectedToday), icon: TrendingUp, delta: "+18.2%", color: "text-emerald-500", bg: "bg-emerald-500/10" },
-          { label: "Monthly Revenue", value: formatCurrency(s.monthRevenue), icon: DatabaseZap, delta: "Stable", color: "text-indigo-400", bg: "bg-indigo-500/10" },
-          { label: "Pending Dues", value: formatCurrency(s.pendingDues), icon: AlertCircle, delta: "Action Required", color: "text-rose-400", bg: "bg-rose-500/10" },
-          { label: "Monthly Expenses", value: formatCurrency(s.monthExpenses), icon: FileText, delta: "Standard", color: "text-slate-400", bg: "bg-slate-500/10" }
+          { label: "Today's Collection", value: formatCurrency(s.collectedToday), icon: TrendingUp, variant: "primary" as const, delta: "Today" },
+          { label: "Monthly Revenue", value: formatCurrency(s.monthRevenue), icon: Wallet, variant: "success" as const, delta: "This period" },
+          { label: "Pending Dues", value: formatCurrency(s.pendingDues), icon: AlertCircle, variant: "warning" as const, delta: "Action required" },
+          { label: "Monthly Expenses", value: formatCurrency(s.monthExpenses), icon: FileText, variant: "destructive" as const, delta: "This period" }
         ].map((kpi, i) => (
-          <div key={i} className="rounded-xl border border-white/10 bg-slate-900 p-6 shadow-sm hover:border-white/20 transition-colors">
-            <div className="flex justify-between items-start mb-4">
-              <div className={cn("p-3 rounded-lg", kpi.bg, kpi.color)}>
-                <kpi.icon className="h-5 w-5" />
-              </div>
-              <span className={cn("text-xs font-medium px-2 py-1 rounded-md bg-slate-800 border border-white/5", kpi.color)}>
-                {kpi.delta}
-              </span>
-            </div>
-            <p className="text-sm font-medium text-slate-400 mb-1">{kpi.label}</p>
-            <h3 className="text-2xl font-bold text-white tabular-nums">{kpi.value}</h3>
-          </div>
+          <StatCard key={i} {...kpi} />
         ))}
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mt-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "New Payment", icon: Wallet, to: "/payments", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-          { label: "Subscribers", icon: Users, to: "/subscribers", color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
-          { label: "Billing", icon: FileText, to: "/invoices", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-          { label: "Reports", icon: BarChart3, to: "/reports", color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" }
+          { label: "New Payment", icon: Wallet, to: "/payments", color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-200" },
+          { label: "Subscribers", icon: Users, to: "/subscribers", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
+          { label: "Billing", icon: FileText, to: "/invoices", color: "text-green-600", bg: "bg-green-50", border: "border-green-200" },
+          { label: "Reports", icon: BarChart3, to: "/reports", color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-200" }
         ].map((action, i) => (
-          <Link key={i} to={action.to} className={cn("flex items-center justify-center gap-2 rounded-xl border p-3 transition-colors hover:bg-white/5", action.bg, action.border)}>
+          <Link key={i} to={action.to} className={cn("flex items-center justify-center gap-2 rounded-xl border p-3 transition-all hover:shadow-sm", action.bg, action.border)}>
             <action.icon className={cn("h-4 w-4", action.color)} />
             <span className={cn("text-sm font-medium", action.color)}>{action.label}</span>
           </Link>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Transactions */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Recent Transactions</h2>
-            <Button variant="ghost" asChild className="text-sm text-indigo-400 hover:text-indigo-300">
+            <h2 className="text-lg font-semibold text-slate-800">Recent Collections</h2>
+            <Button variant="ghost" asChild className="text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50">
               <Link to="/payments">View All <ArrowUpRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
-          <div className="rounded-xl border border-white/10 bg-slate-900 overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
             {recent.length === 0 ? (
-              <div className="p-8 text-center text-slate-500">No recent transactions</div>
+              <div className="p-8 text-center text-slate-400">
+                <Wallet className="h-10 w-10 mx-auto mb-3 text-slate-300" />
+                <p>No recent transactions</p>
+              </div>
             ) : (
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-slate-100">
                 {recent.map((p) => {
                   const sub = subscribers.find(s => s.id === p.subscriberId);
                   return (
-                    <div key={p.id} className="flex items-center justify-between p-4 hover:bg-slate-800/50 transition-colors">
+                    <div key={p.id} className="flex items-center justify-between p-4 hover:bg-slate-50/60 transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-slate-800 border border-white/5 flex items-center justify-center">
-                          <Wallet className="h-5 w-5 text-slate-400" />
+                        <div className="h-10 w-10 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center">
+                          <span className="text-sm font-bold text-orange-600">{(sub?.name || "?")[0]}</span>
                         </div>
                         <div>
-                          <h4 className="text-sm font-medium text-white">{sub?.name || "Unknown Subscriber"}</h4>
-                          <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                            <span className="flex items-center gap-1"><Signal className="h-3 w-3" /> {p.method}</span>
+                          <h4 className="text-sm font-medium text-slate-800">{sub?.name || "Unknown Subscriber"}</h4>
+                          <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                            <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", p.method === 'Cash' ? "bg-slate-100 text-slate-600" : "bg-blue-50 text-blue-600")}>{p.method}</span>
                             <span>•</span>
-                            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {formatDate(p.date)}</span>
+                            <span>{formatDate(p.date)}</span>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-base font-bold text-emerald-400 tabular-nums">+{formatCurrency(p.amount)}</p>
+                        <p className="text-sm font-bold text-green-600 font-mono tabular-nums">+{formatCurrency(p.amount)}</p>
                       </div>
                     </div>
                   );
@@ -290,22 +272,22 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Global Widgets */}
+        {/* Right Column */}
         <div className="space-y-6">
-          <div className="rounded-xl border border-white/10 bg-slate-900 p-6">
-            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-indigo-400" /> Area Breakdown
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-orange-500" /> Area Breakdown
             </h3>
             <div className="space-y-4">
               {areaBreakdown.slice(0, 5).map(([area, count]) => (
-                <div key={area} className="space-y-2">
+                <div key={area} className="space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-300 font-medium">{area}</span>
+                    <span className="text-slate-700 font-medium">{area}</span>
                     <span className="text-slate-400">{count} subs</span>
                   </div>
-                  <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-indigo-500 rounded-full" 
+                      className="h-full bg-orange-500 rounded-full transition-all" 
                       style={{ width: `${(count / Math.max(1, subscribers.length)) * 100}%` }}
                     />
                   </div>
@@ -314,34 +296,34 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-slate-900 p-6">
-            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-rose-400" /> Expiring Soon
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-red-600 mb-4 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" /> Expiring Soon
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {expiring.length === 0 ? (
-                <p className="text-sm text-slate-500">No upcoming expirations</p>
+                <p className="text-sm text-slate-400">No upcoming expirations</p>
               ) : (
                 expiring.map((sub) => {
                   const days = Math.ceil((+new Date(sub.expiryDate) - Date.now()) / 86400000);
                   return (
-                    <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-slate-800/50">
+                    <div key={sub.id} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50/50">
                       <div className="min-w-0 pr-3">
-                        <p className="text-sm font-medium text-white truncate">{sub.name}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{sub.area}</p>
+                        <p className="text-sm font-medium text-slate-700 truncate">{sub.name}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{sub.area}</p>
                       </div>
                       <div className={cn(
-                        "px-2.5 py-1 rounded-md text-xs font-semibold tabular-nums border",
-                        days <= 3 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-slate-800 text-slate-400 border-white/5"
+                        "px-2 py-0.5 rounded-full text-xs font-semibold tabular-nums",
+                        days <= 3 ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"
                       )}>
-                        {days} {days === 1 ? 'day' : 'days'}
+                        {days}d
                       </div>
                     </div>
                   );
                 })
               )}
             </div>
-            <Button variant="ghost" asChild className="w-full mt-4 text-sm text-indigo-400 hover:text-indigo-300">
+            <Button variant="ghost" asChild className="w-full mt-4 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50">
               <Link to="/subscribers">View All <ArrowUpRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>

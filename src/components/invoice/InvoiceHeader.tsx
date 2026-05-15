@@ -18,7 +18,7 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
       {/* Top Accent Bar */}
       <div className="h-[2.5mm] bg-[#F47920] w-full" />
       
-      <div className="bg-[#1B2B4B] px-[22mm] py-[8mm] flex justify-between items-center text-white relative h-[48mm]">
+      <div className="bg-[#1B2B4B] px-[22mm] py-[8mm] flex justify-between items-center text-slate-800 relative h-[48mm]">
         <div className="flex gap-[6mm] items-center">
           <div className="flex flex-col items-center">
             <Logo
@@ -32,7 +32,7 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
           <div className="flex flex-col">
             <p className="text-[7pt] font-black text-[#F47920] tracking-[0.2em] mb-1">OFFICIAL DOCUMENT</p>
             <h1 className={cn(
-              "font-black tracking-tighter text-white leading-none mb-2",
+              "font-black tracking-tighter text-slate-800 leading-none mb-2",
               brand.name.length > 28 ? "text-[14pt]" : brand.name.length > 22 ? "text-[16pt]" : "text-[20pt]"
             )}>
               {brand.name.toUpperCase()}
@@ -46,9 +46,9 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
         </div>
 
         {/* Document Type Box */}
-        <div className="bg-[#243352] border border-[#1B2B4B] rounded-[4mm] w-[55mm] h-[32mm] flex flex-col items-center justify-center text-center shadow-2xl">
+        <div className="bg-[#243352] border border-[#1B2B4B] rounded-[4mm] w-[55mm] h-[32mm] flex flex-col items-center justify-center text-center shadow-xl">
           <p className="text-[6.5pt] font-black text-[#F47920] uppercase tracking-[0.3em] mb-2 opacity-80">Document Category</p>
-          <h2 className="text-[16pt] font-black text-white uppercase tracking-widest leading-none mb-3">
+          <h2 className="text-[16pt] font-black text-slate-800 uppercase tracking-widest leading-none mb-3">
             {invoiceLabel.split(' ')[0]}
           </h2>
           <div className="h-[0.5mm] w-[12mm] bg-white/10 mb-3 rounded-full" />

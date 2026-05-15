@@ -221,8 +221,8 @@ Due Date: ${formatDate(invoice.dueDate)}`;
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={onClose} />
+    <div className="fixed inset-0 bg-slate-50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white text-black w-full max-w-3xl rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-500 relative z-10 max-h-[95vh]">
         <div className="px-8 py-6 bg-slate-50/50 flex justify-between items-center border-b border-slate-100">
           <div className="flex items-center gap-3">
@@ -241,7 +241,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
           <div 
             id="invoice-content" 
             ref={contentRef}
-            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 sm:shadow-2xl origin-top transition-transform duration-300"
+            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 sm:shadow-xl origin-top transition-transform duration-300"
             style={{ 
               transform: `scale(${scale})`, 
               marginBottom: `${(scale - 1) * contentHeight}px`,
@@ -282,7 +282,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
 
               <table className="w-full text-[8.5pt]">
                 <thead>
-                  <tr className="bg-[#1B2B4B] text-white">
+                  <tr className="bg-[#1B2B4B] text-slate-800">
                     <th className="py-3 px-4 text-left font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[110mm]">Description of Service</th>
                     <th className="py-3 px-4 text-center font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[30mm]">Billing Period</th>
                     <th className="py-3 px-4 text-center font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[15mm]">Qty</th>
@@ -317,7 +317,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
               </div>
             </div>
 
-            <div className="bg-[#1B2B4B] border-t-[1.2mm] border-[#F47920] py-4 text-center text-white text-[7.5pt] w-full">
+            <div className="bg-[#1B2B4B] border-t-[1.2mm] border-[#F47920] py-4 text-center text-slate-800 text-[7.5pt] w-full">
               <p className="font-bold tracking-widest uppercase opacity-90">This is a system generated invoice</p>
             </div>
           </div>
@@ -333,7 +333,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
           </Button>
           <Button
             onClick={handleSharePDF}
-            className="flex-1 h-12 sm:h-14 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-emerald-100 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
+            className="flex-1 h-12 sm:h-14 bg-emerald-600 text-slate-800 hover:bg-emerald-700 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-xl shadow-emerald-100 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
           >
             <Send className="h-5 w-5" />
             WhatsApp Bill
@@ -341,7 +341,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
           <Button
             onClick={handleDownloadPDF}
             disabled={isProcessing}
-            className="flex-1 h-12 sm:h-14 bg-slate-900 text-white hover:bg-black rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
+            className="flex-1 h-12 sm:h-14 bg-white text-slate-800 hover:bg-black rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-xl shadow-slate-200 transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
           >
             {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             Download PDF Record

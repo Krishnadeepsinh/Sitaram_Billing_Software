@@ -341,20 +341,20 @@ export default function Reports() {
       {/* INDUSTRIAL HEADER */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-indigo-400">
+          <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-orange-600">
             <Shield className="h-3.5 w-3.5" />
             Financial performance
           </p>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Reports & audit</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Reports & audit</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-9 rounded-lg border-slate-700 bg-slate-900/60 px-3 text-xs font-medium text-slate-300 hover:bg-slate-800">
+          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-9 rounded-lg border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-600 hover:bg-slate-100">
             <Eye className="mr-2 h-3.5 w-3.5" /> Preview
           </Button>
-          <Button variant="outline" onClick={handleExportExcel} className="h-9 rounded-lg border-emerald-600/30 bg-emerald-600/10 px-3 text-xs font-medium text-emerald-400 hover:bg-emerald-600/20">
+          <Button variant="outline" onClick={handleExportExcel} className="h-9 rounded-lg border-emerald-600/30 bg-emerald-600/10 px-3 text-xs font-medium text-green-600 hover:bg-emerald-600/20">
             <Download className="mr-2 h-3.5 w-3.5" /> Export Excel
           </Button>
-          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-9 rounded-lg bg-indigo-600 px-4 text-xs font-medium text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-700">
+          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-9 rounded-lg bg-orange-500 px-4 text-xs font-medium text-slate-800 shadow-md shadow-indigo-600/25 hover:bg-orange-600">
             {isGenerating ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}
             Download PDF
           </Button>
@@ -363,26 +363,26 @@ export default function Reports() {
 
       {/* Filters */}
       <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
-        <div className="flex gap-1 p-1 bg-slate-900 border border-white/10 rounded-lg">
+        <div className="flex gap-1 p-1 bg-white border border-slate-200 rounded-lg">
           <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">From</span>
           <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
             const monthIndex = months.indexOf(e.target.value);
             const d = new Date(filterStartDate);
             d.setMonth(monthIndex);
             setFilterStartDate(d);
-          }} className="flex-1 h-9 bg-transparent border-none text-sm text-white outline-none appearance-none px-2">
-            {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+          }} className="flex-1 h-9 bg-transparent border-none text-sm text-slate-800 outline-none appearance-none px-2">
+            {months.map(m => <option key={m} value={m} className="bg-white">{m}</option>)}
           </select>
           <div className="w-px h-4 my-auto bg-white/10" />
           <select value={filterStartDate.getFullYear()} onChange={(e) => {
             const d = new Date(filterStartDate);
             d.setFullYear(Number(e.target.value));
             setFilterStartDate(d);
-          }} className="w-16 h-9 bg-transparent border-none text-sm text-white outline-none appearance-none px-2">
-            {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+          }} className="w-16 h-9 bg-transparent border-none text-sm text-slate-800 outline-none appearance-none px-2">
+            {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-white">{y}</option>)}
           </select>
         </div>
-        <div className="flex gap-1 p-1 bg-slate-900 border border-white/10 rounded-lg">
+        <div className="flex gap-1 p-1 bg-white border border-slate-200 rounded-lg">
           <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">To</span>
           <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
             const monthIndex = months.indexOf(e.target.value);
@@ -391,32 +391,32 @@ export default function Reports() {
             d.setDate(0);
             d.setHours(23, 59, 59, 999);
             setFilterEndDate(d);
-          }} className="flex-1 h-9 bg-transparent border-none text-sm text-white outline-none appearance-none px-2">
-            {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+          }} className="flex-1 h-9 bg-transparent border-none text-sm text-slate-800 outline-none appearance-none px-2">
+            {months.map(m => <option key={m} value={m} className="bg-white">{m}</option>)}
           </select>
           <div className="w-px h-4 my-auto bg-white/10" />
           <select value={filterEndDate.getFullYear()} onChange={(e) => {
             const d = new Date(filterEndDate);
             d.setFullYear(Number(e.target.value));
             setFilterEndDate(d);
-          }} className="w-16 h-9 bg-transparent border-none text-sm text-white outline-none appearance-none px-2">
-            {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+          }} className="w-16 h-9 bg-transparent border-none text-sm text-slate-800 outline-none appearance-none px-2">
+            {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-white">{y}</option>)}
           </select>
         </div>
         <div className="relative group">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
-          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-white/10 bg-slate-900 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-orange-500 transition-colors" />
+          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-9 pr-6 text-sm font-medium text-slate-800 transition-colors focus:border-orange-400/40 focus:outline-none focus:ring-1 focus:ring-orange-400">
             {areas.map(area => (
-              <option key={area} value={area} className="bg-slate-900">{area}</option>
+              <option key={area} value={area} className="bg-white">{area}</option>
             ))}
           </select>
         </div>
         <div className="relative group">
-          <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
-          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-white/10 bg-slate-900 pl-9 pr-6 text-sm font-medium text-white transition-colors focus:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-            <option value="All Methods" className="bg-slate-900">All Methods</option>
-            <option value="Cash" className="bg-slate-900">Cash</option>
-            <option value="UPI" className="bg-slate-900">UPI / Digital</option>
+          <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-orange-500 transition-colors" />
+          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-9 pr-6 text-sm font-medium text-slate-800 transition-colors focus:border-orange-400/40 focus:outline-none focus:ring-1 focus:ring-orange-400">
+            <option value="All Methods" className="bg-white">All Methods</option>
+            <option value="Cash" className="bg-white">Cash</option>
+            <option value="UPI" className="bg-white">UPI / Digital</option>
           </select>
         </div>
       </div>
@@ -429,18 +429,18 @@ export default function Reports() {
           { label: "Outstanding dues", value: formatCurrency(stats.pendingDues), icon: AlertCircle, color: "rose" },
           { label: "Active subscribers", value: stats.active, icon: Users, color: "indigo" }
         ].map((item, idx) => (
-          <div key={idx} className="bg-slate-900 rounded-xl border border-white/10 group p-5 transition-colors hover:border-indigo-500/25">
+          <div key={idx} className="bg-white rounded-xl border border-slate-200 group p-5 transition-colors hover:border-indigo-500/25">
             <div className="mb-3 flex items-center justify-between">
               <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg border", 
-                item.color === "blue" ? "bg-indigo-600/10 text-indigo-400 border-indigo-600/20" : 
-                item.color === "rose" ? "bg-rose-600/10 text-rose-400 border-rose-600/20" : 
+                item.color === "blue" ? "bg-orange-50 text-orange-600 border-orange-200" : 
+                item.color === "rose" ? "bg-red-500/10 text-red-500 border-rose-600/20" : 
                 "bg-emerald-600/10 text-emerald-300 border-emerald-600/20"
               )}>
                 <item.icon className="h-4 w-4" />
               </div>
               <span className="text-right text-xs font-medium text-slate-500">{item.label}</span>
             </div>
-            <p className="font-display text-xl font-semibold tabular-nums leading-none tracking-tight text-white">{item.value}</p>
+            <p className="font-display text-xl font-semibold tabular-nums leading-none tracking-tight text-slate-800">{item.value}</p>
           </div>
         ))}
       </div>
@@ -451,35 +451,35 @@ export default function Reports() {
           { title: "Collection Ledger", icon: Receipt, data: filteredPayments, type: "collection" },
           { title: "Expenditure Ledger", icon: BarChart3, data: filteredExpenses, type: "expense" }
         ].map((ledger, idx) => (
-          <div key={idx} className="bg-slate-900 rounded-xl border border-white/10 flex h-[500px] flex-col overflow-hidden">
-            <div className="flex items-center justify-between border-b border-white/10 bg-slate-900/40 px-5 py-3">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
-                <ledger.icon className="h-4 w-4 text-indigo-400" />
+          <div key={idx} className="bg-white rounded-xl border border-slate-200 flex h-[500px] flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                <ledger.icon className="h-4 w-4 text-orange-600" />
                 {ledger.title}
               </h3>
-              <span className="rounded-md border border-white/10 bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-400">{ledger.data.length} rows</span>
+              <span className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-400">{ledger.data.length} rows</span>
             </div>
             <div className="custom-scrollbar flex-1 overflow-auto">
               <table className="w-full border-collapse text-left">
-                <thead className="sticky top-0 z-10 border-b border-white/10 bg-slate-900/95 backdrop-blur-sm">
+                <thead className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
                   <tr>
                     <th className="px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">{ledger.type === "collection" ? "Subscriber" : "Category"}</th>
                     <th className="px-5 py-2.5 text-xs font-medium text-slate-400 uppercase tracking-wider">Date</th>
                     <th className="px-5 py-2.5 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-slate-100">
                   {ledger.data.map((item: any) => (
-                    <tr key={item.id} className="hover:bg-indigo-600/[0.03] transition-colors group">
+                    <tr key={item.id} className="hover:bg-orange-500/[0.03] transition-colors group">
                       <td className="px-5 py-2.5">
                         {ledger.type === "collection" ? (
                           <>
-                            <p className="text-sm font-medium text-white transition-colors group-hover:text-indigo-300">{subscribers.find(s => s.id === item.subscriberId)?.name || "Unknown"}</p>
+                            <p className="text-sm font-medium text-slate-800 transition-colors group-hover:text-orange-500">{subscribers.find(s => s.id === item.subscriberId)?.name || "Unknown"}</p>
                             <p className="mt-0.5 text-xs text-slate-500">{subscribers.find(s => s.id === item.subscriberId)?.area || "—"}</p>
                           </>
                         ) : (
                           <>
-                            <span className="rounded border border-slate-800 bg-slate-950 px-1.5 py-0.5 text-xs font-medium text-indigo-400">{item.category}</span>
+                            <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-xs font-medium text-orange-600">{item.category}</span>
                             <p className="mt-1 max-w-[140px] truncate text-xs text-slate-500">{item.description}</p>
                           </>
                         )}
@@ -488,7 +488,7 @@ export default function Reports() {
                         <span className="text-xs font-medium text-slate-500">{formatDate(item.date)}</span>
                       </td>
                       <td className="px-5 py-2.5 text-right">
-                        <span className="font-mono text-sm font-semibold text-white">{formatCurrency(item.amount)}</span>
+                        <span className="font-mono text-sm font-semibold text-slate-800">{formatCurrency(item.amount)}</span>
                       </td>
                     </tr>
                   ))}
@@ -519,30 +519,30 @@ export default function Reports() {
 
       {/* PREVIEW PROTOCOL MODAL */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-xl flex flex-col p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] bg-slate-50/95 backdrop-blur-xl flex flex-col p-4 animate-in fade-in duration-300">
            <div className="max-w-5xl mx-auto w-full flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
               <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-indigo-600/10 flex items-center justify-center border border-indigo-600/20 shadow-lg shadow-indigo-600/10">
-                  <Eye className="h-5 w-5 text-indigo-500" />
+                <div className="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center border border-orange-200 shadow-lg shadow-indigo-600/10">
+                  <Eye className="h-5 w-5 text-orange-500" />
                 </div>
                 <div>
-                  <h2 className="font-display text-lg font-semibold text-white">Report preview</h2>
-                  <p className="text-sm font-medium text-indigo-400">{monthNameLong}</p>
+                  <h2 className="font-display text-lg font-semibold text-slate-800">Report preview</h2>
+                  <p className="text-sm font-medium text-orange-600">{monthNameLong}</p>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" className="h-10 rounded-lg px-5 text-sm font-medium text-slate-400 hover:text-white" onClick={() => setIsPreviewOpen(false)}>
+                <Button variant="ghost" className="h-10 rounded-lg px-5 text-sm font-medium text-slate-400 hover:text-slate-800" onClick={() => setIsPreviewOpen(false)}>
                   Close
                 </Button>
-                <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-10 rounded-lg bg-indigo-600 px-6 text-sm font-medium text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-700">
+                <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-10 rounded-lg bg-orange-500 px-6 text-sm font-medium text-slate-800 shadow-md shadow-indigo-600/25 hover:bg-orange-600">
                   {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                   Download PDF
                 </Button>
               </div>
             </div>
             
-            <div ref={containerRef} className="flex-1 overflow-auto custom-scrollbar flex justify-center bg-slate-950/50 rounded-[3rem] border border-slate-800/50 p-12">
+            <div ref={containerRef} className="flex-1 overflow-auto custom-scrollbar flex justify-center bg-slate-50 rounded-[3rem] border border-slate-200/50 p-12">
               <div className="shadow-[0_0_100px_rgba(0,0,0,0.5)] origin-top transition-transform duration-500" style={{ transform: `scale(${scale})` }}>
                 <AuditReportTemplate 
                   id="preview-template"

@@ -48,7 +48,7 @@ export function InvoiceMeta({
       <div className="rounded-[4mm] bg-[#1B2B4B] px-[4mm] py-[3.5mm] flex flex-col justify-between h-[18mm] relative overflow-hidden shadow-lg border border-[#1B2B4B]">
         <div className="absolute top-0 left-0 w-[1.2mm] h-full bg-[#F47920]" />
         <p className="text-[6.5pt] font-black uppercase tracking-[0.2em] text-[#94A3B8] ml-1">Service Period</p>
-        <p className="text-[10pt] font-black text-white leading-tight ml-1 tracking-tight">{billingPeriodLabel}</p>
+        <p className="text-[10pt] font-black text-slate-800 leading-tight ml-1 tracking-tight">{billingPeriodLabel}</p>
       </div>
       
       {/* DUE DATE */}

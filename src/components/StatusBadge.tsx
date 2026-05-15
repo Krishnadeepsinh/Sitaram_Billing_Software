@@ -1,22 +1,22 @@
 import { cn } from "@/lib/utils";
 
 const styles: Record<string, string> = {
-  active: "bg-success/15 text-success border-success/30",
-  expired: "bg-destructive/15 text-destructive border-destructive/30",
-  inactive: "bg-muted text-muted-foreground border-border",
-  paid: "bg-success/15 text-success border-success/30",
-  pending: "bg-warning/15 text-warning border-warning/30",
-  overdue: "bg-destructive/15 text-destructive border-destructive/30",
+  active: "bg-green-50 text-green-700 border-green-200",
+  expired: "bg-red-50 text-red-700 border-red-200",
+  inactive: "bg-slate-100 text-slate-500 border-slate-200",
+  paid: "bg-green-50 text-green-700 border-green-200",
+  pending: "bg-amber-50 text-amber-700 border-amber-200",
+  overdue: "bg-red-50 text-red-700 border-red-200",
 };
 
 export function StatusBadge({ status, onClick, className, isLoading }: { status: string, onClick?: (e: React.MouseEvent) => void, className?: string, isLoading?: boolean }) {
   const s = String(status || "").toLowerCase().trim();
   
   const badgeStyles = cn(
-    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all",
-    onClick && !isLoading && "cursor-pointer hover:scale-105 active:scale-95 hover:shadow-md",
+    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all",
+    onClick && !isLoading && "cursor-pointer hover:scale-105 active:scale-95 hover:shadow-sm",
     isLoading && "opacity-70 cursor-wait",
-    styles[s] ?? "bg-secondary text-secondary-foreground border-border",
+    styles[s] ?? "bg-slate-100 text-slate-500 border-slate-200",
     className
   );
 
@@ -55,4 +55,3 @@ export function StatusBadge({ status, onClick, className, isLoading }: { status:
     </span>
   );
 }
-

@@ -33,7 +33,7 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
     <>
       {parts.map((part, i) => 
         regex.test(part) ? (
-          <mark key={i} className="rounded-sm bg-[#6C63FF]/20 px-0.5 font-semibold text-[#6C63FF]">{part}</mark>
+          <mark key={i} className="rounded-sm bg-orange-100 px-0.5 font-semibold text-orange-600">{part}</mark>
         ) : (
           part
         )
@@ -283,14 +283,14 @@ export default function Subscribers() {
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-white">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-800">
               Subscribers
             </h1>
             <div className={cn(
               "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border animate-in fade-in zoom-in duration-300",
               isCableMode 
-                ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
-                : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                ? "bg-amber-50 border-amber-200 text-amber-600" 
+                : "bg-orange-50 border-orange-200 text-orange-600"
             )}>
               {activeBusinessMode} Mode
             </div>
@@ -301,7 +301,7 @@ export default function Subscribers() {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <Button 
             variant="outline"
-            className="flex-1 md:flex-none h-10 border-white/10 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors" 
+            className="flex-1 md:flex-none h-10 border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition-colors" 
             onClick={async () => {
               setIsGlobalRefreshing(true);
               try {
@@ -317,14 +317,14 @@ export default function Subscribers() {
           </Button>
           <Button 
             variant="outline"
-            className="flex-1 md:flex-none h-10 border-white/10 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors"
+            className="flex-1 md:flex-none h-10 border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition-colors"
             onClick={handleExportExcel}
           >
             <Download className="mr-2 h-4 w-4" /> Export
           </Button>
           <Button 
             onClick={handleOpenAdd}
-            className="flex-1 md:flex-none h-10 bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+            className="flex-1 md:flex-none h-10 bg-orange-500 hover:bg-orange-600 text-slate-800 transition-colors"
           >
             <Plus className="mr-2 h-4 w-4" /> Add Subscriber
           </Button>
@@ -332,19 +332,19 @@ export default function Subscribers() {
       </div>
 
       {/* Filters */}
-      <div className="p-4 rounded-xl border border-white/10 bg-slate-900 shadow-sm flex flex-col md:flex-row gap-4">
+      <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder="Search by name, ID, phone..."
-            className="h-10 rounded-lg border-white/10 bg-slate-950 pl-10 text-sm text-slate-200 placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-indigo-500 focus-visible:border-transparent"
+            className="h-10 rounded-lg border-slate-200 bg-slate-50 pl-10 text-sm text-slate-700 placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-orange-400 focus-visible:border-transparent"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
           {q && (
             <button 
               onClick={() => setQ("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-md hover:bg-slate-800 text-slate-400 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-400 transition-colors"
             >
               <X className="h-3 w-3" />
             </button>
@@ -353,7 +353,7 @@ export default function Subscribers() {
         
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <select 
-            className="h-10 rounded-lg border border-white/10 bg-slate-950 px-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
+            className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
             value={statusF}
             onChange={(e: any) => setStatusF(e.target.value)}
           >
@@ -362,7 +362,7 @@ export default function Subscribers() {
             <option value="inactive">Inactive</option>
           </select>
           <select 
-            className="h-10 rounded-lg border border-white/10 bg-slate-950 px-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
+            className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
             value={areaF}
             onChange={(e) => setAreaF(e.target.value)}
           >
@@ -370,7 +370,7 @@ export default function Subscribers() {
             {areas.filter(a => a !== "all").map(a => <option key={a} value={a}>{a}</option>)}
           </select>
           <select 
-            className="h-10 rounded-lg border border-white/10 bg-slate-950 px-3 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
+            className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
             value={planF}
             onChange={(e) => setPlanF(e.target.value)}
           >
@@ -378,12 +378,12 @@ export default function Subscribers() {
             {dbPlans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
 
-          <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-white/10 bg-slate-950">
+          <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-slate-50">
             <Switch 
               id="dues-only" 
               checked={showDuesOnly} 
               onCheckedChange={setShowDuesOnly}
-              className="data-[state=checked]:bg-indigo-600"
+              className="data-[state=checked]:bg-orange-500"
             />
             <Label htmlFor="dues-only" className="cursor-pointer text-sm text-slate-400 whitespace-nowrap">Overdue Only</Label>
           </div>
@@ -391,11 +391,11 @@ export default function Subscribers() {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block rounded-xl border border-white/10 bg-slate-900 overflow-hidden shadow-sm">
+      <div className="hidden md:block rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-200">
+          <table className="w-full text-left text-sm text-slate-700">
             <thead>
-              <tr className="border-b border-white/10 bg-slate-950">
+              <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="px-4 py-3 font-medium text-slate-400 whitespace-nowrap w-16">No.</th>
                 <th className="px-4 py-3 font-medium text-slate-400">Subscriber</th>
                 <th className="px-4 py-3 font-medium text-slate-400">{customerIdLabel} / Area</th>
@@ -404,7 +404,7 @@ export default function Subscribers() {
                 <th className="px-4 py-3 font-medium text-slate-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
@@ -419,15 +419,15 @@ export default function Subscribers() {
                 const balance = effectiveBalances[s.id] || 0;
                 
                 return (
-                  <tr key={s.id} className="hover:bg-slate-800/50 transition-colors group">
+                  <tr key={s.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-4 py-3">
-                      <div className="h-8 w-8 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center font-medium text-xs">
+                      <div className="h-8 w-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-medium text-xs">
                         {s.customerNo || '?'}
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-medium text-slate-200"><Highlight text={s.name} query={q} /></span>
+                        <span className="font-medium text-slate-700"><Highlight text={s.name} query={q} /></span>
                         <div className="flex items-center gap-1.5 mt-1 text-slate-400 text-xs">
                           <Phone className="h-3 w-3" />
                           <span>{s.phone || 'N/A'}</span>
@@ -436,7 +436,7 @@ export default function Subscribers() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-medium text-slate-200"><Highlight text={s.customerId || "N/A"} query={q} /></span>
+                        <span className="font-medium text-slate-700"><Highlight text={s.customerId || "N/A"} query={q} /></span>
                         <div className="flex items-center gap-1.5 mt-1 text-slate-400 text-xs">
                           <MapPin className="h-3 w-3" />
                           <span><Highlight text={s.area} query={q} /></span>
@@ -448,7 +448,7 @@ export default function Subscribers() {
                         <div className="flex items-center gap-2">
                           <span className={cn(
                             "font-semibold",
-                            balance >= 0 ? "text-emerald-500" : "text-rose-500"
+                            balance >= 0 ? "text-green-600" : "text-red-600"
                           )}>
                             {formatCurrency(balance)}
                           </span>
@@ -478,35 +478,35 @@ export default function Subscribers() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-orange-600 hover:bg-orange-50"
                           onClick={() => handleOpenHistory(s)}
                           title="View Ledger"
                         >
                           <History className="h-4 w-4" />
                         </Button>
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-green-600 hover:bg-green-50"
                           onClick={() => handleOpenInvoice(s)}
                           title="Generate Invoice"
                         >
                           <FileText className="h-4 w-4" />
                         </Button>
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-sky-400 hover:bg-sky-500/10"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
                           onClick={() => handleCollectPayment(s)}
                           title="Collect Payment"
                         >
                           <Wallet className="h-4 w-4" />
                         </Button>
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100"
                           onClick={() => handleOpenEdit(s)}
                           title="Edit Subscriber"
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
                           onClick={() => setConfirmModal({ type: 'delete', id: s.id })}
                           title="Delete Subscriber"
                         >
@@ -525,7 +525,7 @@ export default function Subscribers() {
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
         {filtered.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-slate-900 p-8 text-center text-slate-400">
+          <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-400">
             <Users className="h-8 w-8 mx-auto mb-3 text-slate-500" />
             <p>No subscribers found</p>
           </div>
@@ -534,14 +534,14 @@ export default function Subscribers() {
           const balance = effectiveBalances[s.id] || 0;
 
           return (
-            <div key={s.id} className="rounded-xl border border-white/10 bg-slate-900 p-4 flex flex-col gap-4 shadow-sm">
+            <div key={s.id} className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col gap-4 shadow-sm">
               <div className="flex justify-between items-start">
                 <div className="flex gap-3">
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center font-medium text-sm">
+                  <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-medium text-sm">
                     {s.customerNo || '?'}
                   </div>
                   <div>
-                    <h3 className="font-medium text-slate-200 text-base leading-none mb-1.5"><Highlight text={s.name} query={q} /></h3>
+                    <h3 className="font-medium text-slate-700 text-base leading-none mb-1.5"><Highlight text={s.name} query={q} /></h3>
                     <p className="text-sm text-slate-400 flex items-center gap-1">
                       <Phone className="h-3 w-3" /> {s.phone || 'N/A'}
                     </p>
@@ -566,44 +566,44 @@ export default function Subscribers() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm bg-slate-950 p-3 rounded-lg border border-white/5">
+              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm bg-slate-50 p-3 rounded-lg border border-slate-100">
                 <div>
                   <span className="text-slate-500 text-xs block mb-0.5">{customerIdLabel}</span>
-                  <span className="text-slate-200 font-medium"><Highlight text={s.customerId || "N/A"} query={q} /></span>
+                  <span className="text-slate-700 font-medium"><Highlight text={s.customerId || "N/A"} query={q} /></span>
                 </div>
                 <div>
                   <span className="text-slate-500 text-xs block mb-0.5">Area</span>
-                  <span className="text-slate-200"><Highlight text={s.area} query={q} /></span>
+                  <span className="text-slate-700"><Highlight text={s.area} query={q} /></span>
                 </div>
                 <div>
                   <span className="text-slate-500 text-xs block mb-0.5">Plan</span>
-                  <span className="text-slate-200 truncate block" title={plan?.name}>{plan?.name || "Unassigned"}</span>
+                  <span className="text-slate-700 truncate block" title={plan?.name}>{plan?.name || "Unassigned"}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 text-xs block mb-0.5">Balance</span>
-                  <span className={cn("font-medium", balance >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                  <span className={cn("font-medium", balance >= 0 ? "text-green-600" : "text-red-600")}>
                     {formatCurrency(balance)}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-white/5">
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10" onClick={() => handleOpenHistory(s)}>
+                  <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50" onClick={() => handleOpenHistory(s)}>
                     <History className="h-4 w-4 mr-1.5" /> Ledger
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10" onClick={() => handleOpenInvoice(s)}>
+                  <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-400 hover:text-green-600 hover:bg-green-50" onClick={() => handleOpenInvoice(s)}>
                     <FileText className="h-4 w-4 mr-1.5" /> Bill
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-400 hover:text-sky-400 hover:bg-sky-500/10" onClick={() => handleCollectPayment(s)}>
+                  <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50" onClick={() => handleCollectPayment(s)}>
                     <Wallet className="h-4 w-4 mr-1.5" /> Collect
                   </Button>
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-200 hover:bg-slate-800" onClick={() => handleOpenEdit(s)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100" onClick={() => handleOpenEdit(s)}>
                     <Edit2 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10" onClick={() => setConfirmModal({ type: 'delete', id: s.id })}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50" onClick={() => setConfirmModal({ type: 'delete', id: s.id })}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -616,14 +616,14 @@ export default function Subscribers() {
       {/* History Modal (Bottom Sheet on Mobile, Centered on Desktop) */}
       {showHistory && historySub && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
-          <div className="bg-slate-900 w-full md:max-w-2xl max-h-[85vh] rounded-t-2xl md:rounded-xl border border-white/10 relative z-10 flex flex-col shadow-2xl animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95">
-            <div className="p-5 border-b border-white/10 flex justify-between items-center shrink-0">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
+          <div className="bg-white w-full md:max-w-2xl max-h-[85vh] rounded-t-2xl md:rounded-xl border border-slate-200 relative z-10 flex flex-col shadow-xl animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95">
+            <div className="p-5 border-b border-slate-200 flex justify-between items-center shrink-0">
               <div>
-                <h2 className="text-xl font-semibold text-white">{historySub.name}</h2>
+                <h2 className="text-xl font-semibold text-slate-800">{historySub.name}</h2>
                 <p className="text-sm text-slate-400">Payment History</p>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:bg-slate-800 hover:text-slate-200" onClick={() => setShowHistory(false)}>
+              <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={() => setShowHistory(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
@@ -636,13 +636,13 @@ export default function Subscribers() {
                 </div>
               ) : (
                 subPayments.map(p => (
-                  <div key={p.id} className="p-4 rounded-xl border border-white/10 bg-slate-950 flex items-center justify-between">
+                  <div key={p.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="font-semibold text-slate-200">{formatCurrency(p.amount)}</span>
+                      <span className="font-semibold text-slate-700">{formatCurrency(p.amount)}</span>
                       <span className="text-xs text-slate-400 uppercase tracking-wider">{p.method}</span>
                     </div>
                     <div className="text-right flex flex-col items-end">
-                      <span className="text-sm text-slate-200">{formatDate(p.date)}</span>
+                      <span className="text-sm text-slate-700">{formatDate(p.date)}</span>
                       <span className="text-xs text-slate-500 font-mono">{p.id.slice(0, 8)}</span>
                     </div>
                   </div>
@@ -656,25 +656,25 @@ export default function Subscribers() {
       {/* Invoice Modal */}
       {showInvoiceModal && invoiceSub && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowInvoiceModal(false)} />
-          <div className="bg-slate-900 w-full md:max-w-md max-h-[90vh] rounded-t-2xl md:rounded-xl border border-white/10 relative z-10 flex flex-col shadow-2xl animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95">
-            <div className="p-5 border-b border-white/10 flex justify-between items-center shrink-0">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowInvoiceModal(false)} />
+          <div className="bg-white w-full md:max-w-md max-h-[90vh] rounded-t-2xl md:rounded-xl border border-slate-200 relative z-10 flex flex-col shadow-xl animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95">
+            <div className="p-5 border-b border-slate-200 flex justify-between items-center shrink-0">
               <div>
-                <h2 className="text-xl font-semibold text-white">Generate Invoice</h2>
+                <h2 className="text-xl font-semibold text-slate-800">Generate Invoice</h2>
                 <p className="text-sm text-slate-400">{invoiceSub.name}</p>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:bg-slate-800 hover:text-slate-200" onClick={() => setShowInvoiceModal(false)}>
+              <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={() => setShowInvoiceModal(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
             
             <div className="p-5 space-y-6 overflow-y-auto custom-scrollbar">
-              <div className="flex p-1 bg-slate-950 border border-white/10 rounded-lg">
+              <div className="flex p-1 bg-slate-50 border border-slate-200 rounded-lg">
                 <button
                   onClick={() => setBillingType("plan")}
                   className={cn(
                     "flex-1 py-2 text-sm font-medium rounded-md transition-colors",
-                    billingType === "plan" ? "bg-slate-800 text-slate-200 shadow-sm" : "text-slate-400 hover:text-slate-200"
+                    billingType === "plan" ? "bg-slate-100 text-slate-700 shadow-sm" : "text-slate-400 hover:text-slate-700"
                   )}
                 >
                   Plan Renewal
@@ -684,7 +684,7 @@ export default function Subscribers() {
                   onClick={() => setBillingType("legacy")}
                   className={cn(
                     "flex-1 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-30",
-                    billingType === "legacy" ? "bg-slate-800 text-slate-200 shadow-sm" : "text-slate-400 hover:text-slate-200"
+                    billingType === "legacy" ? "bg-slate-100 text-slate-700 shadow-sm" : "text-slate-400 hover:text-slate-700"
                   )}
                 >
                   Legacy Dues
@@ -699,7 +699,7 @@ export default function Subscribers() {
                        type="date"
                        value={rechargeDate}
                        onChange={(e) => setRechargeDate(e.target.value)}
-                       className="h-10 rounded-lg border-white/10 bg-slate-950 text-slate-200 focus-visible:ring-indigo-500"
+                       className="h-10 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -707,47 +707,47 @@ export default function Subscribers() {
                     <select
                       value={planMonths}
                       onChange={(e) => setPlanMonths(Number(e.target.value))}
-                      className="h-10 w-full rounded-lg border border-white/10 bg-slate-950 text-slate-200 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
+                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-700 px-3 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
                     >
                       {Array.from({length: 12}, (_, i) => i + 1).map(m => (
                         <option key={m} value={m}>{m} {m > 1 ? 'Cycles' : 'Cycle'}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-950 border border-white/10 space-y-3 mt-4">
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 mt-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400">Plan</span>
-                      <span className="text-slate-200 font-medium">{dbPlans.find(p => p.id === invoiceSub.planId)?.name}</span>
+                      <span className="text-slate-700 font-medium">{dbPlans.find(p => p.id === invoiceSub.planId)?.name}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400">Expiry</span>
-                      <span className="text-slate-200 font-medium">{formatDate(projectedExpiryDate || "")}</span>
+                      <span className="text-slate-700 font-medium">{formatDate(projectedExpiryDate || "")}</span>
                     </div>
-                    <div className="flex justify-between text-base font-semibold pt-3 border-t border-white/10">
-                      <span className="text-slate-200">Total Amount</span>
-                      <span className="text-indigo-400">{formatCurrency((dbPlans.find(p => p.id === invoiceSub.planId)?.price || 0) * planMonths)}</span>
+                    <div className="flex justify-between text-base font-semibold pt-3 border-t border-slate-200">
+                      <span className="text-slate-700">Total Amount</span>
+                      <span className="text-orange-600">{formatCurrency((dbPlans.find(p => p.id === invoiceSub.planId)?.price || 0) * planMonths)}</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-slate-950 border border-white/10 space-y-4">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
                   <p className="text-sm text-slate-400 leading-relaxed">
                     Generate an invoice for the outstanding legacy dues recorded during initial setup.
                   </p>
-                  <div className="flex justify-between text-base font-semibold pt-3 border-t border-white/10">
-                    <span className="text-slate-200">Settlement Amount</span>
-                    <span className="text-rose-500">{formatCurrency(invoiceSub.openingBalance)}</span>
+                  <div className="flex justify-between text-base font-semibold pt-3 border-t border-slate-200">
+                    <span className="text-slate-700">Settlement Amount</span>
+                    <span className="text-red-600">{formatCurrency(invoiceSub.openingBalance)}</span>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="p-5 border-t border-white/10 flex gap-3 shrink-0 bg-slate-900 md:rounded-b-xl">
-              <Button variant="outline" className="flex-1 h-10 border-white/10 hover:bg-slate-800 text-slate-200" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
+            <div className="p-5 border-t border-slate-200 flex gap-3 shrink-0 bg-white md:rounded-b-xl">
+              <Button variant="outline" className="flex-1 h-10 border-slate-200 hover:bg-slate-100 text-slate-700" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
               <Button 
                 onClick={handleGenerateInvoice} 
                 disabled={isSaving} 
-                className="flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-slate-800"
               >
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Generate
@@ -760,14 +760,14 @@ export default function Subscribers() {
       {/* Add/Edit Subscriber Modal */}
       {showModal && (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="bg-slate-900 w-full md:max-w-2xl max-h-[95vh] rounded-t-2xl md:rounded-xl border border-white/10 relative z-10 flex flex-col shadow-2xl animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95">
-            <div className="p-5 border-b border-white/10 flex justify-between items-center shrink-0">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+          <div className="bg-white w-full md:max-w-2xl max-h-[95vh] rounded-t-2xl md:rounded-xl border border-slate-200 relative z-10 flex flex-col shadow-xl animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95">
+            <div className="p-5 border-b border-slate-200 flex justify-between items-center shrink-0">
               <div>
-                <h2 className="text-xl font-semibold text-white">{editingSub ? "Edit Subscriber" : "Add Subscriber"}</h2>
+                <h2 className="text-xl font-semibold text-slate-800">{editingSub ? "Edit Subscriber" : "Add Subscriber"}</h2>
                 <p className="text-sm text-slate-400">Enter subscriber details</p>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:bg-slate-800 hover:text-slate-200" onClick={() => setShowModal(false)}>
+              <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={() => setShowModal(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
@@ -777,12 +777,12 @@ export default function Subscribers() {
                 {/* Column 1 */}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-sm text-slate-400">Name <span className="text-rose-500">*</span></Label>
+                    <Label className="text-sm text-slate-400">Name <span className="text-red-600">*</span></Label>
                     <Input 
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                       placeholder="Full Name" 
-                      className="h-10 rounded-lg border-white/10 bg-slate-950 text-slate-200 focus-visible:ring-indigo-500"
+                      className="h-10 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -791,7 +791,7 @@ export default function Subscribers() {
                       value={formData.phone}
                       onChange={e => setFormData({...formData, phone: e.target.value})}
                       placeholder="10-digit number" 
-                      className="h-10 rounded-lg border-white/10 bg-slate-950 text-slate-200 focus-visible:ring-indigo-500"
+                      className="h-10 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -800,7 +800,7 @@ export default function Subscribers() {
                       value={formData.area}
                       onChange={e => setFormData({...formData, area: e.target.value})}
                       placeholder="Area Name" 
-                      className="h-10 rounded-lg border-white/10 bg-slate-950 text-slate-200 focus-visible:ring-indigo-500"
+                      className="h-10 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -809,7 +809,7 @@ export default function Subscribers() {
                       value={formData.customerId}
                       onChange={e => setFormData({...formData, customerId: e.target.value})}
                       placeholder={isCableMode ? "STB / Box Number" : "MAC / Username"} 
-                      className="h-10 rounded-lg border-white/10 bg-slate-950 text-slate-200 focus-visible:ring-indigo-500"
+                      className="h-10 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
                     />
                   </div>
                 </div>
@@ -821,7 +821,7 @@ export default function Subscribers() {
                     <select 
                       value={formData.planId}
                       onChange={e => setFormData({...formData, planId: e.target.value})}
-                      className="h-10 w-full rounded-lg border border-white/10 bg-slate-950 text-slate-200 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
+                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-700 px-3 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
                     >
                       {dbPlans.map(p => <option key={p.id} value={p.id}>{p.name} ({formatCurrency(p.price)})</option>)}
                     </select>
@@ -831,7 +831,7 @@ export default function Subscribers() {
                     <select 
                       value={formData.status}
                       onChange={e => setFormData({...formData, status: e.target.value as any})}
-                      className="h-10 w-full rounded-lg border border-white/10 bg-slate-950 text-slate-200 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
+                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-700 px-3 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
@@ -843,7 +843,7 @@ export default function Subscribers() {
                       type="date"
                       value={formData.installationDate}
                       onChange={e => setFormData({...formData, installationDate: e.target.value})}
-                      className="h-10 rounded-lg border-white/10 bg-slate-950 text-slate-200 focus-visible:ring-indigo-500"
+                      className="h-10 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -854,12 +854,12 @@ export default function Subscribers() {
                         value={formData.openingBalance || ''}
                         onChange={e => setFormData({...formData, openingBalance: Number(e.target.value)})}
                         placeholder="0.00" 
-                        className="h-10 flex-1 rounded-lg border-white/10 bg-slate-950 text-slate-200 focus-visible:ring-indigo-500"
+                        className="h-10 flex-1 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
                       />
                       <select
                         value={formData.openingBalanceType}
                         onChange={e => setFormData({...formData, openingBalanceType: e.target.value as any})}
-                        className="h-10 rounded-lg border border-white/10 bg-slate-950 text-slate-200 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none"
+                        className="h-10 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 px-3 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
                       >
                         <option value="debit">Due (Dr)</option>
                         <option value="credit">Advance (Cr)</option>
@@ -870,12 +870,12 @@ export default function Subscribers() {
               </div>
             </div>
 
-            <div className="p-5 border-t border-white/10 flex gap-3 shrink-0 bg-slate-900 md:rounded-b-xl">
-              <Button variant="outline" className="flex-1 h-10 border-white/10 hover:bg-slate-800 text-slate-200" onClick={() => setShowModal(false)}>Cancel</Button>
+            <div className="p-5 border-t border-slate-200 flex gap-3 shrink-0 bg-white md:rounded-b-xl">
+              <Button variant="outline" className="flex-1 h-10 border-slate-200 hover:bg-slate-100 text-slate-700" onClick={() => setShowModal(false)}>Cancel</Button>
               <Button 
                 onClick={handleSave} 
                 disabled={isSaving}
-                className="flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-slate-800"
               >
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 {editingSub ? "Save Changes" : "Add Subscriber"}
@@ -888,19 +888,19 @@ export default function Subscribers() {
       {/* Delete Confirmation Modal */}
       {confirmModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmModal(null)} />
-          <div className="bg-slate-900 w-full max-w-sm rounded-xl border border-white/10 relative z-10 flex flex-col shadow-2xl p-6 text-center animate-in zoom-in-95">
-            <div className="mx-auto w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center mb-4">
-              <Trash2 className="h-6 w-6 text-rose-500" />
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setConfirmModal(null)} />
+          <div className="bg-white w-full max-w-sm rounded-xl border border-slate-200 relative z-10 flex flex-col shadow-xl p-6 text-center animate-in zoom-in-95">
+            <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <Trash2 className="h-6 w-6 text-red-600" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Delete Subscriber?</h2>
+            <h2 className="text-xl font-semibold text-slate-800 mb-2">Delete Subscriber?</h2>
             <p className="text-sm text-slate-400 mb-6">
               This action cannot be undone. All associated invoices and payments will also be permanently deleted.
             </p>
             <div className="flex gap-3 w-full">
-              <Button variant="outline" className="flex-1 h-10 border-white/10 hover:bg-slate-800 text-slate-200" onClick={() => setConfirmModal(null)}>Cancel</Button>
+              <Button variant="outline" className="flex-1 h-10 border-slate-200 hover:bg-slate-100 text-slate-700" onClick={() => setConfirmModal(null)}>Cancel</Button>
               <Button 
-                className="flex-1 h-10 bg-rose-600 hover:bg-rose-700 text-white"
+                className="flex-1 h-10 bg-red-500 hover:bg-red-600 text-slate-800"
                 onClick={() => {
                   executeDelete(confirmModal.id);
                   setConfirmModal(null);

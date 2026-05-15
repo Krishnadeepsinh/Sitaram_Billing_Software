@@ -28,7 +28,7 @@ export function InvoiceCustomerBlock({ subscriber, customerIdLabel, isCableMode 
       <div className="flex justify-between items-start mb-3">
         <p className="text-[#F47920] text-[7pt] font-black uppercase tracking-widest">BILLED TO CUSTOMER</p>
         <div className="bg-[#1B2B4B] px-2 py-0.5 rounded-full">
-           <span className="text-white text-[6pt] font-black uppercase tracking-tighter">Verified Account</span>
+           <span className="text-slate-800 text-[6pt] font-black uppercase tracking-tighter">Verified Account</span>
         </div>
       </div>
       

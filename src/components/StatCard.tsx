@@ -10,45 +10,43 @@ interface Props {
 }
 
 export function StatCard({ label, value, delta, icon: Icon, variant = "primary" }: Props) {
-  const accentBar = {
-    primary: "bg-blue-500",
-    accent: "bg-sky-400",
-    success: "bg-emerald-500",
-    warning: "bg-amber-500",
-    destructive: "bg-rose-500",
+  const borderColor = {
+    primary: "border-l-orange-500",
+    accent: "border-l-blue-500",
+    success: "border-l-green-500",
+    warning: "border-l-amber-500",
+    destructive: "border-l-red-500",
   }[variant];
 
-  const iconBg = {
-    primary: "bg-primary/12 text-primary border-primary/20",
-    accent: "bg-accent/12 text-accent border-accent/20",
-    success: "bg-emerald-500/12 text-emerald-400 border-emerald-500/20",
-    warning: "bg-amber-500/12 text-amber-400 border-amber-500/20",
-    destructive: "bg-rose-500/12 text-rose-400 border-rose-500/20",
+  const iconStyles = {
+    primary: "bg-orange-50 text-orange-500",
+    accent: "bg-blue-50 text-blue-500",
+    success: "bg-green-50 text-green-600",
+    warning: "bg-amber-50 text-amber-600",
+    destructive: "bg-red-50 text-red-500",
   }[variant];
 
   return (
-    <div className="app-panel group relative overflow-hidden p-6 transition-colors hover:border-slate-700/90 hover:bg-slate-900/60">
-      <div className={cn("absolute -right-8 -top-8 h-28 w-28 rounded-full blur-3xl opacity-25 transition-opacity group-hover:opacity-35", iconBg.split(" ")[1])} />
-
-      <div className="relative z-10 flex items-start justify-between gap-4">
-        <div className="min-w-0 space-y-3">
-          <p className="text-xs font-medium text-slate-400">{label}</p>
+    <div className={cn(
+      "bg-white rounded-xl border border-slate-100 shadow-sm p-5 transition-shadow hover:shadow-md border-l-4",
+      borderColor
+    )}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
           <div className="space-y-1">
-            <p className="font-display text-3xl font-semibold tracking-tight text-white tabular-nums leading-none sm:text-4xl">
+            <p className="font-mono text-2xl font-bold tracking-tight text-slate-800 tabular-nums leading-none">
               {value}
             </p>
             {delta && (
-              <p className="text-xs font-medium text-slate-500">{delta}</p>
+              <p className="text-xs text-slate-500">{delta}</p>
             )}
           </div>
         </div>
-        <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border shadow-inner transition-transform duration-300 group-hover:scale-105", iconBg)}>
-          <Icon className="h-6 w-6 stroke-[1.75]" />
+        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", iconStyles)}>
+          <Icon className="h-5 w-5" />
         </div>
       </div>
-
-      <div className={cn("pointer-events-none absolute bottom-0 left-0 h-0.5 w-full opacity-80", accentBar)} />
     </div>
   );
 }
-

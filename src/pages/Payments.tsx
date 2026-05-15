@@ -301,15 +301,15 @@ export default function Payments() {
   return (
     <div className="space-y-6 pb-20">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-white/10 pb-6">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-slate-200 pb-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-white">Payments</h1>
+            <h1 className="text-2xl font-bold text-slate-800">Payments</h1>
             <div className={cn(
               "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border animate-in fade-in zoom-in duration-300",
               isCableMode 
-                ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
-                : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                ? "bg-amber-50 border-amber-200 text-amber-600" 
+                : "bg-orange-50 border-orange-200 text-orange-600"
             )}>
               {activeBusinessMode} Mode
             </div>
@@ -319,20 +319,20 @@ export default function Payments() {
         
         <div className="flex items-center gap-3">
           <div className="hidden lg:flex items-center gap-2">
-            <div className="flex flex-col items-end justify-center px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <span className="text-[9px] uppercase font-black tracking-widest text-amber-500/70 mb-0.5">Cash</span>
-              <span className="text-sm font-bold text-amber-500 leading-none">₹{cashTotal.toLocaleString()}</span>
+            <div className="flex flex-col items-end justify-center px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
+              <span className="text-[9px] uppercase font-black tracking-widest text-amber-600/70 mb-0.5">Cash</span>
+              <span className="text-sm font-bold text-amber-600 leading-none">₹{cashTotal.toLocaleString()}</span>
             </div>
-            <div className="flex flex-col items-start justify-center px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <span className="text-[9px] uppercase font-black tracking-widest text-blue-500/70 mb-0.5">UPI</span>
-              <span className="text-sm font-bold text-blue-500 leading-none">₹{upiTotal.toLocaleString()}</span>
+            <div className="flex flex-col items-start justify-center px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200">
+              <span className="text-[9px] uppercase font-black tracking-widest text-blue-600/70 mb-0.5">UPI</span>
+              <span className="text-sm font-bold text-blue-600 leading-none">₹{upiTotal.toLocaleString()}</span>
             </div>
           </div>
           <Button 
             variant="outline" 
             onClick={() => { setIsGlobalRefreshing(true); refreshData().finally(() => setIsGlobalRefreshing(false)); }}
             disabled={isGlobalRefreshing}
-            className="h-10 rounded-lg border-white/10 bg-slate-900 px-4 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
+            className="h-10 rounded-lg border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
           >
             <Activity className={cn("mr-2 h-4 w-4", isGlobalRefreshing && "animate-spin")} />
             Sync
@@ -340,13 +340,13 @@ export default function Payments() {
           <Button 
             variant="outline" 
             onClick={handleExportExcel}
-            className="h-10 rounded-lg border-white/10 bg-slate-900 px-4 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
+            className="h-10 rounded-lg border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
           >
             <Download className="mr-2 h-4 w-4" /> Export
           </Button>
           <Button 
             onClick={() => setIsAddOpen(true)}
-            className="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            className="h-10 rounded-lg bg-orange-500 px-4 text-sm font-medium text-slate-800 hover:bg-orange-600 transition-colors"
           >
             <Plus className="mr-2 h-4 w-4" /> Record Payment
           </Button>
@@ -360,7 +360,7 @@ export default function Payments() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
             <Input
               placeholder="Search by ID, name or area..."
-              className="h-10 rounded-lg border-white/10 bg-slate-900 pl-9 text-sm text-white placeholder:text-slate-500 focus-visible:border-indigo-500"
+              className="h-10 rounded-lg border-slate-200 bg-white pl-9 text-sm text-slate-800 placeholder:text-slate-500 focus-visible:border-indigo-500"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -368,7 +368,7 @@ export default function Payments() {
           <select 
             value={areaF} 
             onChange={(e) => setAreaF(e.target.value)} 
-            className="h-10 bg-slate-900 border border-white/10 rounded-lg px-3 text-sm text-slate-300 outline-none focus:border-indigo-500 sm:w-40"
+            className="h-10 bg-white border border-slate-200 rounded-lg px-3 text-sm text-slate-600 outline-none focus:border-orange-400 sm:w-40"
           >
             <option value="all">All Areas</option>
             {areas.map(a => <option key={a} value={a}>{a}</option>)}
@@ -376,7 +376,7 @@ export default function Payments() {
           <select 
             value={methodF} 
             onChange={(e) => setMethodF(e.target.value)} 
-            className="h-10 bg-slate-900 border border-white/10 rounded-lg px-3 text-sm text-slate-300 outline-none focus:border-indigo-500 sm:w-36"
+            className="h-10 bg-white border border-slate-200 rounded-lg px-3 text-sm text-slate-600 outline-none focus:border-orange-400 sm:w-36"
           >
             <option value="all">All Modes</option>
             <option value="Cash">Cash</option>
@@ -386,25 +386,25 @@ export default function Payments() {
 
         <div className="lg:col-span-4 flex items-center gap-2">
           <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
-            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1 flex-1">
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 flex-1">
               <span className="text-[9px] uppercase font-bold text-slate-500 px-2">From</span>
               <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
                 const monthIndex = months.indexOf(e.target.value);
                 const d = new Date(filterStartDate);
                 d.setMonth(monthIndex);
                 setFilterStartDate(d);
-              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer flex-1">
-                {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+              }} className="bg-transparent text-xs text-slate-600 outline-none appearance-none cursor-pointer flex-1">
+                {months.map(m => <option key={m} value={m} className="bg-white">{m}</option>)}
               </select>
               <select value={filterStartDate.getFullYear()} onChange={(e) => {
                 const d = new Date(filterStartDate);
                 d.setFullYear(Number(e.target.value));
                 setFilterStartDate(d);
-              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer w-14">
-                {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+              }} className="bg-transparent text-xs text-slate-600 outline-none appearance-none cursor-pointer w-14">
+                {years.map(y => <option key={y} value={y} className="bg-white">{y}</option>)}
               </select>
             </div>
-            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1 flex-1">
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 flex-1">
               <span className="text-[9px] uppercase font-bold text-slate-500 px-2">To</span>
               <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
                 const monthIndex = months.indexOf(e.target.value);
@@ -413,28 +413,28 @@ export default function Payments() {
                 d.setDate(0);
                 d.setHours(23, 59, 59, 999);
                 setFilterEndDate(d);
-              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer flex-1">
-                {months.map(m => <option key={m} value={m} className="bg-slate-900">{m}</option>)}
+              }} className="bg-transparent text-xs text-slate-600 outline-none appearance-none cursor-pointer flex-1">
+                {months.map(m => <option key={m} value={m} className="bg-white">{m}</option>)}
               </select>
               <select value={filterEndDate.getFullYear()} onChange={(e) => {
                 const d = new Date(filterEndDate);
                 d.setFullYear(Number(e.target.value));
                 setFilterEndDate(d);
-              }} className="bg-transparent text-xs text-slate-300 outline-none appearance-none cursor-pointer w-14">
-                {years.map(y => <option key={y} value={y} className="bg-slate-900">{y}</option>)}
+              }} className="bg-transparent text-xs text-slate-600 outline-none appearance-none cursor-pointer w-14">
+                {years.map(y => <option key={y} value={y} className="bg-white">{y}</option>)}
               </select>
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-2 flex items-center justify-center gap-4 rounded-lg border border-white/10 bg-slate-900 px-4 h-10">
+        <div className="lg:col-span-2 flex items-center justify-center gap-4 rounded-lg border border-slate-200 bg-white px-4 h-10">
            <div className="flex flex-col items-center justify-center">
-             <span className="text-sm font-medium text-white leading-none">{sorted.length}</span>
+             <span className="text-sm font-medium text-slate-800 leading-none">{sorted.length}</span>
              <span className="text-[10px] text-slate-500 uppercase">Records</span>
            </div>
            <div className="h-6 w-px bg-white/10" />
            <div className="flex flex-col items-center justify-center">
-             <span className="text-sm font-medium text-emerald-400 leading-none">₹{(cashTotal + upiTotal).toLocaleString()}</span>
+             <span className="text-sm font-medium text-green-600 leading-none">₹{(cashTotal + upiTotal).toLocaleString()}</span>
              <span className="text-[10px] text-slate-500 uppercase">Total</span>
            </div>
         </div>
@@ -443,9 +443,9 @@ export default function Payments() {
       {/* Mobile view - Cards */}
       <div className="md:hidden space-y-4">
         {isLoading ? (
-           <div className="py-12 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-indigo-500" /></div>
+           <div className="py-12 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-orange-500" /></div>
         ) : sorted.length === 0 ? (
-           <div className="py-12 text-center text-slate-500 border border-white/10 rounded-lg bg-slate-900">
+           <div className="py-12 text-center text-slate-500 border border-slate-200 rounded-lg bg-white">
              No payments found.
            </div>
         ) : (
@@ -453,23 +453,23 @@ export default function Payments() {
               const sub = subscribers.find(s => s.id === p.subscriberId);
               const items = getPaymentItems(p);
               return (
-                <div key={p.id} className="bg-slate-900 border border-white/10 rounded-lg p-4 space-y-4 relative">
+                <div key={p.id} className="bg-white border border-slate-200 rounded-lg p-4 space-y-4 relative">
                    <div className="flex justify-between items-start">
                       <div>
-                         <div className="font-medium text-white flex items-center gap-2">
+                         <div className="font-medium text-slate-800 flex items-center gap-2">
                            {sub?.name || 'Unknown'} 
-                           <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">#{sub?.customerNo}</span>
+                           <span className="text-[10px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">#{sub?.customerNo}</span>
                          </div>
                          <div className="text-xs text-slate-400 mt-1 flex items-center gap-1"><MapPin className="h-3 w-3" /> {sub?.area || "N/A"}</div>
                       </div>
                       <div className="text-right">
-                         <div className="font-medium text-white">₹{Number(p.amount).toLocaleString()}</div>
-                         <div className={cn("text-[10px] font-medium mt-1 px-1.5 py-0.5 rounded w-fit ml-auto", p.method === 'Cash' ? "bg-amber-500/10 text-amber-500" : "bg-blue-500/10 text-blue-500")}>
+                         <div className="font-medium text-slate-800">₹{Number(p.amount).toLocaleString()}</div>
+                         <div className={cn("text-[10px] font-medium mt-1 px-1.5 py-0.5 rounded w-fit ml-auto", p.method === 'Cash' ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600")}>
                            {p.method}
                          </div>
                       </div>
                    </div>
-                   <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-950 p-2 rounded">
+                   <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-50 p-2 rounded">
                       <Calendar className="h-3 w-3" /> {formatDate(p.date)}
                       <span className="text-slate-600">|</span>
                       <span>#{p.id.slice(-6).toUpperCase()}</span>
@@ -477,15 +477,15 @@ export default function Payments() {
                    {items.length > 0 && (
                      <div className="flex flex-wrap gap-1 mt-2">
                         {items.slice(0, 2).map((it, idx) => (
-                           <span key={idx} className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">{it.desc}</span>
+                           <span key={idx} className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{it.desc}</span>
                         ))}
                         {items.length > 2 && <span className="text-[10px] text-slate-500">+{items.length - 2} more</span>}
                      </div>
                    )}
-                   <div className="flex gap-2 pt-2 border-t border-white/5">
-                      <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs bg-slate-950 hover:bg-slate-800" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-3 w-3 mr-1" /> View</Button>
-                      <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20" onClick={() => handleWhatsApp(p)}><Share2 className="h-3 w-3 mr-1" /> Share</Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20" onClick={() => setConfirmModal(p)}><Trash2 className="h-3 w-3" /></Button>
+                   <div className="flex gap-2 pt-2 border-t border-slate-100">
+                      <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs bg-slate-50 hover:bg-slate-100" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-3 w-3 mr-1" /> View</Button>
+                      <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs bg-orange-50 text-orange-600 hover:bg-orange-100" onClick={() => handleWhatsApp(p)}><Share2 className="h-3 w-3 mr-1" /> Share</Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-red-50 text-red-500 hover:bg-red-100" onClick={() => setConfirmModal(p)}><Trash2 className="h-3 w-3" /></Button>
                    </div>
                 </div>
               );
@@ -494,10 +494,10 @@ export default function Payments() {
       </div>
 
       {/* Desktop view - Table */}
-      <div className="hidden md:block rounded-lg border border-white/10 bg-slate-900 overflow-hidden">
+      <div className="hidden md:block rounded-lg border border-slate-200 bg-white overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-slate-950 text-slate-400 border-b border-white/10 text-xs">
+            <thead className="bg-slate-50 text-slate-400 border-b border-slate-200 text-xs">
               <tr>
                 <th className="px-4 py-3 font-medium">Receipt Info</th>
                 <th className="px-4 py-3 font-medium">Customer Details</th>
@@ -506,9 +506,9 @@ export default function Payments() {
                 <th className="px-4 py-3 w-28"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-100">
               {isLoading ? (
-                <tr><td colSpan={5} className="py-12 text-center"><Loader2 className="w-6 h-6 animate-spin text-indigo-500 mx-auto" /></td></tr>
+                <tr><td colSpan={5} className="py-12 text-center"><Loader2 className="w-6 h-6 animate-spin text-orange-500 mx-auto" /></td></tr>
               ) : sorted.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-500">
@@ -519,10 +519,10 @@ export default function Payments() {
                 const sub = subscribers.find(s => s.id === p.subscriberId);
                 const items = getPaymentItems(p);
                 return (
-                  <tr key={p.id} className="hover:bg-slate-800/50 transition-colors group">
+                  <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
-                        <span className="text-white font-medium">#{p.id.slice(-8).toUpperCase()}</span>
+                        <span className="text-slate-800 font-medium">#{p.id.slice(-8).toUpperCase()}</span>
                         <span className="text-xs text-slate-500 flex items-center gap-1">
                           <Calendar className="h-3 w-3" /> {formatDate(p.date)}
                         </span>
@@ -531,8 +531,8 @@ export default function Payments() {
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-white font-medium">{sub?.name || 'Unknown'}</span>
-                          <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">#{sub?.customerNo}</span>
+                          <span className="text-slate-800 font-medium">{sub?.name || 'Unknown'}</span>
+                          <span className="text-[10px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded">#{sub?.customerNo}</span>
                         </div>
                         <span className="text-xs text-slate-500 flex items-center gap-1"><MapPin className="h-3 w-3" /> {sub?.area || "N/A"}</span>
                       </div>
@@ -540,25 +540,25 @@ export default function Payments() {
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {items.slice(0, 2).map((it, idx) => (
-                          <span key={idx} className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">{it.desc}</span>
+                          <span key={idx} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">{it.desc}</span>
                         ))}
                         {items.length > 2 && <span className="text-[10px] text-slate-500">+{items.length - 2} more</span>}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex flex-col items-end gap-1">
-                        <span className="text-white font-medium">₹{Number(p.amount).toLocaleString()}</span>
+                        <span className="text-slate-800 font-medium">₹{Number(p.amount).toLocaleString()}</span>
                         <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium", 
-                          p.method === 'Cash' ? "text-amber-500 bg-amber-500/10" : "text-blue-500 bg-blue-500/10")}>
+                          p.method === 'Cash' ? "text-amber-600 bg-amber-50" : "text-blue-600 bg-blue-50")}>
                           {p.method}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20" onClick={() => handleWhatsApp(p)}><Share2 className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20" onClick={() => setConfirmModal(p)}><Trash2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-800" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-600 hover:text-orange-500 hover:bg-orange-100" onClick={() => handleWhatsApp(p)}><Share2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-500 hover:bg-red-100" onClick={() => setConfirmModal(p)}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </td>
                   </tr>
@@ -571,28 +571,28 @@ export default function Payments() {
 
       {/* Creation Modal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-xl shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
                   <Wallet className="h-4 w-4" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-white">Record Payment</h2>
+                  <h2 className="text-base font-semibold text-slate-800">Record Payment</h2>
                   <p className="text-xs text-slate-400">Add a new payment record</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={closeAddModal} className="h-8 w-8 text-slate-400 hover:text-white"><X className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={closeAddModal} className="h-8 w-8 text-slate-400 hover:text-slate-800"><X className="h-4 w-4" /></Button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Customer</label>
+                <label className="text-sm font-medium text-slate-600">Customer</label>
                 <select 
                   value={formData.subscriberId} 
                   onChange={(e) => setFormData({...formData, subscriberId: e.target.value})} 
-                  className="w-full h-10 bg-slate-950 border border-white/10 rounded-lg px-3 text-sm text-white outline-none focus:border-indigo-500"
+                  className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-800 outline-none focus:border-orange-400"
                 >
                   <option value="">Select customer...</option>
                   {subscribers.sort((a,b) => a.name.localeCompare(b.name)).map(s => (
@@ -603,18 +603,18 @@ export default function Payments() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-300">Amount (₹)</label>
+                  <label className="text-sm font-medium text-slate-600">Amount (₹)</label>
                   <Input 
                     type="number" 
                     value={formData.amount || ""} 
                     onChange={(e) => setFormData({...formData, amount: Number(e.target.value)})} 
-                    className="h-10 bg-slate-950 border-white/10 rounded-lg px-3 text-sm text-white focus-visible:border-indigo-500" 
+                    className="h-10 bg-slate-50 border-slate-200 rounded-lg px-3 text-sm text-slate-800 focus-visible:border-indigo-500" 
                     placeholder="0.00" 
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-300">Payment Method</label>
-                  <div className="flex gap-2 p-1 bg-slate-950 rounded-lg border border-white/10">
+                  <label className="text-sm font-medium text-slate-600">Payment Method</label>
+                  <div className="flex gap-2 p-1 bg-slate-50 rounded-lg border border-slate-200">
                     {['Cash', 'UPI'].map(m => (
                       <button 
                         key={m} 
@@ -622,7 +622,7 @@ export default function Payments() {
                         onClick={() => setFormData({...formData, method: m as any})} 
                         className={cn(
                           "flex-1 h-8 rounded-md text-sm font-medium transition-colors",
-                          formData.method === m ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"
+                          formData.method === m ? "bg-slate-100 text-slate-800" : "text-slate-400 hover:text-slate-700"
                         )}
                       >
                         {m}
@@ -633,11 +633,11 @@ export default function Payments() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button type="button" variant="ghost" className="flex-1 h-10 bg-slate-800 hover:bg-slate-700 text-white" onClick={closeAddModal}>Cancel</Button>
+                <Button type="button" variant="ghost" className="flex-1 h-10 bg-slate-100 hover:bg-slate-100 text-slate-800" onClick={closeAddModal}>Cancel</Button>
                 <Button 
                   type="submit" 
                   disabled={isSubmitting || !formData.subscriberId} 
-                  className="flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-slate-800"
                 >
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
                   Save Payment
@@ -665,20 +665,20 @@ export default function Payments() {
 
       {/* Delete Confirmation Modal */}
       {confirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-xl p-6 text-center shadow-xl">
-            <div className="mx-auto h-12 w-12 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-white border border-slate-200 rounded-xl p-6 text-center shadow-xl">
+            <div className="mx-auto h-12 w-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 mb-4">
               <AlertCircle className="h-6 w-6" />
             </div>
-            <h2 className="text-lg font-semibold text-white mb-2">Delete Payment</h2>
+            <h2 className="text-lg font-semibold text-slate-800 mb-2">Delete Payment</h2>
             <p className="text-sm text-slate-400 mb-6">
               Are you sure you want to delete this payment record? This action cannot be undone and will affect the customer's balance.
             </p>
             <div className="flex gap-3">
-              <Button variant="ghost" className="flex-1 bg-slate-800 hover:bg-slate-700 text-white" onClick={() => setConfirmModal(null)}>Cancel</Button>
+              <Button variant="ghost" className="flex-1 bg-slate-100 hover:bg-slate-100 text-slate-800" onClick={() => setConfirmModal(null)}>Cancel</Button>
               <Button 
                 variant="destructive" 
-                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white" 
+                className="flex-1 bg-red-500 hover:bg-red-600 text-slate-800" 
                 onClick={() => { deletePayment(confirmModal.id); setConfirmModal(null); toast.success("Payment deleted"); }}
               >
                 Delete

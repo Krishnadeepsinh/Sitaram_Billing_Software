@@ -76,12 +76,12 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
             </div>
           )}
 
-          <div className="flex justify-between items-center px-4 py-5 bg-[#1B2B4B] text-white">
+          <div className="flex justify-between items-center px-4 py-5 bg-[#1B2B4B] text-slate-800">
             <div className="flex flex-col">
               <span className="text-[7.5pt] font-black uppercase tracking-[0.2em] text-[#F47920]">Total Amount</span>
               <span className="text-[6pt] opacity-60">Inclusive of all services</span>
             </div>
-            <span className="text-[20pt] font-black text-white tracking-tighter">
+            <span className="text-[20pt] font-black text-slate-800 tracking-tighter">
               Rs. {grandTotal.toFixed(2)}
             </span>
           </div>

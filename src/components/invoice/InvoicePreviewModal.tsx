@@ -76,22 +76,25 @@ export default function InvoicePreviewModal({
     const element = document.getElementById("invoice-content-print");
     if (!element) throw new Error("Invoice document not ready.");
     
-    // Temporarily show the print version for capturing
+    // Position hiddenly for high-res capture
     element.style.display = "block";
     element.style.position = "absolute";
     element.style.left = "-9999px";
     element.style.top = "0";
+    element.style.visibility = "visible";
+
+    // Wait a tiny bit for any layout shifts
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     const html2pdf = (await import("html2pdf.js")).default;
     const options = {
       margin: 0,
-      filename: `Sitaram_${invoiceLabel}_${invoice?.number || "INV"}.pdf`,
-      image: { type: "jpeg" as const, quality: 1.0 },
+      filename: `Sitaram_Invoice_${invoice.id.slice(-6).toUpperCase()}.pdf`,
+      image: { type: "jpeg" as const, quality: 0.98 },
       html2canvas: { 
-        scale: 3, 
+        scale: 2, // Reduced from 3 to 2 for better performance
         useCORS: true, 
         logging: false, 
-        letterRendering: true,
         windowWidth: 794 
       },
       jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
@@ -102,6 +105,7 @@ export default function InvoicePreviewModal({
       element.style.display = "none";
       return blob;
     } catch (err) {
+      console.error("PDF Gen Error:", err);
       element.style.display = "none";
       throw err;
     }
@@ -184,7 +188,7 @@ export default function InvoicePreviewModal({
             isCableMode={isCableMode} 
           />
           
-          <div className="flex-[0.4] bg-[#1B2B4B] p-8 rounded-[2rem] flex flex-col items-center justify-center text-center relative overflow-hidden shadow-2xl">
+          <div className="flex-[0.4] bg-[#1B2B4B] p-8 rounded-[2rem] flex flex-col items-center justify-center text-center relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
              <p className="text-white/60 text-[9px] font-bold uppercase tracking-[0.3em] mb-4">TOTAL PAYABLE</p>
              <p className="text-white text-5xl font-black tracking-tighter mb-4">₹{Number(invoice.amount).toLocaleString()}</p>

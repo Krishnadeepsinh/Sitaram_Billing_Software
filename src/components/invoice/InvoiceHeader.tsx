@@ -18,10 +18,10 @@ export function InvoiceHeader({ brand, invoiceLabel, isReceipt }: InvoiceHeaderP
       <div className="h-2 bg-[#F47920] w-full" />
       
       <div className="bg-[#1B2B4B] px-10 py-12 flex justify-between items-center relative overflow-hidden">
-        {/* Subtle Background Pattern */}
+        {/* Subtle Background Pattern - Simplified for PDF compatibility */}
         <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-32 -mt-32 blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#F47920] rounded-full -ml-24 -mb-24 blur-3xl" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#F47920] rounded-full -ml-24 -mb-24" />
         </div>
 
         {/* Branding Area */}
@@ -57,7 +57,7 @@ export function InvoiceHeader({ brand, invoiceLabel, isReceipt }: InvoiceHeaderP
 
         {/* Document Label */}
         <div className="flex flex-col items-end relative z-10">
-          <div className="bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/10 flex flex-col items-center">
+          <div className="bg-white/10 px-8 py-4 rounded-2xl border border-white/10 flex flex-col items-center">
             <p className="text-[#F47920] text-[8px] font-black uppercase tracking-[0.3em] mb-1">OFFICIAL DOCUMENT</p>
             <h2 className="text-2xl font-black text-white uppercase tracking-widest leading-none">
               {invoiceLabel}

@@ -217,8 +217,8 @@ export default function InvoicePreviewModal({
       tableWrapper: { border: "1px solid #dce4ef", borderRadius: 4, overflow: "hidden", marginBottom: 30 },
       totalsArea: { display: "flex", justifyContent: "flex-end", marginTop: 0 },
       totalsBox: { width: 340 },
-      totalRow: { display: "flex", justifyContent: "space-between", padding: "8px 14px", fontSize: 13, color: "#4a5568", borderBottom: "1px solid #eef1f6" },
-      grandRow: { display: "flex", justifyContent: "space-between", padding: "14px 14px", fontSize: 18, fontWeight: 800, color: "#ffffff", background: "#1a2e5a", borderRadius: "0 0 4px 4px" },
+      totalRow: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 14px", fontSize: 13, color: "#4a5568", borderBottom: "1px solid #eef1f6", lineHeight: 1.2 },
+      grandRow: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 14px", fontSize: 17, fontWeight: 800, color: "#ffffff", background: "#1a2e5a", borderRadius: "0 0 4px 4px", lineHeight: 1.2 },
       wordsBox: { background: "#f0f4fa", border: "1px solid #dce4ef", borderRadius: 4, padding: "8px 14px", fontSize: 12, color: "#4a5568", fontStyle: "italic", marginTop: 8, marginBottom: 16 },
       bottomArea: { display: "flex", gap: 24, marginTop: 60 },
       payBox: { flex: 1 },
@@ -353,17 +353,17 @@ export default function InvoicePreviewModal({
             <div style={styles.totalsBox}>
               <div style={{ border: "1px solid #dce4ef", borderRadius: "4px 4px 0 0", overflow: "hidden" }}>
                 <div style={styles.totalRow}>
-                  <span>Plan Amount:</span>
-                  <span>Rs. {amount.toFixed(2)}</span>
+                  <span style={{ whiteSpace: "nowrap" }}>Plan Amount:</span>
+                  <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
                 </div>
                 <div style={styles.totalRow}>
-                  <span>Previous Dues (Arrears):</span>
-                  <span>Rs. {previousBalance.toFixed(2)}</span>
+                  <span style={{ whiteSpace: "nowrap" }}>Previous Dues (Arrears):</span>
+                  <span style={{ whiteSpace: "nowrap" }}>Rs. {previousBalance.toFixed(2)}</span>
                 </div>
               </div>
               <div style={styles.grandRow}>
-                <span>GRAND TOTAL:</span>
-                <span>Rs. {grandTotal.toFixed(2)}</span>
+                <span style={{ whiteSpace: "nowrap" }}>GRAND TOTAL:</span>
+                <span style={{ whiteSpace: "nowrap" }}>Rs. {grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>

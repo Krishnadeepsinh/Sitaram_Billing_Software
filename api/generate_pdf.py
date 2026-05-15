@@ -27,29 +27,16 @@ ORANGE_BG = colors.HexColor("#FFF7ED")
 ORANGE_BD = colors.HexColor("#FED7AA")
 WHITE = colors.HexColor("#FFFFFF")
 
-# HELPER FUNCTIONS
 def rrect(c, x, y, w, h, r, fill=False, stroke=False, sw=0.5):
-    """rounded rect using manual beginPath()+arcTo() as requested"""
+    """Stable rounded rect implementation using standard roundRect to avoid artifacts"""
     c.setLineWidth(sw)
     if fill:
         c.setFillColor(fill if isinstance(fill, colors.Color) else colors.white)
     if stroke:
         c.setStrokeColor(stroke if isinstance(stroke, colors.Color) else colors.black)
     
-    path = c.beginPath()
-    path.moveTo(x + r, y)
-    path.arcTo(x + w, y, x + w, y + h, r)
-    path.arcTo(x + w, y + h, x, y + h, r)
-    path.arcTo(x, y + h, x, y, r)
-    path.arcTo(x, y, x + w, y, r)
-    path.close()
-    
-    if fill and stroke:
-        c.drawPath(path, fill=1, stroke=1)
-    elif fill:
-        c.drawPath(path, fill=1, stroke=0)
-    elif stroke:
-        c.drawPath(path, fill=0, stroke=1)
+    # Using standard roundRect as manual path arcTo was creating diagonal artifacts in certain viewers
+    c.roundRect(x, y, w, h, r, stroke=1 if stroke else 0, fill=1 if fill else 0)
 
 def make_qr_image(text):
     """generates QR with qrcode lib as requested (fill=#1B2B4B, white back, ERROR_CORRECT_M)"""

@@ -340,7 +340,7 @@ export default function InvoicePreviewModal({
               <tbody>
                 <tr style={{ background: "#f8fafc" }}>
                   <td style={styles.td}>1</td>
-                  <td style={styles.td}>{lineItem.planName}</td>
+                  <td style={styles.td}>{lineItem.description}</td>
                   <td style={styles.td}>{billingPeriodLabel}</td>
                   <td style={styles.tdRight}>{amount.toFixed(2)}</td>
                   <td style={styles.tdRight}>{previousBalance.toFixed(2)}</td>

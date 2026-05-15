@@ -256,26 +256,25 @@ export default function Invoices() {
 
   return (
     <div className="space-y-6 pb-20">
-      {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-slate-200 pb-6">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-800">Invoices</h1>
-          <p className="text-sm text-slate-400">Manage billing and payment collections.</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Invoices</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage billing and payment collections.</p>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
             onClick={handleSync}
             disabled={isProcessing}
-            className="h-10 rounded-lg border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            className="h-9 border-border text-muted-foreground hover:text-foreground"
           >
             <RefreshCcw className={cn("mr-2 h-4 w-4", isProcessing && "animate-spin")} />
-            Sync Ledger
+            Sync
           </Button>
-          <Button 
+          <Button
             onClick={() => setShowSubSelect(true)}
-            className="h-10 rounded-lg bg-orange-500 px-4 text-sm font-medium text-slate-800 hover:bg-orange-600 transition-colors"
+            className="h-9 bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
           >
             <Plus className="mr-2 h-4 w-4" /> New Invoice
           </Button>
@@ -283,25 +282,27 @@ export default function Invoices() {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-5 rounded-xl border border-slate-200 bg-white p-4 space-y-4">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+      <div className="app-card p-3 flex flex-col lg:flex-row gap-3">
+        {/* Search + Status */}
+        <div className="flex-1 flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search invoices..."
-              className="h-10 rounded-lg border-slate-200 bg-slate-50 pl-9 text-sm text-slate-800 placeholder:text-slate-500 focus-visible:ring-orange-400/20 focus-visible:border-orange-300"
+              className="h-9 bg-input border-border pl-9 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
-          <div className="flex gap-2 p-1 bg-slate-50 rounded-lg border border-slate-100">
+          {/* Status pills */}
+          <div className="flex gap-1 p-1 bg-secondary rounded-lg border border-border">
             {(["all", "paid", "pending", "overdue"] as const).map(f => (
-              <button 
-                key={f} 
-                onClick={() => setStatusF(f)} 
+              <button
+                key={f}
+                onClick={() => setStatusF(f)}
                 className={cn(
-                  "flex-1 py-1.5 text-xs font-medium capitalize rounded-md transition-colors",
-                  statusF === f ? "bg-orange-500 text-slate-800" : "text-slate-400 hover:text-slate-700"
+                  "flex-1 py-1.5 px-2 text-xs font-semibold capitalize rounded-md transition-colors",
+                  statusF === f ? "bg-orange-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {f}
@@ -309,109 +310,87 @@ export default function Invoices() {
             ))}
           </div>
         </div>
-
-        <div className="lg:col-span-3 rounded-xl border border-slate-200 bg-white p-4 space-y-4">
-           <div className="flex gap-2 p-1 bg-slate-50 rounded-lg border border-slate-100">
+        {/* Type + Area */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex gap-1 p-1 bg-secondary rounded-lg border border-border">
             {(["all", "plan", "legacy"] as const).map(t => (
-              <button 
-                key={t} 
-                onClick={() => setTypeF(t)} 
+              <button
+                key={t}
+                onClick={() => setTypeF(t)}
                 className={cn(
-                  "flex-1 py-1.5 text-xs font-medium capitalize rounded-md transition-colors",
-                  typeF === t ? "bg-slate-100 text-slate-800" : "text-slate-400 hover:text-slate-700"
+                  "flex-1 py-1.5 px-2 text-xs font-semibold capitalize rounded-md transition-colors",
+                  typeF === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {t}
               </button>
             ))}
           </div>
-          <select 
-            value={areaF} 
-            onChange={(e) => setAreaF(e.target.value)} 
-            className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-600 outline-none focus:border-orange-300 appearance-none"
+          <select
+            value={areaF}
+            onChange={(e) => setAreaF(e.target.value)}
+            className="h-9 bg-input border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-400 appearance-none"
           >
             <option value="all">All Areas</option>
             {Array.from(new Set(subscribers.map(s => s.area))).filter(Boolean).sort().map(a => <option key={a} value={a}>{a}</option>)}
           </select>
         </div>
-
-        <div className="lg:col-span-4 rounded-xl border border-slate-200 bg-white p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-400">Date Range</span>
-            <button 
-              onClick={resetDateRange}
-              className="text-xs font-medium text-orange-600 hover:text-orange-500"
-            >
-              Reset
-            </button>
+        {/* Date Range */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-secondary rounded-lg border border-border px-2 py-1">
+            <span className="text-[9px] uppercase font-bold text-muted-foreground">From</span>
+            <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
+              const monthIndex = months.indexOf(e.target.value);
+              const d = new Date(filterStartDate); d.setMonth(monthIndex); setFilterStartDate(d);
+            }} className="h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
+              {months.map(m => <option key={m} value={m}>{m.slice(0,3)}</option>)}
+            </select>
+            <select value={filterStartDate.getFullYear()} onChange={(e) => {
+              const d = new Date(filterStartDate); d.setFullYear(Number(e.target.value)); setFilterStartDate(d);
+            }} className="w-14 h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="flex gap-1 p-1 bg-slate-50 border border-slate-200 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">From</span>
-              <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
-                const monthIndex = months.indexOf(e.target.value);
-                const d = new Date(filterStartDate);
-                d.setMonth(monthIndex);
-                setFilterStartDate(d);
-              }} className="flex-1 h-8 bg-transparent border-none text-xs text-slate-600 outline-none appearance-none px-2">
-                {months.map(m => <option key={m} value={m} className="bg-white">{m.slice(0, 3)}</option>)}
-              </select>
-              <div className="w-px h-4 my-auto bg-white/10" />
-              <select value={filterStartDate.getFullYear()} onChange={(e) => {
-                const d = new Date(filterStartDate);
-                d.setFullYear(Number(e.target.value));
-                setFilterStartDate(d);
-              }} className="w-16 h-8 bg-transparent border-none text-xs text-slate-600 outline-none appearance-none px-2">
-                {years.map(y => <option key={y} value={y} className="bg-white">{y}</option>)}
-              </select>
-            </div>
-            <div className="flex gap-1 p-1 bg-slate-50 border border-slate-200 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">To</span>
-              <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
-                const monthIndex = months.indexOf(e.target.value);
-                const d = new Date(filterEndDate);
-                d.setMonth(monthIndex + 1);
-                d.setDate(0);
-                d.setHours(23, 59, 59, 999);
-                setFilterEndDate(d);
-              }} className="flex-1 h-8 bg-transparent border-none text-xs text-slate-600 outline-none appearance-none px-2">
-                {months.map(m => <option key={m} value={m} className="bg-white">{m.slice(0, 3)}</option>)}
-              </select>
-              <div className="w-px h-4 my-auto bg-white/10" />
-              <select value={filterEndDate.getFullYear()} onChange={(e) => {
-                const d = new Date(filterEndDate);
-                d.setFullYear(Number(e.target.value));
-                setFilterEndDate(d);
-              }} className="w-16 h-8 bg-transparent border-none text-xs text-slate-600 outline-none appearance-none px-2">
-                {years.map(y => <option key={y} value={y} className="bg-white">{y}</option>)}
-              </select>
-            </div>
+          <div className="flex items-center gap-1 bg-secondary rounded-lg border border-border px-2 py-1">
+            <span className="text-[9px] uppercase font-bold text-muted-foreground">To</span>
+            <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
+              const monthIndex = months.indexOf(e.target.value);
+              const d = new Date(filterEndDate); d.setMonth(monthIndex+1); d.setDate(0); d.setHours(23,59,59,999); setFilterEndDate(d);
+            }} className="h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
+              {months.map(m => <option key={m} value={m}>{m.slice(0,3)}</option>)}
+            </select>
+            <select value={filterEndDate.getFullYear()} onChange={(e) => {
+              const d = new Date(filterEndDate); d.setFullYear(Number(e.target.value)); setFilterEndDate(d);
+            }} className="w-14 h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
           </div>
+          <button onClick={resetDateRange} className="text-xs font-semibold text-orange-500 hover:text-orange-600 whitespace-nowrap">Reset</button>
         </div>
       </div>
 
       {/* Bulk Action Panel */}
       {selectedInvoices.length > 0 && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="app-card p-3 border-red-200 bg-red-50/60 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Trash2 className="h-4 w-4 text-red-500" />
-            <span className="text-sm font-medium text-red-500">
-              {selectedInvoices.length} Invoices selected
+            <span className="text-sm font-semibold text-red-600">
+              {selectedInvoices.length} invoice{selectedInvoices.length > 1 ? 's' : ''} selected
             </span>
           </div>
-          <Button variant="destructive" size="sm" className="bg-red-500 hover:bg-red-600" onClick={() => setConfirmModal({ type: 'bulkDelete' })}>
+          <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white" onClick={() => setConfirmModal({ type: 'bulkDelete' })}>
             Delete Selected
           </Button>
         </div>
       )}
 
       {/* Invoice Ledger Mobile Cards */}
-      <div className="grid grid-cols-1 gap-4 lg:hidden">
+      <div className="grid grid-cols-1 gap-3 lg:hidden">
         {sorted.length > 0 ? sorted.map((inv) => {
           const sub = subMap[inv.subscriberId];
           const dueAmount = getInvoiceDueAmount(inv.id);
           return (
-            <div key={inv.id} className="rounded-xl border border-slate-200 bg-white p-4 space-y-4">
+            <div key={inv.id} className="app-card p-4 space-y-3">
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
                   <input 
@@ -460,52 +439,52 @@ export default function Invoices() {
       </div>
 
       {/* Invoice Ledger Desktop Table */}
-      <div className="hidden lg:block rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <div className="data-table hidden lg:block">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="px-4 py-3 w-12 text-center">
-                  <input 
-                    type="checkbox" 
-                    className="h-4 w-4 rounded border-slate-200 bg-white accent-indigo-600" 
-                    checked={sorted.length > 0 && selectedInvoices.length === sorted.length} 
-                    onChange={(e) => setSelectedInvoices(e.target.checked ? sorted.map(i => i.id) : [])} 
+              <tr>
+                <th className="w-12 text-center px-4 py-3">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-border accent-orange-500"
+                    checked={sorted.length > 0 && selectedInvoices.length === sorted.length}
+                    onChange={(e) => setSelectedInvoices(e.target.checked ? sorted.map(i => i.id) : [])}
                   />
                 </th>
-                <th className="px-4 py-3 font-medium text-slate-400">Invoice Ref</th>
-                <th className="px-4 py-3 font-medium text-slate-400">Subscriber</th>
-                <th className="px-4 py-3 font-medium text-slate-400">Status</th>
-                <th className="px-4 py-3 font-medium text-slate-400">Dates</th>
-                <th className="px-4 py-3 text-right font-medium text-slate-400">Amount</th>
-                <th className="px-4 py-3 w-32"></th>
+                <th>Invoice Ref</th>
+                <th>Subscriber</th>
+                <th>Status</th>
+                <th>Dates</th>
+                <th className="text-right">Amount</th>
+                <th className="w-32"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {sorted.length > 0 ? sorted.map((inv) => {
                 const sub = subMap[inv.subscriberId];
                 const dueAmount = getInvoiceDueAmount(inv.id);
                 return (
-                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors group">
+                  <tr key={inv.id} className="group">
                     <td className="px-4 py-3 text-center">
-                      <input 
-                        type="checkbox" 
-                        className="h-4 w-4 rounded border-slate-200 bg-white accent-indigo-600" 
-                        checked={selectedInvoices.includes(inv.id)} 
-                        onChange={(e) => setSelectedInvoices(prev => e.target.checked ? [...prev, inv.id] : prev.filter(id => id !== inv.id))} 
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-border accent-orange-500"
+                        checked={selectedInvoices.includes(inv.id)}
+                        onChange={(e) => setSelectedInvoices(prev => e.target.checked ? [...prev, inv.id] : prev.filter(id => id !== inv.id))}
                       />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-slate-800"><Highlight text={inv.number} query={q} /></span>
-                        <span className="text-xs text-slate-500 mt-0.5">#{inv.id.slice(0, 8)}</span>
+                        <span className="font-semibold text-foreground"><Highlight text={inv.number} query={q} /></span>
+                        <span className="text-xs text-muted-foreground mt-0.5 font-mono-num">#{inv.id.slice(0, 8)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-medium text-slate-800"><Highlight text={sub?.name || "Unknown"} query={q} /></span>
-                        <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
-                          <span>#{sub?.customerNo}</span>
+                        <span className="font-medium text-foreground"><Highlight text={sub?.name || "Unknown"} query={q} /></span>
+                        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                          <span className="font-mono-num">#{sub?.customerNo}</span>
                           <span>•</span>
                           <span><Highlight text={sub?.area || "No Area"} query={q} /></span>
                           {inv.type === 'legacy' && <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 text-[10px]">Legacy</span>}
@@ -517,29 +496,34 @@ export default function Invoices() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col text-xs">
-                        <span className="text-slate-600">{formatDate(inv.date)}</span>
-                        <span className="text-slate-500 mt-0.5">Due: {formatDate(inv.dueDate)}</span>
+                        <span className="text-foreground">{formatDate(inv.date)}</span>
+                        <span className="text-muted-foreground mt-0.5">Due: {formatDate(inv.dueDate)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex flex-col items-end">
-                        <span className="font-bold text-slate-800 tabular-nums">{formatCurrency(inv.amount)}</span>
+                        <span className="font-bold text-foreground font-mono-num tabular-nums">{formatCurrency(inv.amount)}</span>
                         {dueAmount > 0 && <span className="text-xs text-red-500 mt-0.5">Due: {formatCurrency(dueAmount)}</span>}
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-800" onClick={() => { setPreviewInv(inv); setShowPreview(true); }}><Eye className="h-4 w-4" /></Button>
-                        {inv.status !== 'paid' && <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-600 hover:text-orange-500 hover:bg-orange-50" onClick={() => { setPayInv(inv); setCustomAmount(dueAmount); }}><Wallet className="h-4 w-4" /></Button>}
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-500 hover:bg-red-50" onClick={() => setConfirmModal({ type: 'delete', id: inv.id })}><Trash2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => { setPreviewInv(inv); setShowPreview(true); }}><Eye className="h-4 w-4" /></Button>
+                        {inv.status !== 'paid' && <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-600 hover:bg-orange-50" onClick={() => { setPayInv(inv); setCustomAmount(dueAmount); }}><Wallet className="h-4 w-4" /></Button>}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => setConfirmModal({ type: 'delete', id: inv.id })}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </td>
                   </tr>
                 );
               }) : (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-slate-500">
-                    No invoices found.
+                  <td colSpan={7} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-12 w-12 rounded-2xl bg-secondary flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-muted-foreground/50" />
+                      </div>
+                      <p className="text-sm font-semibold text-foreground">No invoices found</p>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -550,41 +534,41 @@ export default function Invoices() {
 
       {/* Creation Modal */}
       {showSubSelect && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/30 backdrop-blur-sm sm:animate-in sm:fade-in duration-200">
-          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg app-card p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800">New Invoice</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Create a manual invoice</p>
+                  <h2 className="text-xl font-bold text-foreground">New Invoice</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Create a manual invoice</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setShowSubSelect(false)} className="text-slate-400 hover:text-slate-800"><X className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setShowSubSelect(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
             
             <div className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-slate-600">Area</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Area</Label>
                   <select 
                     value={selectedArea} 
                     onChange={(e) => { setSelectedArea(e.target.value); setSelectedSub(""); }} 
-                    className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-800 outline-none focus:border-orange-300 transition-colors"
+                    className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-300 transition-colors"
                   >
                     <option value="">Select Area</option>
                     {Array.from(new Set(subscribers.map(s => s.area))).filter(Boolean).sort().map(a => <option key={a} value={a}>{a}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-slate-600">Subscriber</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Subscriber</Label>
                   <select 
                     value={selectedSub} 
                     onChange={(e) => setSelectedSub(e.target.value)} 
                     disabled={!selectedArea} 
-                    className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-800 outline-none focus:border-orange-300 transition-colors disabled:opacity-50"
+                    className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-300 transition-colors disabled:opacity-50"
                   >
                     <option value="">Select Subscriber</option>
                     {subscribers.filter(s => s.area === selectedArea).sort((a,b) => a.name.localeCompare(b.name)).map(s => <option key={s.id} value={s.id}>#{s.customerNo} {s.name}</option>)}
@@ -594,15 +578,15 @@ export default function Invoices() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-slate-600">Type</Label>
-                  <div className="flex gap-2 p-1 bg-slate-50 rounded-lg border border-slate-200">
+                  <Label className="text-xs font-medium text-muted-foreground">Type</Label>
+                  <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
                     {(["plan", "legacy"] as const).map(t => (
                       <button 
                         key={t} 
                         onClick={() => setBillingType(t)} 
                         className={cn(
                           "flex-1 py-1.5 text-xs font-medium capitalize rounded-md transition-colors",
-                          billingType === t ? "bg-orange-500 text-slate-800" : "text-slate-400 hover:text-slate-700"
+                          billingType === t ? "bg-orange-500 text-white" : "text-muted-foreground hover:text-foreground"
                         )}
                       >
                         {t}
@@ -612,23 +596,23 @@ export default function Invoices() {
                 </div>
                 {billingType === "plan" ? (
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-slate-600">Duration</Label>
+                    <Label className="text-xs font-medium text-muted-foreground">Duration</Label>
                     <select 
                       value={planMonths} 
                       onChange={(e) => setPlanMonths(Number(e.target.value))} 
-                      className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-800 appearance-none"
+                      className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground appearance-none"
                     >
                       {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>{m} {m > 1 ? 'Months' : 'Month'}</option>)}
                     </select>
                   </div>
                 ) : (
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-slate-600">Discount (₹)</Label>
+                    <Label className="text-xs font-medium text-muted-foreground">Discount (₹)</Label>
                     <input 
                       type="number" 
                       value={discountAmount || ''} 
                       onChange={(e) => setDiscountAmount(Number(e.target.value))} 
-                      className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-800 outline-none focus:border-orange-300" 
+                      className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-300" 
                       placeholder="0" 
                     />
                   </div>
@@ -636,21 +620,21 @@ export default function Invoices() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-slate-600">Effective Date</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Effective Date</Label>
                 <input 
                   type="date" 
                   value={rechargeDate} 
                   onChange={(e) => setRechargeDate(e.target.value)} 
-                  className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-800 outline-none focus:border-orange-300" 
+                  className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-300" 
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button variant="ghost" className="flex-1 text-slate-400 hover:text-slate-800" onClick={() => setShowSubSelect(false)}>Cancel</Button>
+                <Button variant="ghost" className="flex-1 text-muted-foreground hover:text-foreground" onClick={() => setShowSubSelect(false)}>Cancel</Button>
                 <Button 
                   onClick={handleGenerateSingle} 
                   disabled={isProcessing || !selectedSub} 
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-slate-800"
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
                 >
                   {isProcessing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Create Invoice
@@ -663,28 +647,28 @@ export default function Invoices() {
 
       {/* Settlement Terminal Modal */}
       {payInv && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/30 backdrop-blur-sm sm:animate-in sm:fade-in duration-200">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-md app-card p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
                   <Wallet className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800">Record Payment</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Collect pending dues</p>
+                  <h2 className="text-xl font-bold text-foreground">Record Payment</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Collect pending dues</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setPayInv(null)} className="text-slate-400 hover:text-slate-800"><X className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setPayInv(null)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6 flex justify-between items-center">
+            <div className="bg-secondary p-4 rounded-xl border border-border mb-6 flex justify-between items-center">
               <div>
-                <p className="text-xs text-slate-400 mb-1">Subscriber</p>
-                <p className="text-sm font-semibold text-slate-800">{subMap[payInv.subscriberId]?.name}</p>
+                <p className="text-xs text-muted-foreground mb-1">Subscriber</p>
+                <p className="text-sm font-semibold text-foreground">{subMap[payInv.subscriberId]?.name}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-slate-400 mb-1">Due Amount</p>
+                <p className="text-xs text-muted-foreground mb-1">Due Amount</p>
                 <p className="text-lg font-bold text-green-600">{formatCurrency(getInvoiceDueAmount(payInv.id))}</p>
               </div>
             </div>
@@ -692,15 +676,15 @@ export default function Invoices() {
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-slate-600">Method</Label>
-                  <div className="flex gap-2 p-1 bg-slate-50 rounded-lg border border-slate-200">
+                  <Label className="text-xs font-medium text-muted-foreground">Method</Label>
+                  <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
                     {(["Cash", "UPI"] as const).map(m => (
                       <button 
                         key={m} 
                         onClick={() => setPayMethod(m)} 
                         className={cn(
                           "flex-1 py-1.5 text-xs font-medium rounded-md transition-colors",
-                          payMethod === m ? "bg-emerald-600 text-slate-800" : "text-slate-400 hover:text-slate-700"
+                          payMethod === m ? "bg-emerald-600 text-white" : "text-muted-foreground hover:text-foreground"
                         )}
                       >
                         {m}
@@ -709,44 +693,44 @@ export default function Invoices() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-slate-600">Date</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Date</Label>
                   <input 
                     type="date" 
                     value={paymentDate} 
                     onChange={(e) => setPaymentDate(e.target.value)} 
-                    className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-800 outline-none focus:border-emerald-500/50" 
+                    className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-emerald-500/50" 
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-slate-600">Discount (₹)</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Discount (₹)</Label>
                   <input 
                     type="number" 
                     value={payDiscount || ''} 
                     onChange={(e) => setPayDiscount(Number(e.target.value))} 
-                    className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm text-slate-800 outline-none focus:border-emerald-500/50" 
+                    className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-emerald-500/50" 
                     placeholder="0" 
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-slate-600">Paying Amount (₹)</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Paying Amount (₹)</Label>
                   <input 
                     type="number" 
                     value={customAmount || ''} 
                     onChange={(e) => setCustomAmount(Number(e.target.value))} 
-                    className="w-full h-10 bg-slate-50 border border-emerald-500/30 rounded-lg px-3 text-sm font-semibold text-green-600 outline-none focus:border-emerald-500" 
+                    className="w-full h-10 bg-secondary border border-emerald-500/30 rounded-lg px-3 text-sm font-semibold text-green-600 outline-none focus:border-emerald-500" 
                   />
                 </div>
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button variant="ghost" className="flex-1 text-slate-400 hover:text-slate-800" onClick={() => setPayInv(null)}>Cancel</Button>
+                <Button variant="ghost" className="flex-1 text-muted-foreground hover:text-foreground" onClick={() => setPayInv(null)}>Cancel</Button>
                 <Button 
                   onClick={handlePay} 
                   disabled={isProcessing} 
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-slate-800"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   {isProcessing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Confirm Payment
@@ -759,13 +743,13 @@ export default function Invoices() {
 
       {/* Security Override Prompt */}
       {confirmModal && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-black/30 backdrop-blur-sm sm:animate-in sm:fade-in duration-200">
-          <div className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-6 text-center shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-sm app-card p-6 text-center shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
             <div className="h-16 w-16 mx-auto rounded-full bg-red-50 text-red-500 border border-red-200 flex items-center justify-center mb-6">
               <AlertCircle className="h-8 w-8" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 mb-2">Delete Record?</h2>
-            <p className="text-sm text-slate-400 mb-8">
+            <h2 className="text-xl font-bold text-foreground mb-2">Delete Record?</h2>
+            <p className="text-sm text-muted-foreground mb-8">
               This action cannot be undone. This will permanently remove the invoice and its data.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">

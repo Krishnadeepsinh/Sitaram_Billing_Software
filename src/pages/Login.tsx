@@ -43,51 +43,64 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#F8FAFC] relative overflow-hidden">
-      <div className="absolute inset-0 bg-grid opacity-60" />
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Subtle background radial hints */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(24_92%_50%/0.06),transparent_50%),radial-gradient(circle_at_70%_80%,hsl(222_30%_16%/0.08),transparent_50%)]" />
 
-      <div className="w-full max-w-sm p-6 relative z-10">
-        <div className="w-full rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
-          <div className="flex flex-col items-center mb-10 text-center">
-            <Logo size="xl" showText={false} className="mb-5" />
-            <h1 className="font-display text-3xl font-bold tracking-tight text-[#1B2B4B]">SITARAM</h1>
-            <p className="mt-1 text-sm font-semibold text-orange-500">Cable & Broadband</p>
-            <p className="mt-3 text-sm leading-relaxed text-slate-500">Secure workspace for collections, invoices, and subscriber records.</p>
+      <div className="relative w-full max-w-sm">
+        <div className="app-card p-8 space-y-6">
+          {/* Logo + Brand */}
+          <div className="text-center space-y-2">
+            <Logo size="xl" showText={false} className="mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-foreground">SITARAM</h1>
+            <p className="text-orange-500 text-sm font-semibold uppercase tracking-widest">
+              Cable & Broadband
+            </p>
+            <p className="text-sm text-muted-foreground pt-1">
+              Connecting every home through one billing workspace
+            </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div className="space-y-2">
-              <label className="ml-1 text-xs font-medium text-slate-500">Username</label>
+          {/* Divider */}
+          <div className="h-px bg-border" />
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Username
+              </label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Enter username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="h-12 pl-12 bg-slate-50 border-slate-200 text-slate-800 rounded-lg focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400"
+                  className="pl-9 h-11 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="ml-1 text-xs font-medium text-slate-500">Password</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Password
+              </label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder="********"
+                  placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pl-12 pr-12 bg-slate-50 border-slate-200 text-slate-800 rounded-lg focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400"
+                  className="pl-9 pr-10 h-11 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg"
                   required
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword((current) => !current)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((p) => !p)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -96,24 +109,22 @@ export default function Login() {
 
             <Button
               type="submit"
+              className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg shadow-sm"
               disabled={isLoading}
-              className="w-full h-12 mt-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="h-4 w-4" />
-                </>
+                <ArrowRight className="h-4 w-4 mr-2" />
               )}
+              Sign In
             </Button>
           </form>
-
-          <div className="mt-8 text-center border-t border-slate-100 pt-5">
-            <p className="text-xs text-slate-400">Billing workspace v0.4.2</p>
-          </div>
         </div>
+
+        <p className="text-center text-xs text-muted-foreground mt-4">
+          Sitaram Cable & Broadband · Chitra, Bhavnagar
+        </p>
       </div>
     </div>
   );

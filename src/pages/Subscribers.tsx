@@ -280,28 +280,15 @@ export default function Subscribers() {
   return (
     <div className="space-y-6 pb-16 md:pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-800">
-              Subscribers
-            </h1>
-            <div className={cn(
-              "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border animate-in fade-in zoom-in duration-300",
-              isCableMode 
-                ? "bg-amber-50 border-amber-200 text-amber-600" 
-                : "bg-orange-50 border-orange-200 text-orange-600"
-            )}>
-              {activeBusinessMode} Mode
-            </div>
-          </div>
-          <p className="text-sm text-slate-400">Manage your network nodes and customers</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Subscribers</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage your subscriber base and billing.</p>
         </div>
-        
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <Button 
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
             variant="outline"
-            className="flex-1 md:flex-none h-10 border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition-colors" 
+            className="h-9 border-border text-muted-foreground hover:text-foreground"
             onClick={async () => {
               setIsGlobalRefreshing(true);
               try {
@@ -315,45 +302,37 @@ export default function Subscribers() {
             <Loader2 className={cn("mr-2 h-4 w-4", isGlobalRefreshing && "animate-spin")} />
             Sync
           </Button>
-          <Button 
-            variant="outline"
-            className="flex-1 md:flex-none h-10 border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition-colors"
-            onClick={handleExportExcel}
-          >
+          <Button variant="outline" className="h-9 border-border text-muted-foreground hover:text-foreground" onClick={handleExportExcel}>
             <Download className="mr-2 h-4 w-4" /> Export
           </Button>
-          <Button 
-            onClick={handleOpenAdd}
-            className="flex-1 md:flex-none h-10 bg-orange-500 hover:bg-orange-600 text-slate-800 transition-colors"
-          >
+          <Button onClick={handleOpenAdd} className="h-9 bg-orange-500 hover:bg-orange-600 text-white shadow-sm">
             <Plus className="mr-2 h-4 w-4" /> Add Subscriber
           </Button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col md:flex-row gap-4">
+      <div className="app-card p-4 flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name, ID, phone..."
-            className="h-10 rounded-lg border-slate-200 bg-slate-50 pl-10 text-sm text-slate-700 placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-orange-400 focus-visible:border-transparent"
+            className="h-9 rounded-lg bg-input border-border pl-10 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
           {q && (
-            <button 
+            <button
               onClick={() => setQ("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-md hover:bg-slate-100 text-slate-400 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground transition-colors"
             >
               <X className="h-3 w-3" />
             </button>
           )}
         </div>
-        
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <select 
-            className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <select
+            className="h-9 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none"
             value={statusF}
             onChange={(e: any) => setStatusF(e.target.value)}
           >
@@ -361,74 +340,74 @@ export default function Subscribers() {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
-          <select 
-            className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
+          <select
+            className="h-9 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none"
             value={areaF}
             onChange={(e) => setAreaF(e.target.value)}
           >
             <option value="all">All Areas</option>
             {areas.filter(a => a !== "all").map(a => <option key={a} value={a}>{a}</option>)}
           </select>
-          <select 
-            className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
+          <select
+            className="h-9 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none"
             value={planF}
             onChange={(e) => setPlanF(e.target.value)}
           >
             <option value="all">All Plans</option>
             {dbPlans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-
-          <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-slate-50">
-            <Switch 
-              id="dues-only" 
-              checked={showDuesOnly} 
+          <div className="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-secondary/30">
+            <Switch
+              id="dues-only"
+              checked={showDuesOnly}
               onCheckedChange={setShowDuesOnly}
               className="data-[state=checked]:bg-orange-500"
             />
-            <Label htmlFor="dues-only" className="cursor-pointer text-sm text-slate-400 whitespace-nowrap">Overdue Only</Label>
+            <Label htmlFor="dues-only" className="cursor-pointer text-sm text-muted-foreground whitespace-nowrap">Overdue Only</Label>
           </div>
         </div>
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+      <div className="data-table hidden md:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-700">
+          <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="px-4 py-3 font-medium text-slate-400 whitespace-nowrap w-16">No.</th>
-                <th className="px-4 py-3 font-medium text-slate-400">Subscriber</th>
-                <th className="px-4 py-3 font-medium text-slate-400">{customerIdLabel} / Area</th>
-                <th className="px-4 py-3 font-medium text-slate-400">Plan & Balance</th>
-                <th className="px-4 py-3 font-medium text-slate-400">Status</th>
-                <th className="px-4 py-3 font-medium text-slate-400 text-right">Actions</th>
+              <tr className="border-b border-border bg-secondary/60">
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap w-16">No.</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subscriber</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{customerIdLabel} / Area</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Plan & Balance</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
-                    <div className="flex flex-col items-center gap-2">
-                      <Users className="h-8 w-8 text-slate-500" />
-                      <p>No subscribers found</p>
+                  <td colSpan={6} className="px-4 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="h-14 w-14 rounded-2xl bg-secondary flex items-center justify-center">
+                        <Users className="h-7 w-7 text-muted-foreground/50" />
+                      </div>
+                      <p className="text-sm font-semibold text-foreground">No subscribers found</p>
                     </div>
                   </td>
                 </tr>
               ) : filtered.map((s) => {
                 const plan = dbPlans.find(p => p.id === s.planId);
                 const balance = effectiveBalances[s.id] || 0;
-                
                 return (
-                  <tr key={s.id} className="hover:bg-slate-50 transition-colors group">
+                  <tr key={s.id} className="border-b border-border/50 hover:bg-secondary/40 transition-colors group last:border-0">
                     <td className="px-4 py-3">
-                      <div className="h-8 w-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-medium text-xs">
+                      <div className="h-8 w-8 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center font-bold text-xs">
                         {s.customerNo || '?'}
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-medium text-slate-700"><Highlight text={s.name} query={q} /></span>
-                        <div className="flex items-center gap-1.5 mt-1 text-slate-400 text-xs">
+                        <span className="text-sm font-medium text-foreground"><Highlight text={s.name} query={q} /></span>
+                        <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
                           <Phone className="h-3 w-3" />
                           <span>{s.phone || 'N/A'}</span>
                         </div>
@@ -436,8 +415,8 @@ export default function Subscribers() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-medium text-slate-700"><Highlight text={s.customerId || "N/A"} query={q} /></span>
-                        <div className="flex items-center gap-1.5 mt-1 text-slate-400 text-xs">
+                        <span className="text-sm font-medium text-foreground"><Highlight text={s.customerId || "N/A"} query={q} /></span>
+                        <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3" />
                           <span><Highlight text={s.area} query={q} /></span>
                         </div>
@@ -445,15 +424,10 @@ export default function Subscribers() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className={cn(
-                            "font-semibold",
-                            balance >= 0 ? "text-green-600" : "text-red-600"
-                          )}>
-                            {formatCurrency(balance)}
-                          </span>
-                        </div>
-                        <span className="text-xs text-slate-400 mt-1">{plan?.name || "Unassigned"}</span>
+                        <span className={cn("text-sm font-semibold font-mono-num", balance >= 0 ? "text-green-600" : "text-red-600")}>
+                          {formatCurrency(balance)}
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-0.5">{plan?.name || "Unassigned"}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">

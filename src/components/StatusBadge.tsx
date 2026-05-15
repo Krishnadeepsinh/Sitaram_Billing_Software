@@ -1,33 +1,44 @@
 import { cn } from "@/lib/utils";
 
-const styles: Record<string, string> = {
-  active: "bg-green-50 text-green-700 border-green-200",
-  expired: "bg-red-50 text-red-700 border-red-200",
+const statusMap: Record<string, string> = {
+  active:   "bg-green-100 text-green-700 border-green-200",
+  paid:     "bg-green-100 text-green-700 border-green-200",
+  expired:  "bg-red-100 text-red-600 border-red-200",
+  overdue:  "bg-red-100 text-red-600 border-red-200",
+  pending:  "bg-amber-100 text-amber-700 border-amber-200",
   inactive: "bg-slate-100 text-slate-500 border-slate-200",
-  paid: "bg-green-50 text-green-700 border-green-200",
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  overdue: "bg-red-50 text-red-700 border-red-200",
+  sent:     "bg-blue-100 text-blue-600 border-blue-200",
+  failed:   "bg-red-100 text-red-600 border-red-200",
 };
 
-export function StatusBadge({ status, onClick, className, isLoading }: { status: string, onClick?: (e: React.MouseEvent) => void, className?: string, isLoading?: boolean }) {
+export function StatusBadge({
+  status,
+  onClick,
+  className,
+  isLoading,
+}: {
+  status: string;
+  onClick?: (e: React.MouseEvent) => void;
+  className?: string;
+  isLoading?: boolean;
+}) {
   const s = String(status || "").toLowerCase().trim();
-  
-  const badgeStyles = cn(
-    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all",
-    onClick && !isLoading && "cursor-pointer hover:scale-105 active:scale-95 hover:shadow-sm",
+  const label = s === "expired" ? "Inactive" : status;
+
+  const badgeClasses = cn(
+    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+    onClick && !isLoading && "cursor-pointer hover:opacity-80 transition-opacity",
     isLoading && "opacity-70 cursor-wait",
-    styles[s] ?? "bg-slate-100 text-slate-500 border-slate-200",
+    statusMap[s] ?? "bg-secondary text-secondary-foreground border-border",
     className
   );
-
-  const label = (s === 'expired' || s === 'inactive') ? 'Inactive' : (s === 'active' ? 'Active' : status);
 
   const content = (
     <>
       {isLoading ? (
         <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
       ) : (
-        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
       )}
       {label}
     </>
@@ -35,23 +46,19 @@ export function StatusBadge({ status, onClick, className, isLoading }: { status:
 
   if (onClick) {
     return (
-      <button 
+      <button
         type="button"
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           onClick(e);
         }}
-        className={badgeStyles}
+        className={badgeClasses}
       >
         {content}
       </button>
     );
   }
 
-  return (
-    <span className={badgeStyles}>
-      {content}
-    </span>
-  );
+  return <span className={badgeClasses}>{content}</span>;
 }

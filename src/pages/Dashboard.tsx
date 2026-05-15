@@ -1,7 +1,7 @@
 import { StatCard } from "@/components/StatCard";
-import { 
-  Wallet, Users, AlertCircle, Activity, ArrowUpRight, 
-  FileText, Download, MapPin, Loader2, Calendar, 
+import {
+  Wallet, Users, AlertCircle, Activity, ArrowUpRight,
+  FileText, Download, MapPin, Loader2, Calendar,
   BarChart3, LayoutGrid, Terminal, ShieldCheck,
   TrendingUp, DatabaseZap, Zap, Globe, Shield,
   Cpu, Network, Signal, ArrowDownLeft
@@ -23,18 +23,18 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
-  const { 
-    stats: s, 
-    payments, 
-    subscribers, 
-    expenses, 
-    plans: plansList, 
-    isLoading, 
+  const {
+    stats: s,
+    payments,
+    subscribers,
+    expenses,
+    plans: plansList,
+    isLoading,
     companySettings,
     filterStartDate,
     setFilterStartDate,
     filterEndDate,
-    setFilterEndDate 
+    setFilterEndDate
   } = useBilling();
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -61,7 +61,6 @@ export default function Dashboard() {
     const monthIndex = months.indexOf(monthName);
     const newDate = new Date(filterEndDate);
     newDate.setMonth(monthIndex);
-    // Set to last day of that month
     newDate.setMonth(monthIndex + 1);
     newDate.setDate(0);
     newDate.setHours(23, 59, 59, 999);
@@ -93,28 +92,28 @@ export default function Dashboard() {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF();
       const now = new Date();
-      
+
       const formatCurrencyPDF = (n: any) => {
         const val = Number(n) || 0;
-        return "Rs. " + val.toLocaleString('en-IN');
+        return "Rs. " + val.toLocaleString("en-IN");
       };
 
       doc.setFontSize(22);
-      doc.text(companySettings?.name || 'SITARAM CABLE & BROADBAND', 20, 20);
+      doc.text(companySettings?.name || "SITARAM CABLE & BROADBAND", 20, 20);
       doc.setFontSize(10);
       doc.text(`Operational Intelligence Report - ${formatDate(now.toISOString())}`, 20, 30);
-      
+
       doc.setFontSize(16);
-      doc.text('Key Performance Indicators', 20, 50);
+      doc.text("Key Performance Indicators", 20, 50);
       doc.setFontSize(12);
       doc.text(`Today's Collection: ${formatCurrencyPDF(s.collectedToday)}`, 20, 65);
       doc.text(`Monthly Revenue: ${formatCurrencyPDF(s.monthRevenue)}`, 20, 75);
       doc.text(`Total Pending Dues: ${formatCurrencyPDF(s.pendingDues)}`, 20, 85);
       doc.text(`Active Subscriber Base: ${s.totalSubscribers}`, 20, 95);
-      
+
       let y = 120;
       doc.setFontSize(16);
-      doc.text('Sector Breakdown', 20, y);
+      doc.text("Sector Breakdown", 20, y);
       doc.setFontSize(10);
       y += 15;
       areaBreakdown.forEach(([area, count]) => {
@@ -123,9 +122,9 @@ export default function Dashboard() {
         y += 10;
       });
 
-      const fileName = `Ops_Report_${now.toISOString().split('T')[0]}.pdf`;
-      const blob = doc.output('blob');
-      const saveAs = (await import('file-saver')).saveAs;
+      const fileName = `Ops_Report_${now.toISOString().split("T")[0]}.pdf`;
+      const blob = doc.output("blob");
+      const saveAs = (await import("file-saver")).saveAs;
       saveAs(blob, fileName);
       toast.success("Operational Report Exported");
     } catch (err) {
@@ -139,131 +138,167 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 pb-20">
-      {/* Header section */}
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-6">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-          <p className="text-sm text-slate-500">Overview of your operations and revenue.</p>
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {months[filterStartDate.getMonth()]} {filterStartDate.getFullYear()}
+            {" → "}
+            {months[filterEndDate.getMonth()]} {filterEndDate.getFullYear()}
+          </p>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex flex-col sm:flex-row items-center gap-2">
-            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
-              <span className="text-[9px] uppercase font-bold text-slate-400 px-2">From</span>
-              <Select value={months[filterStartDate.getMonth()]} onValueChange={handleStartMonthChange}>
-                <SelectTrigger className="h-8 w-[110px] border-none bg-transparent text-xs font-medium text-slate-700 focus:ring-0 px-2">
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent className="border-slate-200 bg-white">
-                  {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={filterStartDate.getFullYear().toString()} onValueChange={handleStartYearChange}>
-                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent text-xs font-medium text-slate-700 focus:ring-0 px-2">
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent className="border-slate-200 bg-white">
-                  {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
 
-            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
-              <span className="text-[9px] uppercase font-bold text-slate-400 px-2">To</span>
-              <Select value={months[filterEndDate.getMonth()]} onValueChange={handleEndMonthChange}>
-                <SelectTrigger className="h-8 w-[110px] border-none bg-transparent text-xs font-medium text-slate-700 focus:ring-0 px-2">
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent className="border-slate-200 bg-white">
-                  {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={filterEndDate.getFullYear().toString()} onValueChange={handleEndYearChange}>
-                <SelectTrigger className="h-8 w-[70px] border-none bg-transparent text-xs font-medium text-slate-700 focus:ring-0 px-2">
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent className="border-slate-200 bg-white">
-                  {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date range selectors */}
+          <div className="flex items-center gap-1 bg-secondary rounded-lg border border-border px-1 py-1">
+            <span className="text-[9px] uppercase font-bold text-muted-foreground px-1">From</span>
+            <Select value={months[filterStartDate.getMonth()]} onValueChange={handleStartMonthChange}>
+              <SelectTrigger className="h-7 w-[110px] border-none bg-transparent text-xs font-semibold shadow-none focus:ring-0">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <div className="h-4 w-px bg-border" />
+            <Select value={filterStartDate.getFullYear().toString()} onValueChange={handleStartYearChange}>
+              <SelectTrigger className="h-7 w-[70px] border-none bg-transparent text-xs font-semibold shadow-none focus:ring-0">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((y) => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
-          <Button 
+          <div className="flex items-center gap-1 bg-secondary rounded-lg border border-border px-1 py-1">
+            <span className="text-[9px] uppercase font-bold text-muted-foreground px-1">To</span>
+            <Select value={months[filterEndDate.getMonth()]} onValueChange={handleEndMonthChange}>
+              <SelectTrigger className="h-7 w-[110px] border-none bg-transparent text-xs font-semibold shadow-none focus:ring-0">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <div className="h-4 w-px bg-border" />
+            <Select value={filterEndDate.getFullYear().toString()} onValueChange={handleEndYearChange}>
+              <SelectTrigger className="h-7 w-[70px] border-none bg-transparent text-xs font-semibold shadow-none focus:ring-0">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((y) => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
             onClick={handleDownloadReport}
             disabled={isGenerating}
-            className="h-10 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors px-5"
+            variant="outline"
+            className="h-9 border-border text-muted-foreground hover:text-foreground"
           >
             {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            Export Report
+            Export
           </Button>
         </div>
       </div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: "Today's Collection", value: formatCurrency(s.collectedToday), icon: TrendingUp, variant: "primary" as const, delta: "Today" },
-          { label: "Monthly Revenue", value: formatCurrency(s.monthRevenue), icon: Wallet, variant: "success" as const, delta: "This period" },
-          { label: "Pending Dues", value: formatCurrency(s.pendingDues), icon: AlertCircle, variant: "warning" as const, delta: "Action required" },
-          { label: "Monthly Expenses", value: formatCurrency(s.monthExpenses), icon: FileText, variant: "destructive" as const, delta: "This period" }
-        ].map((kpi, i) => (
-          <StatCard key={i} {...kpi} />
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {isLoading ? (
+          [...Array(4)].map((_, i) => (
+            <div key={i} className="app-card p-5 space-y-4">
+              <div className="skeleton h-3 w-24" />
+              <div className="skeleton h-8 w-32" />
+              <div className="skeleton h-0.5 w-full" />
+            </div>
+          ))
+        ) : (
+          [
+            { label: "Today's Collection", value: formatCurrency(s.collectedToday), icon: TrendingUp, variant: "primary" as const, delta: "Today" },
+            { label: "Monthly Revenue", value: formatCurrency(s.monthRevenue), icon: Wallet, variant: "success" as const, delta: "This period" },
+            { label: "Pending Dues", value: formatCurrency(s.pendingDues), icon: AlertCircle, variant: "warning" as const, delta: "Action required" },
+            { label: "Monthly Expenses", value: formatCurrency(s.monthExpenses), icon: FileText, variant: "destructive" as const, delta: "This period" },
+          ].map((kpi, i) => (
+            <StatCard key={i} {...kpi} />
+          ))
+        )}
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "New Payment", icon: Wallet, to: "/payments", color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-200" },
-          { label: "Subscribers", icon: Users, to: "/subscribers", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
-          { label: "Billing", icon: FileText, to: "/invoices", color: "text-green-600", bg: "bg-green-50", border: "border-green-200" },
-          { label: "Reports", icon: BarChart3, to: "/reports", color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-200" }
+          { label: "New Payment", icon: Wallet, to: "/payments", color: "text-orange-600", bg: "bg-orange-50 border-orange-200" },
+          { label: "Subscribers", icon: Users, to: "/subscribers", color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
+          { label: "Billing", icon: FileText, to: "/invoices", color: "text-green-600", bg: "bg-green-50 border-green-200" },
+          { label: "Reports", icon: BarChart3, to: "/reports", color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
         ].map((action, i) => (
-          <Link key={i} to={action.to} className={cn("flex items-center justify-center gap-2 rounded-xl border p-3 transition-all hover:shadow-sm", action.bg, action.border)}>
+          <Link
+            key={i}
+            to={action.to}
+            className={cn(
+              "flex items-center justify-center gap-2 rounded-xl border p-3 transition-all hover:shadow-sm",
+              action.bg
+            )}
+          >
             <action.icon className={cn("h-4 w-4", action.color)} />
             <span className={cn("text-sm font-medium", action.color)}>{action.label}</span>
           </Link>
         ))}
       </div>
 
+      {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Transactions */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-800">Recent Collections</h2>
-            <Button variant="ghost" asChild className="text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50">
-              <Link to="/payments">View All <ArrowUpRight className="ml-1 h-4 w-4" /></Link>
-            </Button>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        {/* Recent Collections */}
+        <div className="lg:col-span-2">
+          <div className="app-card overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold text-foreground">Recent Collections</h2>
+                <span className="text-xs bg-secondary px-2 py-0.5 rounded-full text-muted-foreground font-semibold">
+                  {recent.length}
+                </span>
+              </div>
+              <Button variant="ghost" asChild className="text-xs text-orange-500 hover:text-orange-600 hover:bg-orange-50 h-7 px-2">
+                <Link to="/payments">View All <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+              </Button>
+            </div>
+
             {recent.length === 0 ? (
-              <div className="p-8 text-center text-slate-400">
-                <Wallet className="h-10 w-10 mx-auto mb-3 text-slate-300" />
-                <p>No recent transactions</p>
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <div className="h-12 w-12 rounded-2xl bg-secondary flex items-center justify-center">
+                  <Wallet className="h-6 w-6 text-muted-foreground/50" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">No recent transactions</p>
+                <p className="text-xs text-muted-foreground">Payments will appear here</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div>
                 {recent.map((p) => {
-                  const sub = subscribers.find(s => s.id === p.subscriberId);
+                  const sub = subscribers.find((s) => s.id === p.subscriberId);
                   return (
-                    <div key={p.id} className="flex items-center justify-between p-4 hover:bg-slate-50/60 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center">
-                          <span className="text-sm font-bold text-orange-600">{(sub?.name || "?")[0]}</span>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-slate-800">{sub?.name || "Unknown Subscriber"}</h4>
-                          <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                            <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", p.method === 'Cash' ? "bg-slate-100 text-slate-600" : "bg-blue-50 text-blue-600")}>{p.method}</span>
-                            <span>•</span>
-                            <span>{formatDate(p.date)}</span>
-                          </div>
+                    <div key={p.id} className="flex items-center gap-3 py-3 px-5 border-b border-border/50 last:border-0 hover:bg-secondary/30 transition-colors">
+                      <div className="h-9 w-9 rounded-full bg-orange-100 text-orange-600 font-bold text-sm flex items-center justify-center flex-shrink-0">
+                        {(sub?.name || "?")[0].toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{sub?.name || "Unknown Subscriber"}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className={cn(
+                            "px-1.5 py-0.5 rounded text-[10px] font-semibold border",
+                            p.method === "Cash"
+                              ? "bg-slate-100 text-slate-600 border-slate-200"
+                              : "bg-blue-100 text-blue-600 border-blue-200"
+                          )}>
+                            {p.method}
+                          </span>
+                          <span className="text-xs text-muted-foreground">·</span>
+                          <span className="text-xs text-muted-foreground">{formatDate(p.date)}</span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-green-600 font-mono tabular-nums">+{formatCurrency(p.amount)}</p>
-                      </div>
+                      <p className="text-sm font-semibold font-mono-num text-green-600">+{formatCurrency(p.amount)}</p>
                     </div>
                   );
                 })}
@@ -274,57 +309,62 @@ export default function Dashboard() {
 
         {/* Right Column */}
         <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
+          {/* Area Breakdown */}
+          <div className="app-card p-5">
+            <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-orange-500" /> Area Breakdown
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {areaBreakdown.slice(0, 5).map(([area, count]) => (
                 <div key={area} className="space-y-1.5">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-700 font-medium">{area}</span>
-                    <span className="text-slate-400">{count} subs</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium text-foreground">{area}</span>
+                    <span className="text-xs text-muted-foreground">{count} subs</span>
                   </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-orange-500 rounded-full transition-all" 
+                  <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-orange-400 transition-all duration-500"
                       style={{ width: `${(count / Math.max(1, subscribers.length)) * 100}%` }}
                     />
                   </div>
                 </div>
               ))}
+              {areaBreakdown.length === 0 && (
+                <p className="text-xs text-muted-foreground">No area data yet</p>
+              )}
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-red-600 mb-4 flex items-center gap-2">
+          {/* Expiring Soon */}
+          <div className="app-card p-5 border-red-200 bg-red-50/50">
+            <h3 className="text-sm font-semibold text-red-600 mb-3 flex items-center gap-2">
               <AlertCircle className="h-4 w-4" /> Expiring Soon
             </h3>
-            <div className="space-y-2">
+            <div>
               {expiring.length === 0 ? (
-                <p className="text-sm text-slate-400">No upcoming expirations</p>
+                <p className="text-xs text-muted-foreground">No upcoming expirations</p>
               ) : (
                 expiring.map((sub) => {
                   const days = Math.ceil((+new Date(sub.expiryDate) - Date.now()) / 86400000);
                   return (
-                    <div key={sub.id} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50/50">
+                    <div key={sub.id} className="flex items-center justify-between py-2 border-b border-red-100/60 last:border-0">
                       <div className="min-w-0 pr-3">
-                        <p className="text-sm font-medium text-slate-700 truncate">{sub.name}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{sub.area}</p>
+                        <p className="text-xs font-medium text-foreground truncate">{sub.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{sub.area}</p>
                       </div>
-                      <div className={cn(
-                        "px-2 py-0.5 rounded-full text-xs font-semibold tabular-nums",
-                        days <= 3 ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"
+                      <span className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] font-bold flex-shrink-0",
+                        days <= 3 ? "bg-red-500 text-white" : "bg-amber-100 text-amber-700"
                       )}>
                         {days}d
-                      </div>
+                      </span>
                     </div>
                   );
                 })
               )}
             </div>
-            <Button variant="ghost" asChild className="w-full mt-4 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50">
-              <Link to="/subscribers">View All <ArrowUpRight className="ml-1 h-4 w-4" /></Link>
+            <Button variant="ghost" asChild className="w-full mt-3 text-xs text-orange-500 hover:text-orange-600 hover:bg-orange-50 h-7">
+              <Link to="/subscribers">View All <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
             </Button>
           </div>
         </div>

@@ -10,43 +10,29 @@ interface Props {
 }
 
 export function StatCard({ label, value, delta, icon: Icon, variant = "primary" }: Props) {
-  const borderColor = {
-    primary: "border-l-orange-500",
-    accent: "border-l-blue-500",
-    success: "border-l-green-500",
-    warning: "border-l-amber-500",
-    destructive: "border-l-red-500",
-  }[variant];
-
-  const iconStyles = {
-    primary: "bg-orange-50 text-orange-500",
-    accent: "bg-blue-50 text-blue-500",
-    success: "bg-green-50 text-green-600",
-    warning: "bg-amber-50 text-amber-600",
-    destructive: "bg-red-50 text-red-500",
-  }[variant];
+  const variantMap = {
+    primary:     { icon: "bg-orange-100 text-orange-600", bar: "bg-orange-400" },
+    accent:      { icon: "bg-blue-100 text-blue-600",     bar: "bg-blue-400"   },
+    success:     { icon: "bg-green-100 text-green-600",   bar: "bg-green-400"  },
+    warning:     { icon: "bg-amber-100 text-amber-600",   bar: "bg-amber-400"  },
+    destructive: { icon: "bg-red-100 text-red-600",       bar: "bg-red-400"    },
+  };
 
   return (
-    <div className={cn(
-      "bg-white rounded-xl border border-slate-100 shadow-sm p-5 transition-shadow hover:shadow-md border-l-4",
-      borderColor
-    )}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
-          <div className="space-y-1">
-            <p className="font-mono text-2xl font-bold tracking-tight text-slate-800 tabular-nums leading-none">
-              {value}
-            </p>
-            {delta && (
-              <p className="text-xs text-slate-500">{delta}</p>
-            )}
-          </div>
-        </div>
-        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", iconStyles)}>
-          <Icon className="h-5 w-5" />
+    <div className="app-card p-5 flex flex-col gap-4 hover:shadow-md transition-shadow duration-200">
+      <div className="flex items-start justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground leading-none">
+          {label}
+        </p>
+        <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0", variantMap[variant].icon)}>
+          <Icon className="h-4 w-4" />
         </div>
       </div>
+      <div className="space-y-1">
+        <p className="text-2xl font-bold font-mono-num text-foreground leading-none">{value}</p>
+        {delta && <p className="text-xs text-muted-foreground">{delta}</p>}
+      </div>
+      <div className={cn("h-0.5 w-full rounded-full opacity-60", variantMap[variant].bar)} />
     </div>
   );
 }

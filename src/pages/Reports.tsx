@@ -338,23 +338,20 @@ export default function Reports() {
 
   return (
     <div className="space-y-4 animate-fade-in pb-12">
-      {/* INDUSTRIAL HEADER */}
+      {/* HEADER */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-orange-600">
-            <Shield className="h-3.5 w-3.5" />
-            Financial performance
-          </p>
-          <h1 className="text-2xl font-bold text-slate-800">Reports & audit</h1>
+          <h1 className="text-2xl font-bold text-foreground">Reports & Audit</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Financial performance and reconciliation.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-9 rounded-lg border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-600 hover:bg-slate-100">
+          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="h-9 border-border text-muted-foreground hover:text-foreground">
             <Eye className="mr-2 h-3.5 w-3.5" /> Preview
           </Button>
-          <Button variant="outline" onClick={handleExportExcel} className="h-9 rounded-lg border-emerald-600/30 bg-emerald-600/10 px-3 text-xs font-medium text-green-600 hover:bg-emerald-600/20">
+          <Button variant="outline" onClick={handleExportExcel} className="h-9 border-green-200 bg-green-50 text-green-700 hover:bg-green-100">
             <Download className="mr-2 h-3.5 w-3.5" /> Export Excel
           </Button>
-          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-9 rounded-lg bg-orange-500 px-4 text-xs font-medium text-slate-800 shadow-md shadow-indigo-600/25 hover:bg-orange-600">
+          <Button onClick={handleDownloadPremiumReport} disabled={isGenerating} className="h-9 bg-orange-500 hover:bg-orange-600 text-white shadow-sm">
             {isGenerating ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}
             Download PDF
           </Button>
@@ -362,28 +359,27 @@ export default function Reports() {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
-        <div className="flex gap-1 p-1 bg-white border border-slate-200 rounded-lg">
-          <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">From</span>
+      <div className="app-card p-3 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
+        <div className="flex gap-1 items-center bg-secondary rounded-lg border border-border px-1">
+          <span className="text-[9px] uppercase font-bold text-muted-foreground px-2">From</span>
           <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
             const monthIndex = months.indexOf(e.target.value);
             const d = new Date(filterStartDate);
             d.setMonth(monthIndex);
             setFilterStartDate(d);
-          }} className="flex-1 h-9 bg-transparent border-none text-sm text-slate-800 outline-none appearance-none px-2">
-            {months.map(m => <option key={m} value={m} className="bg-white">{m}</option>)}
+          }} className="flex-1 h-8 bg-transparent border-none text-sm text-foreground outline-none appearance-none px-2">
+            {months.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
-          <div className="w-px h-4 my-auto bg-white/10" />
           <select value={filterStartDate.getFullYear()} onChange={(e) => {
             const d = new Date(filterStartDate);
             d.setFullYear(Number(e.target.value));
             setFilterStartDate(d);
-          }} className="w-16 h-9 bg-transparent border-none text-sm text-slate-800 outline-none appearance-none px-2">
-            {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-white">{y}</option>)}
+          }} className="w-16 h-8 bg-transparent border-none text-sm text-foreground outline-none appearance-none px-2">
+            {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
-        <div className="flex gap-1 p-1 bg-white border border-slate-200 rounded-lg">
-          <span className="text-[9px] uppercase font-bold text-slate-500 px-2 my-auto">To</span>
+        <div className="flex gap-1 items-center bg-secondary rounded-lg border border-border px-1">
+          <span className="text-[9px] uppercase font-bold text-muted-foreground px-2">To</span>
           <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
             const monthIndex = months.indexOf(e.target.value);
             const d = new Date(filterEndDate);
@@ -391,56 +387,51 @@ export default function Reports() {
             d.setDate(0);
             d.setHours(23, 59, 59, 999);
             setFilterEndDate(d);
-          }} className="flex-1 h-9 bg-transparent border-none text-sm text-slate-800 outline-none appearance-none px-2">
-            {months.map(m => <option key={m} value={m} className="bg-white">{m}</option>)}
+          }} className="flex-1 h-8 bg-transparent border-none text-sm text-foreground outline-none appearance-none px-2">
+            {months.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
-          <div className="w-px h-4 my-auto bg-white/10" />
           <select value={filterEndDate.getFullYear()} onChange={(e) => {
             const d = new Date(filterEndDate);
             d.setFullYear(Number(e.target.value));
             setFilterEndDate(d);
-          }} className="w-16 h-9 bg-transparent border-none text-sm text-slate-800 outline-none appearance-none px-2">
-            {[2024, 2025, 2026].map(y => <option key={y} value={y} className="bg-white">{y}</option>)}
+          }} className="w-16 h-8 bg-transparent border-none text-sm text-foreground outline-none appearance-none px-2">
+            {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
         <div className="relative group">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-orange-500 transition-colors" />
-          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-9 pr-6 text-sm font-medium text-slate-800 transition-colors focus:border-orange-400/40 focus:outline-none focus:ring-1 focus:ring-orange-400">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-border bg-input pl-9 pr-6 text-sm font-medium text-foreground focus:border-orange-400/40 focus:outline-none focus:ring-2 focus:ring-orange-500/20">
             {areas.map(area => (
-              <option key={area} value={area} className="bg-white">{area}</option>
+              <option key={area} value={area}>{area}</option>
             ))}
           </select>
         </div>
         <div className="relative group">
-          <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600 group-focus-within:text-orange-500 transition-colors" />
-          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-9 pr-6 text-sm font-medium text-slate-800 transition-colors focus:border-orange-400/40 focus:outline-none focus:ring-1 focus:ring-orange-400">
-            <option value="All Methods" className="bg-white">All Methods</option>
-            <option value="Cash" className="bg-white">Cash</option>
-            <option value="UPI" className="bg-white">UPI / Digital</option>
+          <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <select value={selectedMethod} onChange={(e) => setSelectedMethod(e.target.value)} className="h-9 w-full appearance-none rounded-lg border border-border bg-input pl-9 pr-6 text-sm font-medium text-foreground focus:border-orange-400/40 focus:outline-none focus:ring-2 focus:ring-orange-500/20">
+            <option value="All Methods">All Methods</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI / Digital</option>
           </select>
         </div>
       </div>
 
-      {/* STATS INFRASTRUCTURE */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* STATS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Data quality", value: `${(integrityScore * 100).toFixed(1)}%`, icon: ShieldCheck, color: "blue" },
-          { label: "Net revenue", value: formatCurrency(monthStats.revenue), icon: TrendingUp, color: "blue" },
-          { label: "Outstanding dues", value: formatCurrency(stats.pendingDues), icon: AlertCircle, color: "rose" },
-          { label: "Active subscribers", value: stats.active, icon: Users, color: "indigo" }
+          { label: "Data quality", value: `${(integrityScore * 100).toFixed(1)}%`, icon: ShieldCheck, iconCls: "bg-blue-100 text-blue-600" },
+          { label: "Net revenue", value: formatCurrency(monthStats.revenue), icon: TrendingUp, iconCls: "bg-green-100 text-green-600" },
+          { label: "Outstanding dues", value: formatCurrency(stats.pendingDues), icon: AlertCircle, iconCls: "bg-red-100 text-red-600" },
+          { label: "Active subscribers", value: stats.active, icon: Users, iconCls: "bg-orange-100 text-orange-600" }
         ].map((item, idx) => (
-          <div key={idx} className="bg-white rounded-xl border border-slate-200 group p-5 transition-colors hover:border-indigo-500/25">
-            <div className="mb-3 flex items-center justify-between">
-              <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg border", 
-                item.color === "blue" ? "bg-orange-50 text-orange-600 border-orange-200" : 
-                item.color === "rose" ? "bg-red-500/10 text-red-500 border-rose-600/20" : 
-                "bg-emerald-600/10 text-emerald-300 border-emerald-600/20"
-              )}>
+          <div key={idx} className="app-card p-5 flex flex-col gap-4 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{item.label}</p>
+              <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg flex-shrink-0", item.iconCls)}>
                 <item.icon className="h-4 w-4" />
               </div>
-              <span className="text-right text-xs font-medium text-slate-500">{item.label}</span>
             </div>
-            <p className="font-display text-xl font-semibold tabular-nums leading-none tracking-tight text-slate-800">{item.value}</p>
+            <p className="text-xl font-bold font-mono-num text-foreground leading-none">{item.value}</p>
           </div>
         ))}
       </div>

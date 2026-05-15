@@ -727,7 +727,7 @@ export default function Invoices() {
           <div className="w-full max-w-md app-card p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
                   <Wallet className="h-5 w-5" />
                 </div>
                 <div>
@@ -749,18 +749,19 @@ export default function Invoices() {
               </div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground">Method</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Payment Method</Label>
                   <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
                     {(["Cash", "UPI"] as const).map(m => (
                       <button 
                         key={m} 
+                        type="button"
                         onClick={() => setPayMethod(m)} 
                         className={cn(
                           "flex-1 py-1.5 text-xs font-medium rounded-md transition-colors",
-                          payMethod === m ? "bg-emerald-600 text-white" : "text-muted-foreground hover:text-foreground"
+                          payMethod === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                         )}
                       >
                         {m}
@@ -769,46 +770,62 @@ export default function Invoices() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground">Date</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Payment Date</Label>
                   <input 
                     type="date" 
                     value={paymentDate} 
                     onChange={(e) => setPaymentDate(e.target.value)} 
-                    className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-emerald-500/50" 
+                    className="w-full h-10 bg-input border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-400" 
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground">Discount (₹)</Label>
-                  <input 
+                  <Label className="text-xs font-medium text-foreground">Discount (₹)</Label>
+                  <Input 
                     type="number" 
                     value={payDiscount || ''} 
                     onChange={(e) => setPayDiscount(Number(e.target.value))} 
-                    className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-emerald-500/50" 
-                    placeholder="0" 
+                    className="h-10 bg-input border-border rounded-lg px-3 text-sm text-foreground focus-visible:border-orange-400" 
+                    placeholder="0.00" 
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground">Paying Amount (₹)</Label>
-                  <input 
+                  <Label className="text-sm font-medium text-foreground">Total Bill Amount (₹)</Label>
+                  <Input 
                     type="number" 
                     value={customAmount || ''} 
                     onChange={(e) => setCustomAmount(Number(e.target.value))} 
-                    className="w-full h-10 bg-secondary border border-emerald-500/30 rounded-lg px-3 text-sm font-semibold text-green-600 outline-none focus:border-emerald-500" 
+                    className="h-10 bg-input border-emerald-500/30 rounded-lg px-3 text-sm font-bold text-emerald-600 focus-visible:border-emerald-500" 
+                    placeholder="0.00"
                   />
                 </div>
               </div>
 
+              {/* Live Preview of Net Collection & Credit */}
+              <div className="space-y-3 pt-1">
+                <div className="p-3 bg-secondary/50 rounded-xl border border-dashed border-border flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Cash/UPI to Collect</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[10px] text-muted-foreground font-medium">₹</span>
+                    <span className="text-lg font-bold text-orange-600">{((customAmount || 0) - (payDiscount || 0)).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="p-2 bg-green-50/50 rounded-lg border border-green-100/50 flex justify-between items-center px-3">
+                  <span className="text-[10px] font-bold text-green-700/70 uppercase tracking-tight">Total Credit to Customer</span>
+                  <span className="text-sm font-bold text-green-700">₹{(customAmount || 0).toLocaleString()}</span>
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-4">
-                <Button variant="ghost" className="flex-1 text-muted-foreground hover:text-foreground" onClick={() => setPayInv(null)}>Cancel</Button>
+                <Button variant="ghost" className="flex-1 h-11 bg-secondary hover:bg-secondary/80 text-foreground" onClick={() => setPayInv(null)}>Cancel</Button>
                 <Button 
                   onClick={handlePay} 
                   disabled={isProcessing} 
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="flex-1 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold"
                 >
-                  {isProcessing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {isProcessing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
                   Confirm Payment
                 </Button>
               </div>

@@ -109,7 +109,6 @@ export default function InvoicePreviewModal({
         customerMobile: subscriber?.phone || 'N/A',
         planName: lineItem.description,
         planMonths: lineItem.quantity,
-        isCableMode: isCableMode,
         amount: invoice.amount,
         discount: invoice.discountAmount || 0,
         amountInWords: numberToWords(Number(invoice.amount) - (invoice.discountAmount || 0)),

@@ -156,7 +156,6 @@ export default function Dashboard() {
           <p className="text-sm text-slate-400">Overview of your operations and revenue.</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-col sm:flex-row items-center gap-2">
             <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-slate-900 p-1">

@@ -238,9 +238,16 @@ export default function Payments() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.subscriberId || formData.amount <= 0) return toast.error("Invalid input protocol");
-    try {
+     try {
       setIsSubmitting(true);
-      const newPay = await recordPayment({ ...formData, date: new Date().toISOString(), agent: "System Admin" });
+      // The cash amount is the total bill minus discount
+      const cashAmount = formData.amount - formData.discount;
+      const newPay = await recordPayment({ 
+        ...formData, 
+        amount: cashAmount, 
+        date: new Date().toISOString(), 
+        agent: "System Admin" 
+      });
       toast.success("Transaction Record Created");
       closeAddModal();
       setSelectedPayment(newPay);
@@ -658,7 +665,7 @@ export default function Payments() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Cash/UPI Received (₹)</label>
+                  <label className="text-sm font-medium text-foreground">Total Bill Amount (₹)</label>
                   <Input 
                     type="number" 
                     value={formData.amount || ""} 
@@ -679,12 +686,18 @@ export default function Payments() {
                 </div>
               </div>
 
-              {/* Live Preview of Total Cleared */}
-              <div className="p-3 bg-secondary/50 rounded-xl border border-dashed border-border flex justify-between items-center">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Credit to Customer</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[10px] text-muted-foreground font-medium">₹</span>
-                  <span className="text-lg font-bold text-orange-600">{(formData.amount + formData.discount).toLocaleString()}</span>
+              {/* Live Preview of Net Collection & Credit */}
+              <div className="space-y-3">
+                <div className="p-3 bg-secondary/50 rounded-xl border border-dashed border-border flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Cash/UPI to Collect</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[10px] text-muted-foreground font-medium">₹</span>
+                    <span className="text-lg font-bold text-orange-600">{(formData.amount - formData.discount).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="p-2 bg-green-50/50 rounded-lg border border-green-100/50 flex justify-between items-center px-3">
+                  <span className="text-[10px] font-bold text-green-700/70 uppercase tracking-tight">Total Credit to Customer</span>
+                  <span className="text-sm font-bold text-green-700">₹{formData.amount.toLocaleString()}</span>
                 </div>
               </div>
 

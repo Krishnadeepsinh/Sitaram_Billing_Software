@@ -192,8 +192,8 @@ export const formatMonthRanges = (dates: Date[]) => {
   let rangeEnd = sortedDates[0];
   
   const formatSingleRange = (start: Date, end: Date) => {
-    const startStr = start.toLocaleString('default', { month: 'short' });
-    const endStr = end.toLocaleString('default', { month: 'short' });
+    const startStr = start.toLocaleString('default', { month: 'short' }).toLowerCase();
+    const endStr = end.toLocaleString('default', { month: 'short' }).toLowerCase();
     const startYear = start.toLocaleString('default', { year: '2-digit' });
     const endYear = end.toLocaleString('default', { year: '2-digit' });
     
@@ -201,9 +201,9 @@ export const formatMonthRanges = (dates: Date[]) => {
       return `${startStr} ${startYear}`;
     } else {
       if (startYear === endYear) {
-        return `${startStr}-${endStr} ${startYear}`;
+        return `${startStr} to ${endStr} ${startYear}`;
       } else {
-        return `${startStr} ${startYear} - ${endStr} ${endYear}`;
+        return `${startStr} ${startYear} to ${endStr} ${endYear}`;
       }
     }
   };

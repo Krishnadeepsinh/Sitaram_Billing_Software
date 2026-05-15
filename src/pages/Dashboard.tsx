@@ -6,7 +6,7 @@ import {
   TrendingUp, DatabaseZap, Zap, Globe, Shield,
   Cpu, Network, Signal, ArrowDownLeft
 } from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/mockData";
+import { formatCurrency, formatDate, formatMonthRanges } from "@/lib/mockData";
 import { useBusinessMode } from "@/lib/turso";
 import { useBilling } from "@/context/BillingContext";
 import { Button } from "@/components/ui/button";
@@ -118,6 +118,26 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, number>)
   ).sort((a, b) => b[1] - a[1]);
+
+  const topDebtors = subscribers
+    .map(sub => {
+      const balance = (payments
+        .filter(p => p.subscriberId === sub.id)
+        .reduce((s, p) => s + Number(p.amount) + (Number(p.discount) || 0), 0)) - 
+        (invoices
+        .filter(i => i.subscriberId === sub.id)
+        .reduce((s, i) => s + Number(i.amount || 0), 0)) - 
+        (Number(sub.openingBalance) || 0);
+      
+      const pendingInvoices = invoices.filter(i => i.subscriberId === sub.id && i.status === 'pending');
+      const months = formatMonthRanges(pendingInvoices.filter(i => i.type === 'plan').map(i => new Date(i.date)));
+      const hasLegacy = pendingInvoices.some(i => i.type === 'legacy');
+      
+      return { ...sub, balance, dueMonths: months, hasLegacy };
+    })
+    .filter(s => s.balance < -1)
+    .sort((a, b) => a.balance - b.balance)
+    .slice(0, 5);
 
   const handleDownloadReport = async () => {
     setIsGenerating(true);
@@ -374,6 +394,43 @@ export default function Dashboard() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+
+          {/* Outstanding Dues */}
+          <div className="app-card overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold text-foreground">Pending Dues</h2>
+                <span className="text-xs bg-red-100 px-2 py-0.5 rounded-full text-red-600 font-semibold">
+                  Priority
+                </span>
+              </div>
+              <Button variant="ghost" asChild className="text-xs text-orange-500 hover:text-orange-600 hover:bg-orange-50 h-7 px-2">
+                <Link to="/subscribers">Collect <ArrowUpRight className="ml-1 h-3.5 w-3.5" /></Link>
+              </Button>
+            </div>
+            
+            {topDebtors.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">No pending dues</div>
+            ) : (
+              <div>
+                {topDebtors.map(sub => (
+                  <div key={sub.id} className="flex items-center gap-3 py-3 px-5 border-b border-border/50 last:border-0 hover:bg-secondary/30 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{sub.name}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1 rounded uppercase">
+                          {sub.hasLegacy ? "Legacy + " : ""}{sub.dueMonths || "DUE"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">·</span>
+                        <span className="text-xs text-muted-foreground">{sub.area}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm font-bold text-red-600">{formatCurrency(sub.balance)}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>

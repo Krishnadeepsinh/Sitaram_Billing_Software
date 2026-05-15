@@ -3,7 +3,7 @@ import { Download, Loader2, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatFullDate } from "@/lib/mockData";
 import { toast } from "sonner";
-import { getBillingPeriodLabel, getInvoiceLineItem } from "./invoicePreviewUtils";
+import { getBillingPeriodLabel, getInvoiceLineItem, getInvoiceServiceDates } from "./invoicePreviewUtils";
 import { QRCodeSVG } from "qrcode.react";
 
 type InvoicePreviewModalProps = {
@@ -238,7 +238,6 @@ export default function InvoicePreviewModal({
     const lineItem = getInvoiceLineItem(invoice, subscriber, plans, isCableMode);
     
     // Service Dates
-    const { getInvoiceServiceDates } = require("./invoicePreviewUtils");
     const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
     const servicePeriodLabel = invoice.type === "legacy" 
       ? billingPeriodLabel 

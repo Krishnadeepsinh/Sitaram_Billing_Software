@@ -222,12 +222,12 @@ export default function InvoicePreviewModal({
       wordsBox: { background: "#f0f4fa", border: "1px solid #dce4ef", borderRadius: 4, padding: "8px 14px", fontSize: 12, color: "#4a5568", fontStyle: "italic", marginTop: 8, marginBottom: 16 },
       bottomArea: { display: "flex", gap: 24, marginTop: 60 },
       payBox: { flex: 1 },
-      payTitle: { fontSize: 16, fontWeight: 700, color: "#e8522a", letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 16 },
-      payItem: { fontSize: 16, color: "#1a2e5a", marginBottom: 12, display: "flex", gap: 10 },
+      payTitle: { fontSize: 15, fontWeight: 700, color: "#e8522a", letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 16 },
+      payItem: { fontSize: 15, color: "#1a2e5a", marginBottom: 12, display: "flex", gap: 10 },
       payNum: { color: "#7a8fa6", fontWeight: 700, width: 26, flexShrink: 0 },
       qrBox: { width: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px solid #dce4ef", borderRadius: 4, padding: "16px 20px", background: "#f8fafc" },
-      qrTitle: { fontSize: 13, fontWeight: 700, color: "#1a2e5a", letterSpacing: 0.5, marginBottom: 12 },
-      qrUpi: { fontSize: 13, color: "#1a2e5a", fontWeight: 600, marginTop: 8 },
+      qrTitle: { fontSize: 12, fontWeight: 700, color: "#1a2e5a", letterSpacing: 0.5, marginBottom: 12 },
+      qrUpi: { fontSize: 12, color: "#1a2e5a", fontWeight: 600, marginTop: 8 },
       footer: { background: "#1a2e5a", color: "#a0b4d0", fontSize: 10, textAlign: "center", padding: "10px 20px", marginTop: "auto" },
     };
 
@@ -387,8 +387,8 @@ export default function InvoicePreviewModal({
                 <div style={styles.payItem} key={i}>
                   <span style={styles.payNum}>{i + 1}.</span>
                   <div style={{ display: "flex" }}>
-                    <span style={{ fontWeight: 600, color: "#7a8fa6", width: 150, flexShrink: 0 }}>{item.label}:</span>
-                    <span style={{ fontWeight: 700, flex: 1 }}>{item.value}</span>
+                    <span style={{ fontWeight: 600, color: "#7a8fa6", width: 140, flexShrink: 0 }}>{item.label}:</span>
+                    <span style={{ fontWeight: 700, flex: 1, whiteSpace: "nowrap" }}>{item.value}</span>
                   </div>
                 </div>
               ))}

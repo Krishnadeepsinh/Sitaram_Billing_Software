@@ -48,13 +48,13 @@ export default function Payments() {
   });
 
   const getSubscriberDueAmount = (subscriberId: string) => {
-    const sub = subscribers.find((item) => item.id === subscriberId);
+    const sub = (subscribers || []).find((item) => item.id === subscriberId);
     if (!sub) return 0;
 
-    const totalInvoiced = invoices
+    const totalInvoiced = (invoices || [])
       .filter((inv) => inv.subscriberId === subscriberId)
       .reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
-    const totalPaid = payments
+    const totalPaid = (payments || [])
       .filter((payment) => payment.subscriberId === subscriberId)
       .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
     const effectiveBalance = totalPaid - totalInvoiced - Number(sub.openingBalance || 0);

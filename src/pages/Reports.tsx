@@ -242,23 +242,23 @@ export default function Reports() {
   }, [subscribers]);
 
   const filteredPayments = useMemo(() => {
-    return payments.filter(p => {
+    return (payments || []).filter(p => {
       if (!p || !p.date) return false;
       const d = new Date(p.date);
       if (!(d >= filterStartDate && d <= filterEndDate)) return false;
       if (selectedMethod !== "All Methods" && p.method !== selectedMethod) return false;
       if (selectedArea === "All Addresses") return true;
-      const sub = subscribers.find(sub => sub.id === p.subscriberId);
+      const sub = (subscribers || []).find(sub => sub.id === p.subscriberId);
       return sub?.area === selectedArea;
     }).sort((a, b) => {
-      const subA = subscribers.find(s => s.id === a.subscriberId);
-      const subB = subscribers.find(s => s.id === b.subscriberId);
+      const subA = (subscribers || []).find(s => s.id === a.subscriberId);
+      const subB = (subscribers || []).find(s => s.id === b.subscriberId);
       return (subA?.customerNo || 0) - (subB?.customerNo || 0);
     });
   }, [payments, filterStartDate, filterEndDate, selectedArea, selectedMethod, subscribers]);
 
   const filteredExpenses = useMemo(() => {
-    return expenses.filter(e => {
+    return (expenses || []).filter(e => {
       if (!e || !e.date) return false;
       const d = new Date(e.date);
       return d >= filterStartDate && d <= filterEndDate;

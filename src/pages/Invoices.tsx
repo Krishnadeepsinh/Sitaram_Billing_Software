@@ -107,7 +107,7 @@ export default function Invoices() {
   }, [plansList]);
 
   const filtered = useMemo(() => {
-    const allInvoices = invoices;
+    const allInvoices = invoices || [];
     const tokens = debouncedQ.toLowerCase().split(/\s+/).filter(Boolean);
 
     return allInvoices.filter((inv) => {

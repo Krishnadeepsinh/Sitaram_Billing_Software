@@ -27,6 +27,7 @@ export default function Dashboard() {
     stats: s,
     payments,
     subscribers,
+    invoices,
     expenses,
     plans: plansList,
     isLoading,
@@ -106,30 +107,30 @@ export default function Dashboard() {
     }
   };
 
-  const recent = [...payments].sort((a, b) => +new Date(b.date) - +new Date(a.date)).slice(0, 5);
-  const expiring = subscribers
+  const recent = [...(payments || [])].sort((a, b) => +new Date(b.date) - +new Date(a.date)).slice(0, 5);
+  const expiring = (subscribers || [])
     .filter((x) => x.status === "active")
     .sort((a, b) => +new Date(a.expiryDate) - +new Date(b.expiryDate))
     .slice(0, 8);
 
   const areaBreakdown = Object.entries(
-    subscribers.reduce((acc, sub) => {
+    (subscribers || []).reduce((acc, sub) => {
       acc[sub.area] = (acc[sub.area] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
   ).sort((a, b) => b[1] - a[1]);
 
-  const topDebtors = subscribers
+  const topDebtors = (subscribers || [])
     .map(sub => {
-      const balance = (payments
+      const balance = ((payments || [])
         .filter(p => p.subscriberId === sub.id)
-        .reduce((s, p) => s + Number(p.amount) + (Number(p.discount) || 0), 0)) - 
-        (invoices
+        .reduce((sum, p) => sum + Number(p.amount) + (Number(p.discount) || 0), 0)) - 
+        ((invoices || [])
         .filter(i => i.subscriberId === sub.id)
-        .reduce((s, i) => s + Number(i.amount || 0), 0)) - 
+        .reduce((sum, i) => sum + Number(i.amount || 0), 0)) - 
         (Number(sub.openingBalance) || 0);
       
-      const pendingInvoices = invoices.filter(i => i.subscriberId === sub.id && i.status === 'pending');
+      const pendingInvoices = (invoices || []).filter(i => i.subscriberId === sub.id && i.status === 'pending');
       const months = formatMonthRanges(pendingInvoices.filter(i => i.type === 'plan').map(i => new Date(i.date)));
       const hasLegacy = pendingInvoices.some(i => i.type === 'legacy');
       

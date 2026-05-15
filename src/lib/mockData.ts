@@ -178,7 +178,9 @@ export const formatMonthRanges = (dates: Date[]) => {
   if (dates.length === 0) return "";
   
   const uniqueMonths = new Map<string, Date>();
-  dates.forEach(d => {
+  dates
+    .filter(d => d instanceof Date && !isNaN(d.getTime()))
+    .forEach(d => {
     const key = `${d.getFullYear()}-${d.getMonth()}`;
     if (!uniqueMonths.has(key)) {
       uniqueMonths.set(key, new Date(d.getFullYear(), d.getMonth(), 1));

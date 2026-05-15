@@ -70,8 +70,15 @@ def make_qr_image(text):
 
 def draw_logo(c, x, y, size):
     """loads logo from public dir and draws with size 14x14mm as requested"""
-    # Prefer transparent png then fallback to jpg
-    paths = ["public/logo-transparent.png", "public/logo.jpg", "logo.jpg"]
+    # Prefer specific sitaram logo, then generic variants
+    paths = [
+        "public/sitaram_logo_512x512.png",
+        "public/logo-transparent.png",
+        "public/logo.png",
+        "public/logo.jpg",
+        "logo.jpg",
+        "logo.png"
+    ]
     logo_img = None
     for p in paths:
         if os.path.exists(p):
@@ -217,7 +224,11 @@ def generate_invoice_pdf(buffer, data):
     c.setFillColor(ORANGE)
     c.drawString(margin + 5*mm, y_pos + 38*mm, "BILLED TO CUSTOMER")
     
-    cust_no = data.get('customerNo', '-')
+    # Fallback to customer code or ID if customerNo is missing
+    cust_no = data.get('customerNo')
+    if not cust_no or cust_no == '-':
+        cust_no = data.get('customerId', '-')
+    
     c.setFont("Helvetica-Bold", 10)
     c.setFillColor(GREY)
     c.drawString(margin + 5*mm, y_pos + 31*mm, "#")

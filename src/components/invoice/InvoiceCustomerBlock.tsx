@@ -16,7 +16,7 @@ export function InvoiceCustomerBlock({ subscriber, customerIdLabel, isCableMode 
   const phone = String(subscriber?.phone || "").trim();
   const customerIdValue = String(subscriber?.customerId || "").trim();
   const username = String(subscriber?.customerUsername || "").trim();
-  const customerNo = subscriber?.customerNo || "-";
+  const customerNo = subscriber?.customerNo || subscriber?.customerId || subscriber?.code || "-";
 
   return (
     <div className="flex-[0.6] bg-[#F4F7FB] p-[5mm] rounded-[4mm] border border-[#DDE4EF] flex flex-col h-[45mm] relative overflow-hidden">

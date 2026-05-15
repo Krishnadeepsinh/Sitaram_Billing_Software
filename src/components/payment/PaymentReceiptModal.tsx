@@ -67,38 +67,41 @@ export default function PaymentReceiptModal({
     [payment.subscriberId, subscribers],
   );
 
-  const generatePreviewPdfBlob = async () => {
+  const generatePdfBlob = async () => {
     const element = document.getElementById("receipt-content-print");
-    if (!element) throw new Error("Receipt document not ready.");
-    
-    // Position hiddenly for high-res capture
+    if (!element) throw new Error("Document not ready");
+
     element.style.display = "block";
     element.style.position = "absolute";
     element.style.left = "-9999px";
     element.style.top = "0";
-    element.style.visibility = "visible";
-
-    // Wait a tiny bit for any layout shifts
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    const html2pdf = (await import("html2pdf.js")).default;
-    const options = {
-      margin: 0,
-      filename: `Sitaram_Receipt_${payment.id.slice(-6).toUpperCase()}.pdf`,
-      image: { type: "jpeg" as const, quality: 0.98 },
-      html2canvas: { 
-        scale: 2, // Reduced from 3 to 2 for better performance
-        useCORS: true, 
-        logging: false, 
-        windowWidth: 794 
-      },
-      jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
-    };
 
     try {
-      const blob = await html2pdf().set(options).from(element).toPdf().output("blob");
+      // Use html-to-image for faster, more stable capture than html2canvas
+      const { toPng } = await import("html-to-image");
+      const { jsPDF } = await import("jspdf");
+
+      const dataUrl = await toPng(element, {
+        quality: 0.95,
+        pixelRatio: 1.5, // High enough for print, low enough for stability
+        skipFonts: false,
+        fontEmbedCSS: "", // Reduce overhead
+      });
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgProps = pdf.getImageProperties(dataUrl);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+      
       element.style.display = "none";
-      return blob;
+      return pdf.output("blob");
     } catch (err) {
       console.error("PDF Gen Error:", err);
       element.style.display = "none";
@@ -109,12 +112,13 @@ export default function PaymentReceiptModal({
   const handleDownloadPDF = async () => {
     setIsProcessing(true);
     try {
+      const blob = await generatePdfBlob();
       const { saveAs } = await import("file-saver");
-      const blob = await generatePreviewPdfBlob();
       saveAs(blob, `Receipt_${payment.id.slice(-6).toUpperCase()}.pdf`);
-      toast.success("Professional Receipt downloaded");
+      toast.success("Receipt downloaded successfully");
     } catch (error) {
-      toast.error("Failed to generate PDF");
+      console.error(error);
+      toast.error("Failed to generate PDF. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -123,15 +127,15 @@ export default function PaymentReceiptModal({
   const handleSharePDF = async () => {
     setIsProcessing(true);
     try {
-      const { saveAs } = await import("file-saver");
-      const pdfBlob = await generatePreviewPdfBlob();
+      const pdfBlob = await generatePdfBlob();
       const fileName = `Receipt_${payment.id.slice(-6).toUpperCase()}.pdf`;
       const file = new File([pdfBlob], fileName, { type: "application/pdf" });
-      const message = `*PAYMENT RECEIPT: ${payment.id.slice(-6).toUpperCase()}*\nHello ${subscriber?.name || "Customer"},\nThank you for your payment of *Rs. ${payment.amount}*.\nDate: ${formatDate(payment.date)}\nMethod: ${payment.method}\n\nThank you for choosing ${brand.name}!`;
+      const message = `*PAYMENT RECEIPT*\nHello ${subscriber?.name || "Customer"},\nThank you for your payment of *Rs. ${payment.amount}*.\nRef: ${payment.id.slice(-6).toUpperCase()}\nDate: ${formatDate(payment.date)}`;
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: "Payment Receipt", text: message });
+        await navigator.share({ files: [file], title: `Receipt ${payment.id.slice(-6).toUpperCase()}`, text: message });
       } else {
+        const { saveAs } = await import("file-saver");
         saveAs(pdfBlob, fileName);
         const cleanPhone = String(subscriber?.phone || "").replace(/\D/g, "");
         const waUrl = `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(message)}`;
@@ -139,7 +143,8 @@ export default function PaymentReceiptModal({
         toast.success("Receipt downloaded & WhatsApp opened");
       }
     } catch (error) {
-      toast.error("Could not share receipt");
+      console.error(error);
+      toast.error("Could not share PDF");
     } finally {
       setIsProcessing(false);
     }

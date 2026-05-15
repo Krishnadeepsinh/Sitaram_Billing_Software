@@ -29,56 +29,29 @@ export function InvoiceMeta({
         : "border-amber-200 bg-amber-50 text-amber-700";
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-4 gap-3 border-b border-slate-100 pb-4">
-        <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3 text-center">
-          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Invoice No.</p>
-          <p className="mt-1 text-sm font-black text-[#1e3a5f]">{invoice.number}</p>
-        </div>
-        <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3 text-center">
-          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Invoice Date</p>
-          <p className="mt-1 text-sm font-black text-[#1e3a5f]">{formatDate(invoice.date)}</p>
-        </div>
-        <div className="rounded-xl border border-[#1e3a5f] bg-[#1e3a5f] px-3 py-3 text-center shadow-lg">
-          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-100">Service Window</p>
-          <p className="mt-1 text-[11px] font-black leading-tight text-white">{billingPeriodLabel}</p>
-        </div>
-        <div className="rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3 text-center">
-          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Due Date</p>
-          <p className="mt-1 text-sm font-black text-rose-600">{formatDate(invoice.dueDate)}</p>
-        </div>
+    <div className="grid grid-cols-4 gap-[3mm] py-[4mm]">
+      {/* INVOICE NO */}
+      <div className="rounded-[4mm] border border-[#DDE4EF] bg-[#F4F7FB] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
+        <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#94A3B8]">Invoice No.</p>
+        <p className="text-[9pt] font-bold text-[#1E293B]">{invoice.number}</p>
       </div>
-
-      <div className="flex items-center justify-between gap-4 px-4 py-2 bg-slate-50/80 rounded-xl border border-slate-100">
-        <div className="flex items-center gap-6">
-          {subscriber?.customerNo && subscriber.customerNo !== "-" && (
-            <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Customer No</span>
-              <span className="text-[11px] font-black text-slate-800">#{subscriber.customerNo}</span>
-            </div>
-          )}
-          {connectionId && !connectionId.includes("SCB-AHM-00000") && (
-            <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">{isCableMode ? "STB / Conn ID" : "User ID / Conn ID"}</span>
-              <span className="text-[11px] font-black text-[#1e3a5f] uppercase">{connectionId}</span>
-            </div>
-          )}
-          {rechargeDate && (
-            <div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Plan Period</span>
-              <span className="text-[10px] font-bold text-slate-600">
-                {formatDate(rechargeDate)} - {expiryDate ? formatDate(expiryDate) : "N/A"}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Status:</span>
-          <div className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase border ${stateTone}`}>
-            <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            {invoiceStateLabel}
-          </div>
-        </div>
+      
+      {/* INVOICE DATE */}
+      <div className="rounded-[4mm] border border-[#DDE4EF] bg-[#F4F7FB] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
+        <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#94A3B8]">Invoice Date</p>
+        <p className="text-[9pt] font-bold text-[#1E293B]">{formatDate(invoice.date)}</p>
+      </div>
+      
+      {/* BILLING PERIOD (Highlighted) */}
+      <div className="rounded-[4mm] bg-[#1B2B4B] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
+        <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#94A3B8]">Billing Period</p>
+        <p className="text-[9pt] font-bold text-white leading-tight">{billingPeriodLabel}</p>
+      </div>
+      
+      {/* DUE DATE */}
+      <div className="rounded-[4mm] border border-[#DDE4EF] bg-[#F4F7FB] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
+        <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#94A3B8]">Due Date</p>
+        <p className="text-[9pt] font-bold text-[#DC2626]">{formatDate(invoice.dueDate)}</p>
       </div>
     </div>
   );

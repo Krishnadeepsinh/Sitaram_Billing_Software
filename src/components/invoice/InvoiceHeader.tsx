@@ -12,29 +12,36 @@ type InvoiceHeaderProps = {
 
 export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
   return (
-    <>
-      <div className="bg-[#162f4f] px-8 py-5 flex justify-between items-center gap-8 text-white">
-        <div className="flex gap-4 items-center min-w-0">
+    <div className="relative">
+      {/* Top Accent Bar */}
+      <div className="h-[2.5mm] bg-[#F47920] w-full" />
+      
+      <div className="bg-[#1B2B4B] px-[22mm] py-[8mm] flex justify-between items-center text-white relative h-[48mm]">
+        <div className="flex gap-4 items-center">
           <Logo
             size="lg"
             showText={false}
-            iconClassName="h-16 w-16 rounded-xl p-1.5 shadow-lg border-white/20"
+            iconClassName="h-[14mm] w-[14mm] rounded-none p-0 shadow-none border-none bg-transparent"
           />
-          <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.24em] text-orange-300">{BRAND_DISPLAY_NAME}</p>
-            <h1 className="text-2xl font-black tracking-tight mt-1 leading-tight">{brand.name}</h1>
+          <div className="space-y-0.5">
+            <p className="text-[7.5pt] font-bold text-[#F47920] tracking-wider">SITARAM CABLE & BROADBAND</p>
+            <h1 className="text-[18pt] font-bold tracking-tight text-white leading-tight">{brand.name}</h1>
+            <p className="text-[7.5pt] text-[#94A3B8] max-w-[400px]">
+              {brand.address} | Support: {brand.phone}
+            </p>
           </div>
         </div>
-        <div className="text-right text-xs space-y-1 max-w-[250px] shrink-0">
-          <p className="font-black uppercase tracking-[0.14em] text-orange-200">Payment Summary</p>
-          <p className="text-lg font-black tracking-tight text-white leading-none mb-2">{invoiceLabel}</p>
-          <p className="whitespace-pre-line leading-tight text-blue-50 opacity-90">{brand.address}</p>
-          <div className="flex flex-col gap-0.5 mt-1">
-            <p className="font-bold text-sm tracking-tight text-orange-50">Support: {brand.phone}</p>
-          </div>
+
+        {/* Document Type Box */}
+        <div className="bg-[#243352] rounded-[5mm] w-[55mm] h-[32mm] flex flex-col items-center justify-center text-center">
+          <p className="text-[7pt] font-bold text-[#F47920] uppercase tracking-widest mb-1">Document Type</p>
+          <h2 className="text-[14pt] font-bold text-white uppercase mb-1">{invoiceLabel.split(' ')[0]}</h2>
+          <p className="text-[7.5pt] text-[#94A3B8]">Date: {new Date().toLocaleDateString('en-GB')}</p>
         </div>
       </div>
-      <div className="h-1.5 bg-orange-500" />
-    </>
+      
+      {/* Bottom Accent Bar */}
+      <div className="h-[1.2mm] bg-[#F47920] w-full" />
+    </div>
   );
 }

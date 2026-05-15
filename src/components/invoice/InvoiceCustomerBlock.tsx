@@ -19,49 +19,36 @@ export function InvoiceCustomerBlock({ subscriber, customerIdLabel, isCableMode 
   const customerNo = subscriber?.customerNo || "-";
 
   return (
-    <div className="flex-1 bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col">
-      <p className="text-orange-500 text-[10px] font-black mb-3 uppercase tracking-widest">Billed To Customer</p>
-      <h2 className="text-2xl font-black text-slate-900 mb-3 leading-tight tracking-tight">
-        {customerNo && customerNo !== "-" && (
-          <span className="text-primary mr-2 opacity-50">#{customerNo}</span>
+    <div className="flex-[0.6] bg-[#F4F7FB] p-[5mm] rounded-[4mm] border border-[#DDE4EF] flex flex-col h-[45mm]">
+      <p className="text-[#F47920] text-[7pt] font-black mb-3 uppercase tracking-widest">BILLED TO CUSTOMER</p>
+      
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-[10pt] font-black text-[#1E293B]">#{customerNo}</span>
+        <h2 className="text-[13pt] font-bold text-[#1E293B] tracking-tight truncate">
+          {subscriber?.name || "Valued Customer"}
+        </h2>
+      </div>
+
+      <div className="text-[8.5pt] text-[#64748B] space-y-0.5 leading-tight flex-1">
+        {addressLines.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+        <p>Bhavnagar, Gujarat</p>
+      </div>
+
+      <div className="mt-2 flex gap-6 pt-2 border-t border-[#DDE4EF]">
+        {customerIdValue && customerIdValue !== "-" && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[7.5pt] font-black uppercase text-[#94A3B8] tracking-tighter">{isCableMode ? "STB:" : "ID:"}</span>
+            <span className="text-[8.5pt] font-bold text-[#1E293B]">{customerIdValue}</span>
+          </div>
         )}
-        {subscriber?.name || "Valued Customer"}
-      </h2>
-      <div className="text-sm text-slate-600 space-y-1 leading-relaxed flex-1">
-        {addressLines.length > 0 ? (
-          addressLines.map((line) => (
-            <p key={line} className="font-medium">{line}</p>
-          ))
-        ) : (
-          <p className="italic text-slate-400">Address not provided</p>
+        {phone && phone !== "N/A" && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[7.5pt] font-black uppercase text-[#94A3B8] tracking-tighter">MOBILE:</span>
+            <span className="text-[8.5pt] font-bold text-[#1E293B]">{phone}</span>
+          </div>
         )}
-        <p className="font-medium">Bhavnagar, Gujarat</p>
-        <div className="mt-4 grid grid-cols-2 gap-y-1 pt-3 border-t border-slate-200/60">
-          {customerNo && customerNo !== "-" && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase text-slate-400 w-24 tracking-tighter">Customer No:</span>
-              <span className="text-sm font-black text-slate-800">{customerNo}</span>
-            </div>
-          )}
-          {customerIdValue && customerIdValue !== "-" && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase text-slate-400 w-24 tracking-tighter">{customerIdLabel}:</span>
-              <span className="text-sm font-black text-primary">{customerIdValue}</span>
-            </div>
-          )}
-          {username && !isCableMode && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase text-slate-400 w-24 tracking-tighter">Username:</span>
-              <span className="text-sm font-bold text-slate-800">{username}</span>
-            </div>
-          )}
-          {phone && phone !== "N/A" && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase text-slate-400 w-24 tracking-tighter">Mobile:</span>
-              <span className="text-sm font-bold text-slate-800">+91 {phone}</span>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

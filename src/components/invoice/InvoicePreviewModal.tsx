@@ -308,47 +308,47 @@ Due Date: ${formatDate(invoice.dueDate)}`;
                 subscriber={subscriber}
               />
 
-              <div className="flex gap-4">
+              <div className="flex gap-[4mm] h-[45mm]">
                 <InvoiceCustomerBlock customerIdLabel={customerIdLabel} subscriber={subscriber} isCableMode={isCableMode} />
-                <div className="w-48 bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-center text-center">
-                  <p className="text-slate-400 text-[8px] font-black mb-1 uppercase tracking-widest">Payment Status</p>
-                  <div className={`text-xs font-black py-1.5 rounded-full border uppercase tracking-widest ${
+                
+                {/* Status Box (40%) */}
+                <div className="flex-[0.4] bg-[#FFF7ED] p-[5mm] rounded-[4mm] border border-[#FED7AA] flex flex-col justify-center text-center">
+                  <p className="text-[#F47920] text-[7pt] font-black mb-2 uppercase tracking-widest">PAYMENT STATUS</p>
+                  <div className={`text-[12pt] font-bold py-2 rounded-[3mm] border uppercase tracking-widest ${
                     invoice.status === 'paid' 
-                      ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                      ? 'bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0]' 
                       : invoice.status === 'overdue'
                       ? 'bg-rose-50 text-rose-600 border-rose-100'
                       : 'bg-amber-50 text-amber-600 border-amber-100'
                   }`}>
                     {invoice.status}
                   </div>
-                  <p className="text-[9px] text-slate-400 mt-2 font-bold italic">Due {formatDate(invoice.dueDate)}</p>
+                  <p className="text-[8pt] text-[#64748B] mt-3 font-bold">DUE: {formatDate(invoice.dueDate)}</p>
                 </div>
               </div>
 
-              <table className="w-full text-xs">
+              <table className="w-full text-[8.5pt]">
                 <thead>
-                  <tr className="bg-[#1e3a5f] text-white">
-                    <th className="py-2.5 px-4 text-left font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500">Description of Service</th>
-                    <th className="py-2.5 px-4 text-center font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500">Billing Period</th>
-                    <th className="py-2.5 px-4 text-center font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500">Months</th>
-                    <th className="py-2.5 px-4 text-right font-black text-[10px] uppercase tracking-widest border-b-2 border-orange-500">Plan Price</th>
+                  <tr className="bg-[#1B2B4B] text-white">
+                    <th className="py-3 px-4 text-left font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[110mm]">Description of Service</th>
+                    <th className="py-3 px-4 text-center font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[30mm]">Billing Period</th>
+                    <th className="py-3 px-4 text-center font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[15mm]">Qty</th>
+                    <th className="py-3 px-4 text-right font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[35mm]">Plan Price</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 border-b border-slate-100">
-                  <tr>
-                    <td className="py-4 px-4">
-                      <p className="font-black text-slate-900 text-sm">{lineItem.description}</p>
-                      <p className="text-[11px] font-bold text-slate-500 mt-1">
-                        {invoice.type === "legacy"
-                          ? lineItem.subDescription
-                          : `${isCableMode ? "Cable TV" : "Broadband"} Service${(subscriber?.customerId || subscriber?.customerUsername) ? ` | ID: ${subscriber?.customerId || subscriber?.customerUsername}` : ""}`}
+                <tbody className="divide-y divide-[#DDE4EF] border-b border-[#DDE4EF]">
+                  <tr className="bg-[#FFFFFF]">
+                    <td className="py-5 px-4">
+                      <p className="font-bold text-[#1E293B] text-[10pt]">{lineItem.description}</p>
+                      <p className="text-[8pt] text-[#64748B] mt-1">
+                        {isCableMode ? "Digital Cable TV" : "Broadband"} Service {(subscriber?.customerId || subscriber?.customerUsername) ? `| ID: ${subscriber?.customerId || subscriber?.customerUsername}` : ""}
                       </p>
                     </td>
-                    <td className="py-4 px-4 text-center text-slate-600 font-bold text-xs">
+                    <td className="py-5 px-4 text-center text-[#64748B] font-bold">
                       {formatDate(serviceDates.rechargeDate)} - {formatDate(serviceDates.expiryDate)}
                     </td>
-                    <td className="py-4 px-4 text-center text-slate-900 font-black text-sm">{lineItem.quantity}</td>
-                    <td className="py-4 px-4 text-right text-slate-900 font-black text-base">₹{lineItem.total}</td>
+                    <td className="py-5 px-4 text-center text-[#1E293B] font-bold text-[10pt]">{lineItem.quantity}</td>
+                    <td className="py-5 px-4 text-right text-[#1E293B] font-bold text-[11pt]">Rs. {lineItem.total}</td>
                   </tr>
                 </tbody>
               </table>
@@ -364,8 +364,8 @@ Due Date: ${formatDate(invoice.dueDate)}`;
               </div>
             </div>
 
-            <div className="bg-[#1e3a5f] border-t-2 border-orange-500 py-4 text-center text-white text-[10px] w-full">
-              <p className="font-black tracking-widest uppercase opacity-80">This is a system generated invoice</p>
+            <div className="bg-[#1B2B4B] border-t-[1.2mm] border-[#F47920] py-4 text-center text-white text-[7.5pt] w-full">
+              <p className="font-bold tracking-widest uppercase opacity-90">This is a system generated invoice</p>
             </div>
           </div>
         </div>

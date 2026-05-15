@@ -642,7 +642,7 @@ export default function Subscribers() {
                       <span className="text-xs text-slate-400 uppercase tracking-wider">{p.method}</span>
                     </div>
                     <div className="text-right flex flex-col items-end">
-                      <span className="text-sm text-slate-200">{new Date(p.date).toLocaleDateString()}</span>
+                      <span className="text-sm text-slate-200">{formatDate(p.date)}</span>
                       <span className="text-xs text-slate-500 font-mono">{p.id.slice(0, 8)}</span>
                     </div>
                   </div>

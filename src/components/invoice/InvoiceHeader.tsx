@@ -1,6 +1,7 @@
 import { Logo } from "@/components/Logo";
 import { BRAND_DISPLAY_NAME } from "@/lib/branding";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/mockData";
 
 type InvoiceHeaderProps = {
   brand: {
@@ -52,7 +53,7 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
           </h2>
           <div className="h-[0.5mm] w-[12mm] bg-white/10 mb-3 rounded-full" />
           <p className="text-[7.5pt] font-bold text-[#94A3B8] uppercase tracking-tighter">
-            DATE: {new Date().toLocaleDateString('en-GB')}
+            DATE: {formatDate(new Date().toISOString())}
           </p>
         </div>
       </div>

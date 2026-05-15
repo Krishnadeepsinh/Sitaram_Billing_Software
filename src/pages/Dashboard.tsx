@@ -210,21 +210,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
-        {[
-          { label: "New Payment", icon: Wallet, to: "/payments", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-          { label: "Subscribers", icon: Users, to: "/subscribers", color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
-          { label: "Billing", icon: FileText, to: "/invoices", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-          { label: "Reports", icon: BarChart3, to: "/reports", color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" }
-        ].map((action, i) => (
-          <Link key={i} to={action.to} className={cn("flex flex-col items-center justify-center gap-3 rounded-xl border p-6 transition-all hover:scale-[1.02] hover:shadow-lg active:scale-95", action.bg, action.border)}>
-            <action.icon className={cn("h-8 w-8", action.color)} />
-            <span className={cn("text-sm font-semibold tracking-wide", action.color)}>{action.label}</span>
-          </Link>
-        ))}
-      </div>
-
       {/* KPI Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
@@ -248,7 +233,22 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mt-6">
+        {[
+          { label: "New Payment", icon: Wallet, to: "/payments", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+          { label: "Subscribers", icon: Users, to: "/subscribers", color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
+          { label: "Billing", icon: FileText, to: "/invoices", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+          { label: "Reports", icon: BarChart3, to: "/reports", color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" }
+        ].map((action, i) => (
+          <Link key={i} to={action.to} className={cn("flex items-center justify-center gap-2 rounded-xl border p-3 transition-colors hover:bg-white/5", action.bg, action.border)}>
+            <action.icon className={cn("h-4 w-4", action.color)} />
+            <span className={cn("text-sm font-medium", action.color)}>{action.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         {/* Recent Transactions */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">

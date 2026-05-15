@@ -40,3 +40,7 @@ cable-billing-reference/
 
 # OS / temp artifacts
 Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc

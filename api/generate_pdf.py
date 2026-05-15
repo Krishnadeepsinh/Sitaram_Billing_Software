@@ -307,22 +307,23 @@ def generate_invoice_pdf(buffer, data):
     
     c.setFont("Helvetica-Bold", 14)
     c.setFillColor(DARK)
-    draw_string(c, margin + 24*mm, y_pos + 31*mm, safe_str(data.get('customerName', 'VALUED CUSTOMER')))
+    # Move name down slightly to avoid overlap with verified badge
+    draw_string(c, margin + 5*mm, y_pos + 28*mm, safe_str(data.get('customerName', 'VALUED CUSTOMER')))
     
     c.setFont("Helvetica", 9)
     c.setFillColor(DARK)
     addr_val = safe_str(data.get('customerAddress', ''))
     addr = str(addr_val).split('\n') if addr_val else []
-    draw_string(c, margin + 5*mm, y_pos + 25*mm, addr[0] if len(addr) > 0 else 'No Address Provided')
+    draw_string(c, margin + 5*mm, y_pos + 22*mm, addr[0] if len(addr) > 0 else 'No Address Provided')
     c.setFillColor(GREY)
     if len(addr) > 1:
-        draw_string(c, margin + 5*mm, y_pos + 20*mm, addr[1])
+        draw_string(c, margin + 5*mm, y_pos + 17*mm, addr[1])
     
     # Locality/Area
     area = data.get('customerArea', data.get('brand', {}).get('address', 'Bhavnagar, Gujarat'))
     c.setFont("Helvetica-Bold", 7.5)
     c.setFillColor(NAVY)
-    draw_string(c, margin + 5*mm, y_pos + 15*mm, f"{safe_str(area).upper()}, GJ")
+    draw_string(c, margin + 5*mm, y_pos + 12*mm, f"{safe_str(area).upper()}, GJ")
     
     # Dynamic Fields: STB/ID and Mobile - only show if valid
     stb_val = str(data.get('stbNumber') or '').strip()

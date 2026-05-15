@@ -1,5 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { BRAND_DISPLAY_NAME } from "@/lib/branding";
+import { cn } from "@/lib/utils";
 
 type InvoiceHeaderProps = {
   brand: {
@@ -29,7 +30,10 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
           
           <div className="flex flex-col">
             <p className="text-[7pt] font-black text-[#F47920] tracking-[0.2em] mb-1">OFFICIAL DOCUMENT</p>
-            <h1 className="text-[20pt] font-black tracking-tighter text-white leading-none mb-2">
+            <h1 className={cn(
+              "font-black tracking-tighter text-white leading-none mb-2",
+              brand.name.length > 28 ? "text-[14pt]" : brand.name.length > 22 ? "text-[16pt]" : "text-[20pt]"
+            )}>
               {brand.name.toUpperCase()}
             </h1>
             <div className="flex items-center gap-3">

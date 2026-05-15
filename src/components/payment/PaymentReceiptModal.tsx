@@ -295,7 +295,9 @@ Thank you for choosing ${brand.name}!`;
             className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 origin-top shadow-2xl"
             style={{ 
               transform: `scale(${scale})`, 
-              marginBottom: `${(scale - 1) * contentHeight}px`
+              marginBottom: `${(scale - 1) * contentHeight}px`,
+              marginLeft: `${((scale - 1) * 794) / 2}px`,
+              marginRight: `${((scale - 1) * 794) / 2}px`
             }}
           >
             <InvoiceHeader brand={brand} invoiceLabel="Payment Receipt" />

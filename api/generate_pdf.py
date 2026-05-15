@@ -205,47 +205,71 @@ def generate_invoice_pdf(buffer, data):
     
     # Customer Info Box
     rrect(c, margin, y_pos, left_w, 45*mm, 4*mm, fill=LIGHT_BG, stroke=BORDER)
-    c.setFont("Helvetica-Bold", 7)
+    
+    # "Verified" Badge
+    badge_w = 20*mm
+    rrect(c, margin + left_w - badge_w - 5*mm, y_pos + 37*mm, badge_w, 4.5*mm, 2.2*mm, fill=NAVY, stroke=False)
+    c.setFillColor(WHITE)
+    c.setFont("Helvetica-Bold", 5.5)
+    c.drawCentredString(margin + left_w - 5*mm - badge_w/2, y_pos + 38.5*mm, "VERIFIED ACCOUNT")
+
+    c.setFont("Helvetica-Bold", 7.5)
     c.setFillColor(ORANGE)
     c.drawString(margin + 5*mm, y_pos + 38*mm, "BILLED TO CUSTOMER")
     
     cust_no = data.get('customerNo', '-')
     c.setFont("Helvetica-Bold", 10)
-    c.setFillColor(DARK)
-    c.drawString(margin + 5*mm, y_pos + 31*mm, f"#{cust_no}")
-    c.setFont("Helvetica-Bold", 13)
-    c.drawString(margin + 22*mm, y_pos + 31*mm, data.get('customerName', 'N/A'))
-    
-    c.setFont("Helvetica", 8.5)
     c.setFillColor(GREY)
-    addr_val = data.get('customerAddress', 'N/A')
-    addr = str(addr_val).split('\n') if addr_val else ['N/A']
-    c.drawString(margin + 5*mm, y_pos + 25*mm, addr[0] if len(addr) > 0 else 'N/A')
-    c.drawString(margin + 5*mm, y_pos + 20*mm, addr[1] if len(addr) > 1 else '')
+    c.drawString(margin + 5*mm, y_pos + 31*mm, "#")
+    c.setFillColor(NAVY)
+    c.drawString(margin + 8*mm, y_pos + 31*mm, str(cust_no))
+    
+    c.setFont("Helvetica-Bold", 14)
+    c.setFillColor(DARK)
+    c.drawString(margin + 24*mm, y_pos + 31*mm, data.get('customerName', 'VALUED CUSTOMER'))
+    
+    c.setFont("Helvetica", 9)
+    c.setFillColor(DARK)
+    addr_val = data.get('customerAddress', '')
+    addr = str(addr_val).split('\n') if addr_val else []
+    c.drawString(margin + 5*mm, y_pos + 25*mm, addr[0] if len(addr) > 0 else 'No Address Provided')
+    c.setFillColor(GREY)
+    if len(addr) > 1:
+        c.drawString(margin + 5*mm, y_pos + 20*mm, addr[1])
+    
+    # Locality/Area
+    area = data.get('customerArea', data.get('brand', {}).get('address', 'Bhavnagar, Gujarat'))
+    c.setFont("Helvetica-Bold", 7.5)
+    c.setFillColor(NAVY)
+    c.drawString(margin + 5*mm, y_pos + 15*mm, f"{area.upper()}, GJ")
     
     # Dynamic Fields: STB/ID and Mobile - only show if valid
     stb_val = str(data.get('stbNumber') or '').strip()
     mobile_val = str(data.get('customerMobile') or '').strip()
     
-    row_y = y_pos + 10*mm
+    # Footer details within box (White strip at bottom)
+    rrect(c, margin, y_pos, left_w, 12*mm, 0, fill=WHITE, stroke=False)
+    hline(c, margin, margin + left_w, y_pos + 12*mm, BORDER, 0.4)
+    
+    row_y = y_pos + 4*mm
     has_stb = stb_val and stb_val.upper() not in ["N/A", "-", ""]
     if has_stb:
-        label = "STB:" if is_cable else "ID:"
-        c.setFont("Helvetica", 7.5)
+        label = "STB NO." if is_cable else "CUST ID"
+        c.setFont("Helvetica-Bold", 6.5)
         c.setFillColor(LABEL)
-        c.drawString(margin + 5*mm, row_y, label)
-        c.setFont("Helvetica-Bold", 8.5)
+        c.drawString(margin + 5*mm, row_y + 3*mm, label)
+        c.setFont("Helvetica-Bold", 9)
         c.setFillColor(DARK)
-        c.drawString(margin + 12*mm, row_y, stb_val)
+        c.drawString(margin + 5*mm, row_y - 1*mm, stb_val)
         
     if mobile_val and mobile_val.upper() not in ["N/A", "-", ""]:
-        x_off = 45*mm if has_stb else 5*mm
-        c.setFont("Helvetica", 7.5)
+        x_off = left_w/2
+        c.setFont("Helvetica-Bold", 6.5)
         c.setFillColor(LABEL)
-        c.drawString(margin + x_off, row_y, "MOBILE:")
-        c.setFont("Helvetica-Bold", 8.5)
+        c.drawString(margin + x_off, row_y + 3*mm, "PHONE NO.")
+        c.setFont("Helvetica-Bold", 9)
         c.setFillColor(DARK)
-        c.drawString(margin + x_off + 14*mm, row_y, mobile_val)
+        c.drawString(margin + x_off, row_y - 1*mm, mobile_val)
 
     # Payment Status Box (Right)
     status = str(data.get('status', 'unpaid')).upper()

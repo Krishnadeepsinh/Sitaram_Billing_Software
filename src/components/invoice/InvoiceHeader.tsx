@@ -17,26 +17,39 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
       <div className="h-[2.5mm] bg-[#F47920] w-full" />
       
       <div className="bg-[#1B2B4B] px-[22mm] py-[8mm] flex justify-between items-center text-white relative h-[48mm]">
-        <div className="flex gap-4 items-center">
-          <Logo
-            size="lg"
-            showText={false}
-            iconClassName="h-[14mm] w-[14mm] rounded-none p-0 shadow-none border-none bg-transparent"
-          />
-          <div className="space-y-0.5">
-            <p className="text-[7.5pt] font-bold text-[#F47920] tracking-wider">SITARAM CABLE & BROADBAND</p>
-            <h1 className="text-[18pt] font-bold tracking-tight text-white leading-tight">{brand.name}</h1>
-            <p className="text-[7.5pt] text-[#94A3B8] max-w-[400px]">
-              {brand.address} | Support: {brand.phone}
-            </p>
+        <div className="flex gap-[6mm] items-center">
+          <div className="flex flex-col items-center">
+            <Logo
+              size="lg"
+              showText={false}
+              iconClassName="h-[14mm] w-[14mm] rounded-none p-0 shadow-none border-none bg-transparent"
+            />
+            <div className="h-[8mm] w-[0.8mm] bg-[#F47920] mt-2 rounded-full opacity-50" />
+          </div>
+          
+          <div className="flex flex-col">
+            <p className="text-[7pt] font-black text-[#F47920] tracking-[0.2em] mb-1">OFFICIAL DOCUMENT</p>
+            <h1 className="text-[20pt] font-black tracking-tighter text-white leading-none mb-2">
+              {brand.name.toUpperCase()}
+            </h1>
+            <div className="flex items-center gap-3">
+              <p className="text-[7.5pt] text-[#94A3B8] font-medium">{brand.address}</p>
+              <div className="w-1 h-1 rounded-full bg-[#F47920]" />
+              <p className="text-[7.5pt] text-[#94A3B8] font-bold">Support: {brand.phone}</p>
+            </div>
           </div>
         </div>
 
         {/* Document Type Box */}
-        <div className="bg-[#243352] rounded-[5mm] w-[55mm] h-[32mm] flex flex-col items-center justify-center text-center">
-          <p className="text-[7pt] font-bold text-[#F47920] uppercase tracking-widest mb-1">Document Type</p>
-          <h2 className="text-[14pt] font-bold text-white uppercase mb-1">{invoiceLabel.split(' ')[0]}</h2>
-          <p className="text-[7.5pt] text-[#94A3B8]">Date: {new Date().toLocaleDateString('en-GB')}</p>
+        <div className="bg-[#243352] border border-[#1B2B4B] rounded-[4mm] w-[55mm] h-[32mm] flex flex-col items-center justify-center text-center shadow-2xl">
+          <p className="text-[6.5pt] font-black text-[#F47920] uppercase tracking-[0.3em] mb-2 opacity-80">Document Category</p>
+          <h2 className="text-[16pt] font-black text-white uppercase tracking-widest leading-none mb-3">
+            {invoiceLabel.split(' ')[0]}
+          </h2>
+          <div className="h-[0.5mm] w-[12mm] bg-white/10 mb-3 rounded-full" />
+          <p className="text-[7.5pt] font-bold text-[#94A3B8] uppercase tracking-tighter">
+            DATE: {new Date().toLocaleDateString('en-GB')}
+          </p>
         </div>
       </div>
       

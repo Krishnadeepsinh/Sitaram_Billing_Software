@@ -90,24 +90,41 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
     </div>
 
       {linkedPayments.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-slate-100">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Recent Receipt History</p>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="mt-8 pt-6 border-t border-[#DDE4EF] relative">
+          <div className="absolute -top-[10px] left-1/2 -translate-x-1/2 bg-white px-4 text-[7pt] font-black text-[#94A3B8] uppercase tracking-[0.3em]">
+            Payment Reconciliation
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             {linkedPayments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex justify-between items-center bg-emerald-50/30 p-3 rounded-2xl border border-emerald-100/50"
+                className="flex justify-between items-center bg-[#F4F7FB] p-4 rounded-[3mm] border border-[#DDE4EF] hover:border-[#1B2B4B] transition-colors"
               >
                 <div className="flex flex-col">
-                  <span className="text-xs font-black text-slate-700">{formatDate(payment.date)}</span>
-                  <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">{payment.method}</span>
+                  <span className="text-[9pt] font-black text-[#1B2B4B]">{formatDate(payment.date)}</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
+                    <span className="text-[7pt] font-bold text-[#64748B] uppercase tracking-widest">{payment.method}</span>
+                  </div>
                 </div>
-                <span className="text-sm font-black text-emerald-700">₹{payment.amount}</span>
+                <div className="text-right">
+                  <span className="text-[10pt] font-black text-[#1B2B4B]">Rs. {payment.amount}</span>
+                  <p className="text-[6pt] text-[#16A34A] font-bold uppercase tracking-tighter">Success</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
+      
+      <div className="mt-8 text-center py-4 border-y border-[#DDE4EF] border-dashed">
+        <p className="text-[8pt] font-bold text-[#1B2B4B] uppercase tracking-[0.1em]">
+          Thank you for your business! We appreciate your timely payments.
+        </p>
+        <p className="text-[6.5pt] text-[#64748B] mt-1 italic">
+          For any billing queries, please contact our support at {brand.phone}
+        </p>
+      </div>
     </div>
   );
 }

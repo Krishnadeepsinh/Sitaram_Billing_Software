@@ -164,6 +164,7 @@ export default function InvoicePreviewModal({
 
     const amount = parseAmount(invoice.amount);
     const previousBalance = parseAmount(invoice.previousBalance);
+    const discount = parseAmount(invoice.discount);
     const grandTotal = amount + previousBalance;
 
     const numToWords = (n: number) => {
@@ -356,6 +357,12 @@ export default function InvoicePreviewModal({
                   <span style={{ whiteSpace: "nowrap" }}>Plan Amount:</span>
                   <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
                 </div>
+                {discount > 0 && (
+                  <div style={styles.totalRow}>
+                    <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>Discount:</span>
+                    <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>- Rs. {discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div style={styles.totalRow}>
                   <span style={{ whiteSpace: "nowrap" }}>Previous Dues (Arrears):</span>
                   <span style={{ whiteSpace: "nowrap" }}>Rs. {previousBalance.toFixed(2)}</span>

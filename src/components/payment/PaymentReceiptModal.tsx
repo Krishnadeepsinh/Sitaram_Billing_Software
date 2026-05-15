@@ -156,6 +156,8 @@ export default function PaymentReceiptModal({
     };
 
     const amount = parseAmount(payment?.amount);
+    const discount = parseAmount(payment?.discount);
+    const subtotal = amount + discount;
 
     const numToWords = (n: number) => {
       if (isNaN(n)) return "Zero Rupees Only";
@@ -459,8 +461,14 @@ export default function PaymentReceiptModal({
             <div style={styles.allocTitle}>Payment Allocation Summary</div>
             <div style={styles.allocRow}>
               <span style={{ whiteSpace: "nowrap" }}>Subtotal:</span>
-              <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
+              <span style={{ whiteSpace: "nowrap" }}>Rs. {subtotal.toFixed(2)}</span>
             </div>
+            {discount > 0 && (
+              <div style={styles.allocRow}>
+                <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>Discount:</span>
+                <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>- Rs. {discount.toFixed(2)}</span>
+              </div>
+            )}
             <div style={styles.allocRowTotal}>
               <span style={{ whiteSpace: "nowrap" }}>Total Paid:</span>
               <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>

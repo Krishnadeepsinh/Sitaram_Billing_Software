@@ -341,12 +341,34 @@ export default function Invoices() {
             <span className="text-[9px] uppercase font-bold text-muted-foreground">From</span>
             <select value={months[filterStartDate.getMonth()]} onChange={(e) => {
               const monthIndex = months.indexOf(e.target.value);
-              const d = new Date(filterStartDate); d.setMonth(monthIndex); setFilterStartDate(d);
+              const d = new Date(filterStartDate); 
+              d.setMonth(monthIndex);
+              if (d > filterEndDate) {
+                setFilterStartDate(d);
+                const end = new Date(d);
+                end.setMonth(d.getMonth() + 1);
+                end.setDate(0);
+                end.setHours(23, 59, 59, 999);
+                setFilterEndDate(end);
+              } else {
+                setFilterStartDate(d);
+              }
             }} className="h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
               {months.map(m => <option key={m} value={m}>{m.slice(0,3)}</option>)}
             </select>
             <select value={filterStartDate.getFullYear()} onChange={(e) => {
-              const d = new Date(filterStartDate); d.setFullYear(Number(e.target.value)); setFilterStartDate(d);
+              const d = new Date(filterStartDate); 
+              d.setFullYear(Number(e.target.value)); 
+              if (d > filterEndDate) {
+                setFilterStartDate(d);
+                const end = new Date(d);
+                end.setMonth(d.getMonth() + 1);
+                end.setDate(0);
+                end.setHours(23, 59, 59, 999);
+                setFilterEndDate(end);
+              } else {
+                setFilterStartDate(d);
+              }
             }} className="w-14 h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
@@ -355,12 +377,34 @@ export default function Invoices() {
             <span className="text-[9px] uppercase font-bold text-muted-foreground">To</span>
             <select value={months[filterEndDate.getMonth()]} onChange={(e) => {
               const monthIndex = months.indexOf(e.target.value);
-              const d = new Date(filterEndDate); d.setMonth(monthIndex+1); d.setDate(0); d.setHours(23,59,59,999); setFilterEndDate(d);
+              const d = new Date(filterEndDate); 
+              d.setMonth(monthIndex + 1); 
+              d.setDate(0); 
+              d.setHours(23, 59, 59, 999); 
+              if (d < filterStartDate) {
+                setFilterEndDate(d);
+                const start = new Date(d);
+                start.setDate(1);
+                start.setHours(0, 0, 0, 0);
+                setFilterStartDate(start);
+              } else {
+                setFilterEndDate(d);
+              }
             }} className="h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
               {months.map(m => <option key={m} value={m}>{m.slice(0,3)}</option>)}
             </select>
             <select value={filterEndDate.getFullYear()} onChange={(e) => {
-              const d = new Date(filterEndDate); d.setFullYear(Number(e.target.value)); setFilterEndDate(d);
+              const d = new Date(filterEndDate); 
+              d.setFullYear(Number(e.target.value)); 
+              if (d < filterStartDate) {
+                setFilterEndDate(d);
+                const start = new Date(d);
+                start.setDate(1);
+                start.setHours(0, 0, 0, 0);
+                setFilterStartDate(start);
+              } else {
+                setFilterEndDate(d);
+              }
             }} className="w-14 h-7 bg-transparent border-none text-xs text-foreground outline-none appearance-none">
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>

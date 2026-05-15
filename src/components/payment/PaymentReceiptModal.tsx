@@ -277,13 +277,16 @@ Thank you for choosing ${brand.name}!`;
   return (
     <div className="fixed inset-0 bg-slate-50 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
-      <div className="bg-white text-black w-full max-w-3xl rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-500 relative z-10 max-h-[95vh]">
+      <div className="bg-white text-black w-full max-w-3xl rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-500 relative z-10 max-h-[95vh]">
         <div className="px-8 py-6 bg-slate-50/50 flex justify-between items-center border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Official Payment Receipt</span>
           </div>
-          <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white border border-transparent hover:border-slate-200 transition-all text-slate-400 hover:text-slate-900">
+          <button
+            onClick={onClose}
+            className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-slate-400 hover:text-slate-900"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -292,7 +295,7 @@ Thank you for choosing ${brand.name}!`;
           <div 
             id="receipt-content" 
             ref={contentRef}
-            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 origin-top shadow-xl"
+            className="bg-white relative font-sans text-slate-800 flex flex-col min-h-[1122px] w-[794px] shrink-0 sm:shadow-xl origin-top transition-transform duration-300"
             style={{ 
               transform: `scale(${scale})`, 
               marginBottom: `${(scale - 1) * contentHeight}px`,
@@ -302,109 +305,81 @@ Thank you for choosing ${brand.name}!`;
           >
             <InvoiceHeader brand={brand} invoiceLabel="Payment Receipt" />
 
-            <div className="p-8 space-y-6 flex-1 flex flex-col">
-              {/* Receipt Metadata */}
-              <div className="grid grid-cols-4 gap-[3mm] py-[4mm]">
-                {/* RECEIPT NO */}
-                <div className="rounded-[4mm] border border-[#DDE4EF] bg-[#F4F7FB] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
-                  <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#94A3B8]">Receipt No.</p>
-                  <p className="text-[9pt] font-bold text-[#1E293B]">#{payment.id.slice(-8).toUpperCase()}</p>
+            <div className="p-10 space-y-10 flex-1 flex flex-col">
+              {/* Receipt Metadata Grid */}
+              <div className="grid grid-cols-4 gap-4">
+                <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Receipt No.</span>
+                  <span className="text-sm font-black text-slate-900 tracking-tight">#{payment.id.slice(-8).toUpperCase()}</span>
                 </div>
-                
-                {/* PAYMENT DATE */}
-                <div className="rounded-[4mm] border border-[#DDE4EF] bg-[#F4F7FB] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
-                  <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#94A3B8]">Payment Date</p>
-                  <p className="text-[9pt] font-bold text-[#1E293B]">{formatDate(payment.date)}</p>
+                <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Payment Date</span>
+                  <span className="text-sm font-black text-slate-900 tracking-tight">{formatDate(payment.date)}</span>
                 </div>
-                
-                {/* METHOD (Highlighted) */}
-                <div className="rounded-[4mm] bg-[#1B2B4B] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
-                  <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#94A3B8]">Method</p>
-                  <p className="text-[9pt] font-bold text-slate-800 leading-tight">{payment.method}</p>
+                <div className="p-5 rounded-3xl bg-[#0f172a] flex flex-col gap-1">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Method</span>
+                  <span className="text-sm font-black text-white tracking-tight leading-tight">{payment.method}</span>
                 </div>
-                
-                {/* STATUS */}
-                <div className="rounded-[4mm] border border-[#BBF7D0] bg-[#DCFCE7] px-[3mm] py-[3mm] flex flex-col justify-between h-[17mm]">
-                  <p className="text-[6.5pt] font-black uppercase tracking-widest text-[#16A34A]">Status</p>
-                  <p className="text-[9pt] font-bold text-[#16A34A] uppercase tracking-tighter">SUCCESS</p>
+                <div className="p-5 rounded-3xl bg-emerald-50 border border-emerald-100 flex flex-col gap-1">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Status</span>
+                  <span className="text-sm font-black text-emerald-600 uppercase tracking-widest">Success</span>
                 </div>
               </div>
 
-              {/* Connection & Plan Details Bar */}
-              <div className="flex items-center justify-between gap-4 px-6 py-3 bg-slate-50/80 rounded-2xl border border-slate-100 shadow-sm">
-                <div className="flex items-center gap-8">
-                  {subscriber?.customerNo && subscriber.customerNo !== "-" && (
-                    <div>
-                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Customer No</span>
-                      <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">
-                        #{subscriber.customerNo}
-                      </span>
-                    </div>
-                  )}
-                  {(subscriber?.customerId || subscriber?.customerUsername) && (
-                    <div>
-                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">{isCableMode ? "STB Number" : "Customer ID"}</span>
-                      <span className="text-[11px] font-black text-[#1e3a5f] uppercase tracking-tight">
-                        {subscriber.customerId || subscriber.customerUsername}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Plan Period</span>
-                    <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">
-                      {formatDate(selectedPaymentServiceDates.rechargeDate)} - {formatDate(selectedPaymentServiceDates.expiryDate)}
-                    </span>
-                  </div>
-                </div>
-                <div className="h-8 w-px bg-slate-200" />
-                <div className="flex items-center gap-4">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Paid:</span>
-                  <div className="text-xl font-black text-emerald-600 tracking-tighter">
+              <div className="flex gap-8 min-h-[180px]">
+                <InvoiceCustomerBlock 
+                  customerIdLabel={customerIdLabel} 
+                  subscriber={subscriber} 
+                  isCableMode={isCableMode} 
+                />
+                
+                {/* Received Box (35%) */}
+                <div className="flex-[0.35] bg-emerald-50/50 p-10 rounded-[2.5rem] border border-emerald-100 flex flex-col justify-center text-center relative overflow-hidden group transition-all hover:shadow-sm">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 blur-3xl" />
+                  <p className="text-emerald-600 text-[9px] font-black mb-5 uppercase tracking-[0.4em] relative z-10">Total Received</p>
+                  <div className="text-3xl font-black text-[#0f172a] tracking-tighter leading-none relative z-10">
                     ₹{Number(payment.amount).toLocaleString()}
                   </div>
-                </div>
-              </div>
-
-              {/* Customer Info */}
-              <div className="flex gap-[4mm] h-[45mm]">
-                <InvoiceCustomerBlock customerIdLabel={customerIdLabel} subscriber={subscriber} isCableMode={isCableMode} />
-                
-                {/* Received Box (40%) */}
-                <div className="flex-[0.4] bg-[#DCFCE7] p-[5mm] rounded-[4mm] border border-[#BBF7D0] flex flex-col justify-center text-center">
-                  <p className="text-[#16A34A] text-[7pt] font-black mb-2 uppercase tracking-widest">TOTAL RECEIVED</p>
-                  <div className="text-[18pt] font-black text-[#1B2B4B] tracking-tight leading-none">
-                    Rs. {Number(payment.amount).toLocaleString()}
-                  </div>
-                  <div className="mt-3 flex items-center justify-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#16A34A]" />
-                    <span className="text-[7.5pt] font-black uppercase tracking-widest text-[#16A34A]">Verified Payment</span>
+                  <div className="mt-8 flex items-center justify-center gap-2 relative z-10">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Verified</span>
                   </div>
                 </div>
               </div>
 
-              {/* Transaction Detail Table - Matches Invoice Style */}
-              <div className="flex-1">
-                <table className="w-full text-[8.5pt]">
+              {/* Transaction Detail Table */}
+              <div className="flex-1 pt-4">
+                <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-[#1B2B4B] text-slate-800">
-                      <th className="py-3 px-4 text-left font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[110mm]">Service Description</th>
-                      <th className="py-3 px-4 text-center font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[30mm]">Service Period</th>
-                      <th className="py-3 px-4 text-center font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[15mm]">Qty</th>
-                      <th className="py-3 px-4 text-right font-bold uppercase tracking-wider border-b-[1.2mm] border-[#F47920] w-[35mm]">Amount</th>
+                    <tr>
+                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 w-1/2">Payment Description</th>
+                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-center">Service Period</th>
+                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-center">Qty</th>
+                      <th className="pb-6 pt-2 px-8 text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 border-b border-slate-100 text-right">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#DDE4EF] border-b border-[#DDE4EF]">
+                  <tbody className="divide-y divide-slate-100/60">
                     {paymentItems.map((item, idx) => (
-                      <tr key={idx} className="bg-[#FFFFFF]">
-                        <td className="py-5 px-4">
-                          <p className="font-bold text-[#1E293B] text-[10pt]">{item.desc}</p>
-                          <p className="text-[8pt] text-[#64748B] mt-1">
-                            {item.subDesc || `${isCableMode ? "Digital Cable TV" : "Broadband Internet"} Service`}
-                          </p>
+                      <tr key={idx} className="group">
+                        <td className="py-10 px-8">
+                          <div className="flex flex-col gap-2">
+                            <p className="font-black text-slate-900 text-lg tracking-tight leading-tight">{item.desc}</p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] text-slate-400 font-black uppercase tracking-widest">
+                                {isCableMode ? "Digital TV" : "Broadband"} • {payment.method}
+                              </span>
+                            </div>
+                          </div>
                         </td>
-                        <td className="py-5 px-4 text-center text-[#64748B] font-bold">{item.period}</td>
-                        <td className="py-5 px-4 text-center text-[#1E293B] font-bold text-[10pt]">{item.qty}</td>
-                        <td className="py-5 px-4 text-right text-[#1E293B] font-bold text-[11pt]">Rs. {Number(item.total).toLocaleString()}</td>
+                        <td className="py-10 px-8 text-center">
+                          <span className="px-4 py-2 rounded-full bg-slate-50 text-slate-600 font-black text-[11px] tracking-tight border border-slate-100">
+                            {item.period}
+                          </span>
+                        </td>
+                        <td className="py-10 px-8 text-center text-slate-900 font-black text-base">{item.qty}</td>
+                        <td className="py-10 px-8 text-right text-slate-900 font-black text-xl tracking-tighter">
+                          ₹{Number(item.total).toLocaleString()}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -412,62 +387,65 @@ Thank you for choosing ${brand.name}!`;
               </div>
 
               {/* Summary Section */}
-              <div className="flex justify-end pt-4">
-                <div className="w-64 space-y-2">
-                  <div className="flex justify-between items-center text-slate-500 font-bold text-xs">
-                    <span>Subtotal</span>
-                    <span>₹{Number(payment.amount).toLocaleString()}</span>
+              <div className="flex justify-between items-end pt-10">
+                <div className="max-w-[400px]">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Amount in Words</p>
+                  <p className="text-sm font-black text-slate-600 italic tracking-tight capitalize leading-relaxed">
+                    {numberToWords(Number(payment.amount))} Only
+                  </p>
+                </div>
+                <div className="w-72 space-y-4">
+                  <div className="flex justify-between items-center px-4">
+                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Net Received</span>
+                    <span className="text-2xl font-black text-[#0f172a] tracking-tighter">₹{Number(payment.amount).toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between items-center text-slate-500 font-bold text-xs">
-                    <span>Discount</span>
-                    <span>₹0.00</span>
-                  </div>
-                  <div className="h-px bg-slate-100 my-1" />
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#1e3a5f] font-black text-sm uppercase tracking-wider">Net Received</span>
-                    <span className="text-[#1e3a5f] font-black text-xl">₹{Number(payment.amount).toLocaleString()}</span>
+                  <div className="p-6 rounded-[1.5rem] bg-[#0f172a] text-center">
+                    <p className="text-[9px] font-black text-orange-500 uppercase tracking-[0.4em] mb-1">Receipt Status</p>
+                    <p className="text-sm font-black text-white uppercase tracking-widest">Payment Confirmed</p>
                   </div>
                 </div>
               </div>
 
-              {/* Professional Footer */}
-              <div className="mt-auto pt-6 text-center">
+              {/* Footer */}
+              <div className="mt-auto pt-10 text-center">
                 <div className="inline-flex flex-col items-center">
-                  <div className="h-px w-16 bg-slate-100 mb-3" />
-                  <p className="text-base font-display font-black text-[#1e3a5f] tracking-tight">Payment Confirmed</p>
-                  <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-[0.2em]">Authorized Digital Receipt</p>
+                  <div className="h-px w-24 bg-slate-100 mb-4" />
+                  <p className="text-xl font-black text-[#0f172a] tracking-tighter">Thank You!</p>
+                  <p className="text-[10px] font-black text-slate-400 mt-2 uppercase tracking-[0.3em]">Authorized Digital Receipt</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#1B2B4B] border-t-[1.2mm] border-[#F47920] py-4 text-center text-slate-800 text-[7.5pt] w-full">
-              <p className="font-bold tracking-widest uppercase opacity-90">This is a system generated receipt</p>
+            <div className="bg-[#0f172a] py-6 text-center text-slate-500 text-[9px] w-full font-black uppercase tracking-[0.6em] mt-auto">
+              Computer Generated Receipt • Official Confirmation of Payment
             </div>
           </div>
         </div>
 
-        <div className="p-4 sm:p-8 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
           <Button
             variant="outline"
-            className="flex-1 h-12 sm:h-14 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest text-slate-600 hover:bg-white border-slate-200"
             onClick={onClose}
+            className="flex-1 h-16 rounded-[1.5rem] font-black text-slate-500 uppercase tracking-widest text-[11px] bg-white border-slate-200 hover:bg-slate-100 transition-all"
           >
             Close Receipt
           </Button>
           <Button
+            variant="outline"
             onClick={handleSharePDF}
-            className="flex-1 h-12 sm:h-14 bg-emerald-600 text-slate-800 hover:bg-emerald-700 rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
+            disabled={isProcessing}
+            className="flex-1 h-16 rounded-[1.5rem] font-black text-emerald-600 uppercase tracking-widest text-[11px] bg-emerald-50 border-emerald-100 hover:bg-emerald-100 shadow-sm transition-all flex items-center justify-center gap-2"
           >
-            <Send className="h-5 w-5" />
+            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             WhatsApp Receipt
           </Button>
           <Button
             onClick={handleDownloadPDF}
             disabled={isProcessing}
-            className="flex-1 h-12 sm:h-14 bg-white text-slate-800 hover:bg-black rounded-xl sm:rounded-[1.25rem] font-black text-xs sm:text-sm uppercase tracking-widest shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
+            className="flex-1 h-16 rounded-[1.5rem] font-black text-white uppercase tracking-widest text-[11px] bg-[#0f172a] hover:bg-slate-900 shadow-2xl transition-all flex items-center justify-center gap-2"
           >
-            {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-            Download Receipt
+            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            Download PDF
           </Button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { QRCodeCanvas } from "qrcode.react";
-import { formatCurrency, formatDate } from "@/lib/mockData";
+import { formatDate } from "@/lib/mockData";
 import { numberToWords } from "@/lib/utils";
 
 type InvoiceTotalsProps = {
@@ -26,90 +26,91 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
   const linkedPayments = (payments || [])
     .filter((payment) => payment.invoiceId === invoice.id)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  const hasUpiId = Boolean(String(brand.upiId || "").trim());
 
   return (
-    <div className="space-y-4">
-    <div className="flex gap-[10mm] mt-[4mm] items-end">
-      {/* Left Side: QR & Words */}
-      <div className="w-[180px] shrink-0 space-y-4">
-        <div className="bg-[#F4F7FB] p-[4mm] rounded-[4mm] border border-[#DDE4EF] flex flex-col items-center shadow-sm">
-          <p className="text-[7pt] font-black text-[#1B2B4B] mb-3 uppercase tracking-widest">SCAN TO PAY (UPI)</p>
-          <div className="p-2 bg-white rounded-[3mm] border border-[#DDE4EF]">
-            <QRCodeCanvas
-              value={`upi://pay?pa=${brand.upiId}&pn=${encodeURIComponent(brand.name)}&am=${grandTotal.toFixed(2)}&cu=INR`}
-              size={110}
-              bgColor="#ffffff"
-              fgColor="#1B2B4B"
-              level="H"
-              includeMargin={false}
-            />
-          </div>
-          <p className="text-[6.5pt] font-bold text-[#64748B] mt-3 truncate w-full text-center">{brand.upiId}</p>
-        </div>
-        
-        <div className="px-2">
-          <p className="text-[6.5pt] font-black text-[#94A3B8] uppercase tracking-widest mb-1">AMOUNT IN WORDS</p>
-          <p className="text-[8pt] font-bold text-[#1B2B4B] uppercase italic leading-tight">
-            Rupees {numberToWords(grandTotal)} Only
-          </p>
-        </div>
-      </div>
-
-      {/* Right Side: Financial Summary Table */}
-      <div className="flex-1">
-        <div className="bg-[#F4F7FB] rounded-[4mm] border border-[#DDE4EF] overflow-hidden">
-          <div className="flex justify-between items-center px-4 py-3 border-b border-[#DDE4EF]">
-            <span className="text-[8pt] font-black text-[#94A3B8] uppercase">Subtotal</span>
-            <span className="text-[10pt] font-bold text-[#1E293B]">Rs. {grossTotal.toFixed(2)}</span>
+    <div className="space-y-10">
+      <div className="flex gap-10 mt-6 items-end">
+        {/* Left Side: QR & Words */}
+        <div className="w-[180px] shrink-0 space-y-6">
+          <div className="bg-slate-50/80 p-5 rounded-3xl border border-slate-100 flex flex-col items-center shadow-sm relative group">
+            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl -z-10" />
+            <p className="text-[8px] font-black text-slate-400 mb-4 uppercase tracking-[0.25em]">Payment QR (UPI)</p>
+            <div className="p-3 bg-white rounded-2xl shadow-inner border border-slate-100">
+              <QRCodeCanvas
+                value={`upi://pay?pa=${brand.upiId}&pn=${encodeURIComponent(brand.name)}&am=${grandTotal.toFixed(2)}&cu=INR`}
+                size={110}
+                bgColor="#ffffff"
+                fgColor="#0f172a"
+                level="H"
+                includeMargin={false}
+              />
+            </div>
+            <p className="text-[8px] font-black text-[#F47920] mt-4 truncate w-full text-center tracking-tighter bg-orange-50 px-2 py-1 rounded-full">{brand.upiId}</p>
           </div>
           
-          <div className="flex justify-between items-center px-4 py-3 border-b border-[#DDE4EF]">
-            <span className="text-[8pt] font-black text-[#94A3B8] uppercase">Discount</span>
-            <span className="text-[10pt] font-bold text-[#DC2626]">Rs. {discount.toFixed(2)}</span>
+          <div className="px-1">
+            <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.3em] mb-2">Amount in words</p>
+            <p className="text-[10px] font-black text-slate-900 uppercase italic leading-tight">
+              {numberToWords(grandTotal)} Only
+            </p>
           </div>
+        </div>
 
-          {previousDues > 0 && (
-            <div className="flex justify-between items-center px-4 py-3 border-b border-[#DDE4EF] bg-amber-50/50">
-              <span className="text-[8pt] font-black text-amber-600 uppercase">Previous Dues</span>
-              <span className="text-[10pt] font-bold text-amber-700">Rs. {previousDues.toFixed(2)}</span>
+        {/* Right Side: Financial Summary Table */}
+        <div className="flex-1">
+          <div className="bg-slate-50/50 rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100/60">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subtotal</span>
+              <span className="text-sm font-black text-slate-900 tracking-tighter">₹{grossTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
-          )}
+            
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100/60">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Discount</span>
+              <span className="text-sm font-black text-rose-500 tracking-tighter">-₹{discount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </div>
 
-          <div className="flex justify-between items-center px-4 py-5 bg-[#1B2B4B] text-slate-800">
-            <div className="flex flex-col">
-              <span className="text-[7.5pt] font-black uppercase tracking-[0.2em] text-[#F47920]">Total Amount</span>
-              <span className="text-[6pt] opacity-60">Inclusive of all services</span>
+            {previousDues > 0 && (
+              <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100/60 bg-orange-50/30">
+                <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Previous Balance</span>
+                <span className="text-sm font-black text-orange-600 tracking-tighter">₹{previousDues.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center px-6 py-8 bg-[#0f172a] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+              <div className="flex flex-col relative z-10">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-400 mb-1">Grand Total</span>
+                <span className="text-[10px] font-bold text-slate-400 opacity-60 uppercase tracking-widest">Inclusive of taxes & fees</span>
+              </div>
+              <span className="text-3xl font-black text-white tracking-tighter relative z-10">
+                ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </span>
             </div>
-            <span className="text-[20pt] font-black text-slate-800 tracking-tighter">
-              Rs. {grandTotal.toFixed(2)}
-            </span>
           </div>
         </div>
       </div>
-    </div>
 
       {linkedPayments.length > 0 && (
-        <div className="mt-8 pt-6 border-t border-[#DDE4EF] relative">
-          <div className="absolute -top-[10px] left-1/2 -translate-x-1/2 bg-white px-4 text-[7pt] font-black text-[#94A3B8] uppercase tracking-[0.3em]">
-            Payment Reconciliation
+        <div className="mt-10 pt-8 border-t border-slate-100 relative">
+          <div className="absolute -top-[11px] left-8 bg-white px-4 text-[9px] font-black text-slate-300 uppercase tracking-[0.4em]">
+            Reconciliation Records
           </div>
           <div className="grid grid-cols-2 gap-4">
             {linkedPayments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex justify-between items-center bg-[#F4F7FB] p-4 rounded-[3mm] border border-[#DDE4EF] hover:border-[#1B2B4B] transition-colors"
+                className="flex justify-between items-center bg-slate-50/50 p-5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-sm"
               >
-                <div className="flex flex-col">
-                  <span className="text-[9pt] font-black text-[#1B2B4B]">{formatDate(payment.date)}</span>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
-                    <span className="text-[7pt] font-bold text-[#64748B] uppercase tracking-widest">{payment.method}</span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] font-black text-slate-900">{formatDate(payment.date)}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">{payment.method}</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10pt] font-black text-[#1B2B4B]">Rs. {payment.amount}</span>
-                  <p className="text-[6pt] text-[#16A34A] font-bold uppercase tracking-tighter">Success</p>
+                <div className="text-right flex flex-col gap-1">
+                  <span className="text-sm font-black text-[#0f172a] tracking-tight">₹{Number(payment.amount).toLocaleString('en-IN')}</span>
+                  <p className="text-[8px] text-emerald-600 font-black uppercase tracking-widest">Confirmed</p>
                 </div>
               </div>
             ))}
@@ -117,12 +118,9 @@ export function InvoiceTotals({ brand, invoice, invoices = [], payments = [] }: 
         </div>
       )}
       
-      <div className="mt-8 text-center py-4 border-y border-[#DDE4EF] border-dashed">
-        <p className="text-[8pt] font-bold text-[#1B2B4B] uppercase tracking-[0.1em]">
-          Thank you for your business! We appreciate your timely payments.
-        </p>
-        <p className="text-[6.5pt] text-[#64748B] mt-1 italic">
-          For any billing queries, please contact our support at {brand.phone}
+      <div className="text-center py-6 border-y border-slate-100 border-dashed mt-8">
+        <p className="text-[10px] font-black text-[#0f172a] uppercase tracking-[0.2em]">
+          Thank you for your continued partnership with {brand.name}
         </p>
       </div>
     </div>

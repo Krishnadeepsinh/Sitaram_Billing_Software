@@ -366,14 +366,32 @@ export default function Reports() {
             const monthIndex = months.indexOf(e.target.value);
             const d = new Date(filterStartDate);
             d.setMonth(monthIndex);
-            setFilterStartDate(d);
+            if (d > filterEndDate) {
+              setFilterStartDate(d);
+              const end = new Date(d);
+              end.setMonth(d.getMonth() + 1);
+              end.setDate(0);
+              end.setHours(23, 59, 59, 999);
+              setFilterEndDate(end);
+            } else {
+              setFilterStartDate(d);
+            }
           }} className="flex-1 h-8 bg-transparent border-none text-sm text-foreground outline-none appearance-none px-2">
             {months.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
           <select value={filterStartDate.getFullYear()} onChange={(e) => {
             const d = new Date(filterStartDate);
             d.setFullYear(Number(e.target.value));
-            setFilterStartDate(d);
+            if (d > filterEndDate) {
+              setFilterStartDate(d);
+              const end = new Date(d);
+              end.setMonth(d.getMonth() + 1);
+              end.setDate(0);
+              end.setHours(23, 59, 59, 999);
+              setFilterEndDate(end);
+            } else {
+              setFilterStartDate(d);
+            }
           }} className="w-16 h-8 bg-transparent border-none text-sm text-foreground outline-none appearance-none px-2">
             {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
@@ -386,14 +404,30 @@ export default function Reports() {
             d.setMonth(monthIndex + 1);
             d.setDate(0);
             d.setHours(23, 59, 59, 999);
-            setFilterEndDate(d);
+            if (d < filterStartDate) {
+              setFilterEndDate(d);
+              const start = new Date(d);
+              start.setDate(1);
+              start.setHours(0, 0, 0, 0);
+              setFilterStartDate(start);
+            } else {
+              setFilterEndDate(d);
+            }
           }} className="flex-1 h-8 bg-transparent border-none text-sm text-foreground outline-none appearance-none px-2">
             {months.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
           <select value={filterEndDate.getFullYear()} onChange={(e) => {
             const d = new Date(filterEndDate);
             d.setFullYear(Number(e.target.value));
-            setFilterEndDate(d);
+            if (d < filterStartDate) {
+              setFilterEndDate(d);
+              const start = new Date(d);
+              start.setDate(1);
+              start.setHours(0, 0, 0, 0);
+              setFilterStartDate(start);
+            } else {
+              setFilterEndDate(d);
+            }
           }} className="w-16 h-8 bg-transparent border-none text-sm text-foreground outline-none appearance-none px-2">
             {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
           </select>

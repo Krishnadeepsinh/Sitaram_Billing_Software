@@ -183,13 +183,13 @@ export default function InvoicePreviewModal({
 
     const styles: Record<string, React.CSSProperties> = {
       page: { fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif", fontSize: 13, color: "#1a1a2e", background: "#ffffff", width: 794, minHeight: 1123, margin: "0 auto", boxSizing: "border-box", padding: 0, position: "relative" },
-      header: { background: "#1a2e5a", color: "#ffffff", padding: "24px 36px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" },
+      header: { background: "#1a2e5a", color: "#ffffff", padding: "36px 40px 30px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" },
       headerLeft: { display: "flex", alignItems: "center", gap: 18 },
       logoBox: { width: 76, height: 76, background: "#ffffff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 },
       logoSvg: { width: 72, height: 72 },
-      companyName: { fontSize: 24, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.1, margin: 0, padding: 0 },
-      tagline: { fontSize: 12, color: "#a0b4d0", marginTop: 6, marginBottom: 4, margin: 0, padding: 0 },
-      contactInfo: { fontSize: 11, color: "#c8d8ee", marginTop: 8, lineHeight: 1.5 },
+      companyName: { fontSize: 30, fontWeight: 800, letterSpacing: 0.5, lineHeight: 1.1, margin: 0, padding: 0 },
+      tagline: { fontSize: 14, color: "#a0b4d0", marginTop: 8, marginBottom: 4, margin: 0, padding: 0 },
+      contactInfo: { fontSize: 12, color: "#c8d8ee", marginTop: 10, lineHeight: 1.5 },
       headerBadge: { background: "#e8522a", color: "#fff", fontSize: 13, fontWeight: 700, padding: "6px 18px", borderRadius: 6, letterSpacing: 1, textTransform: "uppercase" },
       orangeBar: { height: 5, background: "linear-gradient(90deg,#e8522a,#f4a035)" },
       metaRow: { display: "flex", borderBottom: "1px solid #e4e9f0", background: "#f8fafc" },
@@ -216,18 +216,18 @@ export default function InvoicePreviewModal({
       tdRight: { padding: "10px 12px", fontSize: 12, color: "#1a2e5a", borderBottom: "1px solid #e4e9f0", textAlign: "right" },
       tableWrapper: { border: "1px solid #dce4ef", borderRadius: 4, overflow: "hidden", marginBottom: 30 },
       totalsArea: { display: "flex", justifyContent: "flex-end", marginTop: 0 },
-      totalsBox: { width: 280 },
-      totalRow: { display: "flex", justifyContent: "space-between", padding: "6px 14px", fontSize: 12, color: "#4a5568", borderBottom: "1px solid #eef1f6" },
-      grandRow: { display: "flex", justifyContent: "space-between", padding: "10px 14px", fontSize: 14, fontWeight: 800, color: "#ffffff", background: "#1a2e5a", borderRadius: "0 0 4px 4px" },
+      totalsBox: { width: 340 },
+      totalRow: { display: "flex", justifyContent: "space-between", padding: "8px 14px", fontSize: 13, color: "#4a5568", borderBottom: "1px solid #eef1f6" },
+      grandRow: { display: "flex", justifyContent: "space-between", padding: "14px 14px", fontSize: 18, fontWeight: 800, color: "#ffffff", background: "#1a2e5a", borderRadius: "0 0 4px 4px" },
       wordsBox: { background: "#f0f4fa", border: "1px solid #dce4ef", borderRadius: 4, padding: "8px 14px", fontSize: 12, color: "#4a5568", fontStyle: "italic", marginTop: 8, marginBottom: 16 },
-      bottomArea: { display: "flex", gap: 16, marginTop: 10 },
+      bottomArea: { display: "flex", gap: 24, marginTop: 60 },
       payBox: { flex: 1 },
-      payTitle: { fontSize: 13, fontWeight: 700, color: "#e8522a", letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 12 },
-      payItem: { fontSize: 14, color: "#1a2e5a", marginBottom: 8, display: "flex", gap: 8 },
-      payNum: { color: "#7a8fa6", fontWeight: 700, width: 22, flexShrink: 0 },
-      qrBox: { width: 170, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px solid #dce4ef", borderRadius: 4, padding: "12px 18px", background: "#f8fafc" },
-      qrTitle: { fontSize: 11, fontWeight: 700, color: "#1a2e5a", letterSpacing: 0.5, marginBottom: 8 },
-      qrUpi: { fontSize: 11, color: "#1a2e5a", fontWeight: 600, marginTop: 6 },
+      payTitle: { fontSize: 16, fontWeight: 700, color: "#e8522a", letterSpacing: 0.6, textTransform: "uppercase", marginBottom: 16 },
+      payItem: { fontSize: 16, color: "#1a2e5a", marginBottom: 12, display: "flex", gap: 10 },
+      payNum: { color: "#7a8fa6", fontWeight: 700, width: 26, flexShrink: 0 },
+      qrBox: { width: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px solid #dce4ef", borderRadius: 4, padding: "16px 20px", background: "#f8fafc" },
+      qrTitle: { fontSize: 13, fontWeight: 700, color: "#1a2e5a", letterSpacing: 0.5, marginBottom: 12 },
+      qrUpi: { fontSize: 13, color: "#1a2e5a", fontWeight: 600, marginTop: 8 },
       footer: { background: "#1a2e5a", color: "#a0b4d0", fontSize: 10, textAlign: "center", padding: "10px 20px", marginTop: "auto" },
     };
 
@@ -395,7 +395,7 @@ export default function InvoicePreviewModal({
             </div>
             <div style={styles.qrBox}>
               <div style={styles.qrTitle}>SCAN & PAY</div>
-              <QRCodeSVG value={`upi://pay?pa=${brand.upiId}&pn=SitaramCable&am=${grandTotal}&cu=INR`} size={110} level="H" />
+              <QRCodeSVG value={`upi://pay?pa=${brand.upiId}&pn=SitaramCable&am=${grandTotal}&cu=INR`} size={130} level="H" />
               <div style={styles.qrUpi}>UPI: {brand.upiId}</div>
             </div>
           </div>

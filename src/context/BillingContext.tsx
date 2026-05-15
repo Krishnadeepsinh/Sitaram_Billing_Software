@@ -1781,6 +1781,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             args: [id, number, sub.id, total, gst, date, dueDate, 'pending', 'plan', billingPeriod, 0]
           });
           statements.push({
+
             sql: 'UPDATE subscribers SET balance = ?, unpaid_months = ?, expiry_date = ? WHERE id = ?',
             args: [newBalance, JSON.stringify(updatedMonths), newExpiryDate, sub.id]
           });
@@ -1846,40 +1847,6 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // ── Stats ────────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const today = new Date();
-
-    const collectedToday  = payments
-      .filter(p => p.date && new Date(p.date).toDateString() === today.toDateString())
-      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-    
-    const monthRevenue    = payments
-      .filter(p => {
-        if (!p.date) return false;
-        const d = new Date(p.date);
-        return d >= filterStartDate && d <= filterEndDate;
-      })
-      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-    
-    const monthExpenses   = expenses
-      .filter(e => {
-        if (!e.date) return false;
-        const d = new Date(e.date);
-        return d >= filterStartDate && d <= filterEndDate;
-      })
-      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-    
-    // Pending dues = sum of unpaid invoice amounts (single source of truth)
-    // This matches the Invoices page and avoids orphan-balance mismatches
-    const pendingDues = subscribers.reduce((sum, sub) => {
-      const subInvoices = invoices.filter(inv => inv.subscriberId === sub.id);
-      const subPayments = payments.filter(p => p.subscriberId === sub.id);
-      
-      const totalInvoiced = subInvoices.reduce((s, i) => s + (Number(i.amount) || 0), 0);
-      const totalPaid = subPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
-      const openingBal = Number(sub.openingBalance || 0);
-      
-      const realBalance = totalPaid - totalInvoiced - openingBal;
-      return sum + (realBalance < 0 ? Math.abs(realBalance) : 0);
-    }, 0);
     
     const expiringCount   = subscribers
       .filter(s => s.expiryDate && new Date(s.expiryDate) < new Date(today.getTime() + 7 * 86400000) && s.status === 'active')

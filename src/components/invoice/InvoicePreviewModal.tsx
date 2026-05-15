@@ -89,62 +89,59 @@ export default function InvoicePreviewModal({
   const lineItem = getInvoiceLineItem(invoice, subscriber, plans, isCableMode);
   const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
 
+  const generatePreviewPdfBlob = async () => {
+    const element = document.getElementById("invoice-content");
+    if (!element) {
+      throw new Error("Invoice document not ready.");
+    }
+
+    const html2pdf = (await import("html2pdf.js")).default;
+    const options = {
+      margin: 0,
+      filename: `${invoice?.number || "INV"}.pdf`,
+      image: { type: "jpeg" as const, quality: 1.0 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        letterRendering: true,
+        windowWidth: 794,
+        onclone: (doc: Document) => {
+          const el = doc.getElementById("invoice-content");
+          if (el) {
+            el.style.transform = "none";
+            el.style.margin = "0";
+            el.style.padding = "40px";
+            el.style.width = "794px";
+            el.style.backgroundColor = "white";
+            el.style.color = "black";
+            const allText = el.querySelectorAll("*");
+            allText.forEach((node: any) => {
+              if (node.style) {
+                node.style.color = "black";
+                node.style.borderColor = "#eee";
+              }
+            });
+          }
+        }
+      },
+      jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
+    };
+
+    const pdfBlob = await html2pdf().set(options).from(element).toPdf().output("blob");
+    if (!pdfBlob || pdfBlob.size < 1000) {
+      throw new Error("PDF generation failed - file is empty.");
+    }
+
+    return pdfBlob as Blob;
+  };
+
   const handleDownloadPDF = async () => {
     setIsProcessing(true);
     try {
-      const payload = {
-        type: 'invoice',
-        number: invoice.invoiceNumber || invoice.number || 'INV',
-        date: formatDate(invoice.date),
-        billingPeriod: billingPeriodLabel,
-        dueDate: formatDate(invoice.dueDate),
-        customerId: subscriber?.customerId || subscriber?.customerUsername || 'N/A',
-        planPeriod: `${formatDate(serviceDates.rechargeDate)} - ${formatDate(serviceDates.expiryDate)}`,
-        isCableMode: isCableMode,
-        status: invoice.status,
-        customerNo: subscriber?.customerNo || '-',
-        customerName: subscriber?.name || 'N/A',
-        customerAddress: `${subscriber?.area || ''}\nBhavnagar, Gujarat`,
-        stbNumber: subscriber?.customerId || subscriber?.customerUsername || 'N/A',
-        customerMobile: subscriber?.phone || 'N/A',
-        planName: lineItem.description,
-        planMonths: lineItem.quantity,
-        amount: invoice.amount,
-        discount: invoice.discountAmount || 0,
-        amountInWords: numberToWords(Number(invoice.amount) - (invoice.discountAmount || 0)),
-        brand: {
-          name: brand.name,
-          address: brand.address,
-          phone: brand.phone,
-          upiId: brand.upiId
-        },
-        history: invoices
-          .filter(inv => inv.subscriberId === invoice.subscriberId && inv.id !== invoice.id)
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .map(inv => ({
-            date: formatDate(inv.date),
-            amount: inv.amount,
-            method: 'Cash/Online'
-          }))
-      };
-
-      const response = await fetch('/api/generate_pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate PDF");
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Invoice_${payload.number}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const { saveAs } = await import("file-saver");
+      const blob = await generatePreviewPdfBlob();
+      saveAs(blob, `Invoice_${invoice.invoiceNumber || invoice.number || "INV"}.pdf`);
       
       toast.success("Professional Invoice downloaded");
     } catch (error) {
@@ -156,12 +153,6 @@ export default function InvoicePreviewModal({
   };
 
   const handleSharePDF = async () => {
-    const element = document.getElementById("invoice-content");
-    if (!element) {
-      toast.error("Invoice document not ready. Please try again.");
-      return;
-    }
-
     if (!window.isSecureContext) {
       toast.error("Sharing is only available on secure (HTTPS) connections.");
       return;
@@ -172,45 +163,8 @@ export default function InvoicePreviewModal({
     const fileName = `${invoice?.number || "INV"}.pdf`;
 
     try {
-      const html2pdf = (await import("html2pdf.js")).default;
       const { saveAs } = await import("file-saver");
-      const options = {
-        margin: 0,
-        filename: fileName,
-        image: { type: "jpeg" as const, quality: 1.0 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          letterRendering: true,
-          windowWidth: 794,
-          onclone: (doc: Document) => {
-            const el = doc.getElementById("invoice-preview-content");
-            if (el) {
-              el.style.transform = "none";
-              el.style.margin = "0";
-              el.style.padding = "40px";
-              el.style.width = "794px";
-              el.style.backgroundColor = "white";
-              el.style.color = "black";
-              const allText = el.querySelectorAll('*');
-              allText.forEach((node: any) => {
-                if (node.style) {
-                  node.style.color = "black";
-                  node.style.borderColor = "#eee";
-                }
-              });
-            }
-          }
-        },
-        jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
-      };
-
-      const pdfBlob = await html2pdf().set(options).from(element).toPdf().output("blob");
-      if (!pdfBlob || pdfBlob.size < 1000) {
-        throw new Error("PDF generation failed - file is empty.");
-      }
-
+      const pdfBlob = await generatePreviewPdfBlob();
       const file = new File([pdfBlob], fileName, { type: "application/pdf" });
       const message = `*INVOICE: ${invoice.number}*
 Hello ${subscriber?.name || "Customer"},

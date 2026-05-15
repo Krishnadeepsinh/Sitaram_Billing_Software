@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useBusinessMode } from "@/lib/turso";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useNavigate } from "react-router-dom";
 
 const Highlight = ({ text, query }: { text: string; query: string }) => {
   if (!query || !text) return <>{text || ""}</>;
@@ -42,6 +43,7 @@ const Highlight = ({ text, query }: { text: string; query: string }) => {
 };
 
 export default function Subscribers() {
+  const navigate = useNavigate();
   const activeBusinessMode = useBusinessMode();
   const isCableMode = activeBusinessMode === "cable";
   const customerIdLabel = isCableMode ? "STB Number" : "Customer ID";
@@ -223,6 +225,10 @@ export default function Subscribers() {
   const handleOpenHistory = (sub: any) => {
     setHistorySub(sub);
     setShowHistory(true);
+  };
+
+  const handleCollectPayment = (sub: any) => {
+    navigate(`/payments?subscriberId=${encodeURIComponent(sub.id)}`);
   };
 
   const handleExportExcel = () => {
@@ -486,6 +492,13 @@ export default function Subscribers() {
                           <FileText className="h-4 w-4" />
                         </Button>
                         <Button 
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-sky-400 hover:bg-sky-500/10"
+                          onClick={() => handleCollectPayment(s)}
+                          title="Collect Payment"
+                        >
+                          <Wallet className="h-4 w-4" />
+                        </Button>
+                        <Button 
                           variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                           onClick={() => handleOpenEdit(s)}
                           title="Edit Subscriber"
@@ -581,6 +594,9 @@ export default function Subscribers() {
                   </Button>
                   <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10" onClick={() => handleOpenInvoice(s)}>
                     <FileText className="h-4 w-4 mr-1.5" /> Bill
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 px-2 text-slate-400 hover:text-sky-400 hover:bg-sky-500/10" onClick={() => handleCollectPayment(s)}>
+                    <Wallet className="h-4 w-4 mr-1.5" /> Collect
                   </Button>
                 </div>
                 <div className="flex gap-1">

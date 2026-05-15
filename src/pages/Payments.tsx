@@ -18,6 +18,7 @@ import { useBusinessMode } from "@/lib/turso";
 import { Logo } from "@/components/Logo";
 import PaymentReceiptModal from "@/components/payment/PaymentReceiptModal";
 import * as XLSX from 'xlsx';
+import { useSearchParams } from "react-router-dom";
 
 export default function Payments() {
   const activeBusinessMode = useBusinessMode();
@@ -28,6 +29,7 @@ export default function Payments() {
     companySettings, refreshData, filterStartDate, setFilterStartDate, filterEndDate, setFilterEndDate 
   } = useBilling();
   const brand = getBrandSettings(companySettings);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [q, setQ] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +45,46 @@ export default function Payments() {
     amount: 0,
     method: "Cash" as const,
   });
+
+  const getSubscriberDueAmount = (subscriberId: string) => {
+    const sub = subscribers.find((item) => item.id === subscriberId);
+    if (!sub) return 0;
+
+    const totalInvoiced = invoices
+      .filter((inv) => inv.subscriberId === subscriberId)
+      .reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
+    const totalPaid = payments
+      .filter((payment) => payment.subscriberId === subscriberId)
+      .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+    const effectiveBalance = totalPaid - totalInvoiced - Number(sub.openingBalance || 0);
+
+    return effectiveBalance < 0 ? Math.abs(effectiveBalance) : 0;
+  };
+
+  const closeAddModal = () => {
+    setIsAddOpen(false);
+    setFormData({ subscriberId: "", amount: 0, method: "Cash" });
+    if (searchParams.get("subscriberId")) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("subscriberId");
+      setSearchParams(nextParams, { replace: true });
+    }
+  };
+
+  useEffect(() => {
+    const subscriberId = searchParams.get("subscriberId");
+    if (!subscriberId) return;
+
+    const subscriber = subscribers.find((item) => item.id === subscriberId);
+    if (!subscriber) return;
+
+    setFormData({
+      subscriberId,
+      amount: getSubscriberDueAmount(subscriberId),
+      method: "Cash",
+    });
+    setIsAddOpen(true);
+  }, [searchParams, subscribers, invoices, payments]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -198,8 +240,7 @@ export default function Payments() {
       setIsSubmitting(true);
       const newPay = await recordPayment({ ...formData, date: new Date().toISOString(), agent: "System Admin" });
       toast.success("Transaction Record Created");
-      setIsAddOpen(false);
-      setFormData({ subscriberId: "", amount: 0, method: "Cash" });
+      closeAddModal();
       setSelectedPayment(newPay);
       setIsReceiptOpen(true);
     } catch (err) { toast.error("Transaction failed"); } finally { setIsSubmitting(false); }
@@ -543,7 +584,7 @@ export default function Payments() {
                   <p className="text-xs text-slate-400">Add a new payment record</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsAddOpen(false)} className="h-8 w-8 text-slate-400 hover:text-white"><X className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={closeAddModal} className="h-8 w-8 text-slate-400 hover:text-white"><X className="h-4 w-4" /></Button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
@@ -593,7 +634,7 @@ export default function Payments() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button type="button" variant="ghost" className="flex-1 h-10 bg-slate-800 hover:bg-slate-700 text-white" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                <Button type="button" variant="ghost" className="flex-1 h-10 bg-slate-800 hover:bg-slate-700 text-white" onClick={closeAddModal}>Cancel</Button>
                 <Button 
                   type="submit" 
                   disabled={isSubmitting || !formData.subscriberId} 

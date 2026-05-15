@@ -1847,20 +1847,53 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // ── Stats ────────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const today = new Date();
-    
-    const expiringCount   = subscribers
-      .filter(s => s.expiryDate && new Date(s.expiryDate) < new Date(today.getTime() + 7 * 86400000) && s.status === 'active')
-      .length;
+    const todayStr = today.toISOString().split('T')[0];
 
-    return { 
-      collectedToday, 
-      monthRevenue, 
-      monthExpenses, 
-      pendingDues, 
-      expiringCount, 
-      totalSubscribers: subscribers.length, 
-      active: subscribers.filter(s => s.status === 'active').length, 
-      expired: subscribers.filter(s => s.status === 'expired').length 
+    // O(N) single-pass calculations
+    const collectedToday = payments.reduce((sum, p) => {
+      const pDate = p.date ? p.date.split('T')[0] : '';
+      return pDate === todayStr ? sum + (Number(p.amount) || 0) : sum;
+    }, 0);
+
+    const monthRevenue = payments.reduce((sum, p) => {
+      if (!p.date) return sum;
+      const pDate = new Date(p.date);
+      return (pDate >= filterStartDate && pDate <= filterEndDate) ? sum + (Number(p.amount) || 0) : sum;
+    }, 0);
+
+    const monthExpenses = expenses.reduce((sum, e) => {
+      if (!e.date) return sum;
+      const eDate = new Date(e.date);
+      return (eDate >= filterStartDate && eDate <= filterEndDate) ? sum + (Number(e.amount) || 0) : sum;
+    }, 0);
+
+    const pendingDues = subscribers.reduce((sum, s) => {
+      return s.status === 'active' ? sum + Math.abs(Math.min(0, Number(s.balance) || 0)) : sum;
+    }, 0);
+
+    const expiringCount = subscribers.reduce((count, s) => {
+      if (s.status !== 'active' || !s.expiryDate) return count;
+      const expDate = new Date(s.expiryDate);
+      const isExpiring = expDate < new Date(today.getTime() + 7 * 86400000);
+      return isExpiring ? count + 1 : count;
+    }, 0);
+
+    let activeCount = 0;
+    let expiredCount = 0;
+    subscribers.forEach(s => {
+      if (s.status === 'active') activeCount++;
+      else if (s.status === 'expired') expiredCount++;
+    });
+
+    return {
+      collectedToday,
+      monthRevenue,
+      monthExpenses,
+      pendingDues,
+      expiringCount,
+      totalSubscribers: subscribers.length,
+      active: activeCount,
+      expired: expiredCount
     };
   }, [subscribers, payments, expenses, invoices, filterStartDate, filterEndDate]);
 

@@ -44,7 +44,7 @@ export const getInvoiceServiceDates = (invoice: any, subscriber: any, plans: any
 };
 
 export const getConnectionId = (subscriber: any, invoice: any) =>
-  (subscriber as any)?.customId || `SCB-AHM-${String(invoice?.subscriberId || "").padStart(5, "0")}`;
+  (subscriber as any)?.code || (subscriber as any)?.customerId || `SCB-AHM-${String(invoice?.subscriberId || "").padStart(5, "0")}`;
 
 export const getSubscriberAddressLines = (subscriber: any) => {
   if (!subscriber) return ["Address not available"];
@@ -60,7 +60,7 @@ export const getSubscriberAddressLines = (subscriber: any) => {
   return lines.length > 0 ? lines : ["Address not available"];
 };
 
-export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[]) => {
+export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[], isCableMode: boolean = false) => {
   const grossAmount = Number(invoice?.amount || 0) + Number(invoice?.discount || 0);
 
   if (invoice?.type === "legacy") {
@@ -77,14 +77,28 @@ export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[]) 
   const fallbackRate = Math.max(1, Number(plan?.price || grossAmount || 1));
   const quantity = Math.max(1, Math.round(grossAmount / fallbackRate));
   const validityDays = Number(plan?.validityDays || 30);
-  const speed = plan?.speedMbps ? `${plan.speedMbps} Mbps` : "";
+  const speed = !isCableMode && plan?.speedMbps ? `${plan.speedMbps} Mbps` : "";
+
+  let serviceName = isCableMode ? (plan?.name || "Cable TV Service") : (plan?.name || "Broadband Service");
+  
+  // Sanitize plan name for Cable mode with a foolproof splitting approach
+  if (isCableMode && serviceName) {
+    // 1. Manually split by '[' or '(' to remove any trailing metadata blocks
+    serviceName = serviceName.split('[')[0].split('(')[0].trim();
+    
+    // 2. Fallback regex for loose speed indicators not wrapped in brackets
+    serviceName = serviceName
+      .replace(/\d+\s*mbps/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
   if (quantity === 1 && validityDays > 31) {
     return {
-      description: `${plan?.name || "Broadband Service"}${speed ? ` [${speed}]` : ""} (${invoice?.billingPeriod || `${validityDays} DAYS`})`,
+      description: `${serviceName}${speed ? ` [${speed}]` : ""} (${invoice?.billingPeriod || `${validityDays} DAYS`})`,
       subDescription: subscriber?.customerUsername
         ? `User ID: ${subscriber.customerUsername}`
-        : `${validityDays}-day high-speed internet subscription`,
+        : `${validityDays}-day ${isCableMode ? "cable television" : "high-speed internet"} subscription`,
       quantity: "1",
       rate: grossAmount,
       total: grossAmount,
@@ -100,10 +114,10 @@ export const getInvoiceLineItem = (invoice: any, subscriber: any, plans: any[]) 
   const rangeLabel = formatMonthRanges(months);
 
   return {
-    description: `${plan?.name || "Broadband Service"}${speed ? ` [${speed}]` : ""}${rangeLabel ? ` (${rangeLabel})` : ""}`,
+    description: `${serviceName}${speed ? ` [${speed}]` : ""}${rangeLabel ? ` (${rangeLabel})` : ""}`,
     subDescription: subscriber?.customerUsername
       ? `User ID: ${subscriber.customerUsername}`
-      : "Monthly high-speed broadband service",
+      : `Monthly ${isCableMode ? "cable television" : "high-speed broadband"} service`,
     quantity: String(quantity),
     rate: grossAmount / quantity,
     total: grossAmount,

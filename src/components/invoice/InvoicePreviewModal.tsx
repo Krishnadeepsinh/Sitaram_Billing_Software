@@ -85,7 +85,7 @@ export default function InvoicePreviewModal({
   const invoiceLabel = getInvoiceLabel(invoice, isCableMode);
   const invoiceStatusLabel = getInvoiceStatusLabel(invoice, isCableMode);
   const billingPeriodLabel = getBillingPeriodLabel(invoice);
-  const lineItem = getInvoiceLineItem(invoice, subscriber, plans);
+  const lineItem = getInvoiceLineItem(invoice, subscriber, plans, isCableMode);
   const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
 
   const handleDownloadPDF = async () => {
@@ -288,7 +288,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
               />
 
               <div className="flex gap-4">
-                <InvoiceCustomerBlock customerIdLabel={customerIdLabel} subscriber={subscriber} />
+                <InvoiceCustomerBlock customerIdLabel={customerIdLabel} subscriber={subscriber} isCableMode={isCableMode} />
                 <div className="w-48 bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-center text-center">
                   <p className="text-slate-400 text-[8px] font-black mb-1 uppercase tracking-widest">Payment Status</p>
                   <div className={`text-xs font-black py-1.5 rounded-full border uppercase tracking-widest ${
@@ -320,7 +320,7 @@ Due Date: ${formatDate(invoice.dueDate)}`;
                       <p className="text-[11px] font-bold text-slate-500 mt-1">
                         {invoice.type === "legacy"
                           ? lineItem.subDescription
-                          : `${isCableMode ? "Cable TV" : "Broadband"} Service | ID: ${subscriber?.username || "N/A"}`}
+                          : `${isCableMode ? "Cable TV" : "Broadband"} Service${(subscriber?.customerId || subscriber?.customerUsername) ? ` | ID: ${subscriber?.customerId || subscriber?.customerUsername}` : ""}`}
                       </p>
                     </td>
                     <td className="py-4 px-4 text-center text-slate-600 font-bold text-xs">

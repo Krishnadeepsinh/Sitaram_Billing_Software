@@ -57,6 +57,22 @@ export default function Payments() {
     if (!payment) return [];
     const sub = subscribers.find(s => s.id === payment.subscriberId);
     const plan = plans.find(p => p.id === sub?.planId);
+    
+    // Clean plan name for Cable mode
+    // Clean plan name for Cable mode aggressively
+    let planName = plan?.name || 'Service';
+    if (isCableMode && planName) {
+      planName = planName
+        .replace(/\[[^\]]*mbps[^\]]*\]/gi, "")
+        .replace(/\([^\)]*mbps[^\)]*\)/gi, "")
+        .replace(/\d+\s*mbps/gi, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\[\s*\]/g, "")
+        .replace(/\(\s*\)/g, "")
+        .trim();
+    }
+
     const chronoInvoices = invoices.filter(inv => inv.subscriberId === payment.subscriberId)
       .sort((a, b) => {
         const typeA = a.type === 'legacy' ? 0 : 1;
@@ -110,8 +126,8 @@ export default function Payments() {
         const invDate = new Date(inv.date);
         invDate.setHours(12, 0, 0, 0);
         items.push({ 
-          desc: `Subscription (${inv.billingPeriod || invDate.toLocaleString('default', { month: 'short', year: '2-digit' }).toUpperCase()})`, 
-          subDesc: `${plan?.name || 'Service'} Plan`, 
+          desc: `${isCableMode ? 'Cable TV' : 'Broadband'} Service (${inv.billingPeriod || invDate.toLocaleString('default', { month: 'short', year: '2-digit' }).toUpperCase()})`, 
+          subDesc: `${planName} Plan`, 
           date: formatDate(inv.date), 
           qty: "1", 
           total: amt 

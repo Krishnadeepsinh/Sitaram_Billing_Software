@@ -129,14 +129,19 @@ export default function PaymentReceiptModal({
       if (inv.type === 'legacy') {
         items.push({ 
           desc: "Previous Year Arrears", 
-          period: formatDate(inv.date), 
+          period: inv.billingPeriod || formatDate(inv.date), 
           qty: "\u2014", 
           total: amt 
         });
       } else {
         const dates = getInvoiceServiceDates(inv, sub, plans);
+        const planName = plan?.name || "Standard Plan";
+        const cleanedPlanName = isCableMode 
+          ? planName.replace(/\[?\d+\s*Mbps\]?/gi, "").replace(/\(\s*Mbps\s*\)/gi, "").trim() 
+          : planName;
+          
         items.push({ 
-          desc: `${isCableMode ? "Cable TV" : "Broadband"} Service - ${plan?.name || "Standard Plan"}`, 
+          desc: `${isCableMode ? "Cable TV" : "Broadband"} Service - ${cleanedPlanName}`, 
           period: `${formatDate(dates.rechargeDate)} - ${formatDate(dates.expiryDate)}`, 
           qty: "1", 
           total: amt 
@@ -278,12 +283,54 @@ Thank you for choosing ${brand.name}!`;
                 </div>
               </div>
 
+              {/* Connection & Plan Details Bar */}
+              <div className="flex items-center justify-between gap-4 px-6 py-3 bg-slate-50/80 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="flex items-center gap-8">
+                  {subscriber?.customerNo && subscriber.customerNo !== "-" && (
+                    <div>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Customer No</span>
+                      <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">
+                        #{subscriber.customerNo}
+                      </span>
+                    </div>
+                  )}
+                  {(subscriber?.customerId || subscriber?.customerUsername) && (
+                    <div>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">{isCableMode ? "STB Number" : "Customer ID"}</span>
+                      <span className="text-[11px] font-black text-[#1e3a5f] uppercase tracking-tight">
+                        {subscriber.customerId || subscriber.customerUsername}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Plan Period</span>
+                    <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">
+                      {formatDate(selectedPaymentServiceDates.rechargeDate)} - {formatDate(selectedPaymentServiceDates.expiryDate)}
+                    </span>
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-slate-200" />
+                <div className="flex items-center gap-4">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Paid:</span>
+                  <div className="text-xl font-black text-emerald-600 tracking-tighter">
+                    ₹{Number(payment.amount).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
               {/* Customer Info */}
               <div className="flex gap-4">
-                <InvoiceCustomerBlock customerIdLabel={customerIdLabel} subscriber={subscriber} />
-                <div className="w-48 bg-slate-900 p-6 rounded-[2rem] text-white flex flex-col justify-center text-center">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-300 mb-1">Total Paid</p>
-                  <p className="text-3xl font-black tracking-tight text-white">₹{Number(payment.amount).toLocaleString()}</p>
+                <InvoiceCustomerBlock customerIdLabel={customerIdLabel} subscriber={subscriber} isCableMode={isCableMode} />
+                <div className="w-48 bg-slate-900 p-6 rounded-[2.5rem] text-white flex flex-col justify-center text-center shadow-xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl -mr-8 -mt-8 transition-all group-hover:bg-white/10" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-300 mb-1 relative z-10 opacity-80">Total Received</p>
+                  <p className="text-3xl font-black tracking-tight text-white relative z-10 leading-none">
+                    ₹{Number(payment.amount).toLocaleString()}
+                  </p>
+                  <div className="mt-3 flex items-center justify-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                    <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400">Verified</span>
+                  </div>
                 </div>
               </div>
 
@@ -303,8 +350,8 @@ Thank you for choosing ${brand.name}!`;
                       <tr key={idx}>
                         <td className="py-4 px-4">
                           <p className="font-black text-slate-900 text-sm">{item.desc}</p>
-                          <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-wide">
-                            {isCableMode ? "Cable Television" : "Broadband Internet"} Service
+                          <p className="text-[11px] font-bold text-slate-500 mt-1">
+                            {item.subDesc || `${isCableMode ? "Cable Television" : "Broadband Internet"} Service`}
                           </p>
                         </td>
                         <td className="py-4 px-4 text-center text-slate-600 font-bold text-xs">{item.period}</td>

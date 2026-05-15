@@ -18,6 +18,7 @@ export function InvoiceMeta({
   rechargeDate,
   expiryDate,
 }: InvoiceMetaProps) {
+  const isCableMode = invoiceStatusLabel.includes("CABLE");
   const connectionId = getConnectionId(subscriber, invoice);
   const invoiceStateLabel = String(invoice?.status || "pending").toUpperCase();
   const stateTone =
@@ -50,10 +51,18 @@ export function InvoiceMeta({
 
       <div className="flex items-center justify-between gap-4 px-4 py-2 bg-slate-50/80 rounded-xl border border-slate-100">
         <div className="flex items-center gap-6">
-          <div>
-            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">User ID / Conn ID</span>
-            <span className="text-[11px] font-black text-[#1e3a5f] uppercase">{connectionId}</span>
-          </div>
+          {subscriber?.customerNo && subscriber.customerNo !== "-" && (
+            <div>
+              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Customer No</span>
+              <span className="text-[11px] font-black text-slate-800">#{subscriber.customerNo}</span>
+            </div>
+          )}
+          {connectionId && !connectionId.includes("SCB-AHM-00000") && (
+            <div>
+              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">{isCableMode ? "STB / Conn ID" : "User ID / Conn ID"}</span>
+              <span className="text-[11px] font-black text-[#1e3a5f] uppercase">{connectionId}</span>
+            </div>
+          )}
           {rechargeDate && (
             <div>
               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 block">Plan Period</span>

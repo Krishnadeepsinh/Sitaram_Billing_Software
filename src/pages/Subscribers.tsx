@@ -226,18 +226,23 @@ export default function Subscribers() {
           'No': s.customerNo || '',
           'Name': s.name,
           'Phone': s.phone,
-          'Area': s.area,
+          'Area / Zone': s.area || 'General',
           [customerIdLabel]: s.customerId,
           'Username': s.customerUsername || '',
+          'Password': s.customerPassword || '',
           'Email': s.email || '',
-          'Plan': plan?.name || 'Unassigned',
-          'Price': plan?.price || 0,
-          'Status': s.status,
-          'Balance': balance,
-          'Expiry Date': s.expiryDate || '',
-          'Installation Date': s.installationDate || '',
+          'Plan Name': plan?.name || 'Unassigned',
+          'Plan Monthly Price': plan?.price || 0,
+          'Status': (s.status || 'Active').toUpperCase(),
+          'Current Balance': balance,
+          'Opening Balance': s.openingBalance || 0,
+          'Expiry Date': s.expiryDate || 'N/A',
+          'Installation Date': s.installationDate || 'N/A',
           'House No': s.houseNo || '',
-          'Landmark': s.landmark || ''
+          'Landmark': s.landmark || '',
+          'Auto Billing': s.autoBilling ? 'Enabled' : 'Disabled',
+          'Unpaid Months': s.unpaidMonths || 0,
+          'System ID': s.id
         };
       });
 
@@ -447,8 +452,8 @@ export default function Subscribers() {
                           setUpdatingStatus(prev => ({ ...prev, [s.id]: true }));
                           try {
                             await updateSubscriber(s.id, { status: newStatus });
-                          } catch (err) {
-                            toast.error("Failed to update status");
+                          } catch (err: any) {
+                            toast.error(err.message || "Failed to update status");
                           } finally {
                             setUpdatingStatus(prev => ({ ...prev, [s.id]: false }));
                           }
@@ -530,8 +535,8 @@ export default function Subscribers() {
                     setUpdatingStatus(prev => ({ ...prev, [s.id]: true }));
                     try {
                       await updateSubscriber(s.id, { status: newStatus });
-                    } catch (err) {
-                      toast.error("Failed to update");
+                    } catch (err: any) {
+                      toast.error(err.message || "Failed to update");
                     } finally {
                       setUpdatingStatus(prev => ({ ...prev, [s.id]: false }));
                     }

@@ -10,7 +10,7 @@ import {
   Trash2, History, FileText, Wifi, ChevronRight,
   Activity, Wallet, X, User, Shield, CreditCard,
   Network, Signal, Globe, ArrowUpRight, Zap, DatabaseZap,
-  ShieldCheck, LayoutGrid, ListFilter, Users
+  ShieldCheck, LayoutGrid, ListFilter, Users, Download
 } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { toast } from "sonner";

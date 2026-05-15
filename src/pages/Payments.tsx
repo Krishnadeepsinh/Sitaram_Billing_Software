@@ -600,10 +600,10 @@ export default function Payments() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-600 hover:bg-orange-50" onClick={() => handleWhatsApp(p)}><Share2 className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => setConfirmModal(p)}><Trash2 className="h-4 w-4" /></Button>
+                      <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-[#1B2B4B] hover:bg-slate-100" onClick={() => { setSelectedPayment(p); setIsReceiptOpen(true); }}><Eye className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#F47920] hover:text-[#D96611] hover:bg-orange-50" onClick={() => handleWhatsApp(p)}><Share2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => setConfirmModal(p)}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </td>
                   </tr>

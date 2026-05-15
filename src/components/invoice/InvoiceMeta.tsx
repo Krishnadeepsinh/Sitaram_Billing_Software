@@ -1,4 +1,4 @@
-import { formatDate } from "@/lib/mockData";
+import { formatFullDate } from "@/lib/mockData";
 
 type InvoiceMetaProps = {
   invoice: any;
@@ -20,7 +20,7 @@ export function InvoiceMeta({
       {/* INVOICE DATE */}
       <div className="rounded-2xl border border-[#DDE4EF] bg-[#F4F7FB] px-5 py-4 flex flex-col justify-between h-[68px]">
         <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[#94A3B8]">ISSUE DATE</p>
-        <p className="text-sm font-bold text-[#1E293B]">{formatDate(invoice.date)}</p>
+        <p className="text-sm font-bold text-[#1E293B]">{formatFullDate(invoice.date)}</p>
       </div>
       
       {/* BILLING PERIOD */}
@@ -32,7 +32,7 @@ export function InvoiceMeta({
       {/* DUE DATE */}
       <div className="rounded-2xl border border-[#DDE4EF] bg-[#F4F7FB] px-5 py-4 flex flex-col justify-between h-[68px]">
         <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[#DC2626]">DUE BY</p>
-        <p className="text-sm font-black text-[#DC2626] tracking-tight">{formatDate(invoice.dueDate)}</p>
+        <p className="text-sm font-black text-[#DC2626] tracking-tight">{formatFullDate(invoice.dueDate)}</p>
       </div>
     </div>
   );

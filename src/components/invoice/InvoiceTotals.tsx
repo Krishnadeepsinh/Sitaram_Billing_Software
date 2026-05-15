@@ -14,12 +14,12 @@ type InvoiceTotalsProps = {
 export function InvoiceTotals({ brand, invoice, invoices = [] }: InvoiceTotalsProps) {
   const previousDues = (invoices || [])
     .filter((item) => item.subscriberId === invoice.subscriberId && item.id !== invoice.id && item.status !== "paid")
-    .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    .reduce((sum, item) => sum + (Number(String(item.amount).replace(/[^0-9.]/g, '')) || 0), 0);
   
-  const totalPayable = Number(invoice?.amount || 0);
-  const discount = Number(invoice?.discount || 0);
-  const grossTotal = totalPayable + discount;
-  const grandTotal = totalPayable + previousDues;
+  const totalPayable = Number(String(invoice?.amount || 0).replace(/[^0-9.]/g, ''));
+  const discount = Number(String(invoice?.discount || 0).replace(/[^0-9.]/g, ''));
+  const grossTotal = (totalPayable || 0) + (discount || 0);
+  const grandTotal = (totalPayable || 0) + previousDues;
   
   return (
     <div className="space-y-6">

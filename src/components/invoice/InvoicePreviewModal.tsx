@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Download, Loader2, Send, X, ShieldCheck, CreditCard, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/mockData";
+import { formatDate, formatFullDate } from "@/lib/mockData";
 import { toast } from "sonner";
 import { InvoiceHeader } from "./InvoiceHeader";
 import { InvoiceMeta } from "./InvoiceMeta";
@@ -82,9 +82,11 @@ export default function InvoicePreviewModal({
     element.style.top = "0";
 
     try {
-      // Use html-to-image for faster, more stable capture than html2canvas
       const { toPng } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
+
+      // Small delay to ensure DOM is painted after display: block
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const dataUrl = await toPng(element, {
         quality: 1,
@@ -140,7 +142,7 @@ export default function InvoicePreviewModal({
       const pdfBlob = await generatePdfBlob();
       const fileName = `Invoice_${invoice.number}.pdf`;
       const file = new File([pdfBlob], fileName, { type: "application/pdf" });
-      const message = `*INVOICE: ${invoice.number}*\nHello ${subscriber?.name || "Customer"},\nPlease find attached your invoice for *${billingPeriodLabel}*.\nAmount: Rs. ${invoice.amount}\nDue Date: ${formatDate(invoice.dueDate)}`;
+      const message = `*INVOICE: ${invoice.number}*\nHello ${subscriber?.name || "Customer"},\nPlease find attached your invoice for *${billingPeriodLabel}*.\nAmount: Rs. ${invoice.amount}\nDue Date: ${formatFullDate(invoice.dueDate)}`;
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: `Invoice ${invoice.number}`, text: message });
@@ -177,7 +179,7 @@ export default function InvoicePreviewModal({
               <ShieldCheck className="h-5 w-5 text-[#1B2B4B]" />
             </div>
             <div>
-              <p className="text-[7px] font-black text-[#94A3B8] uppercase tracking-widest">CUSTOMER IDENTITY</p>
+              <p className="text-[7px] font-black uppercase tracking-[0.2em] text-[#94A3B8]">CUSTOMER IDENTITY</p>
               <p className="text-[11px] font-black text-[#1B2B4B]">{subscriber?.id || "N/A"}</p>
             </div>
           </div>
@@ -201,22 +203,23 @@ export default function InvoicePreviewModal({
           
           <div className="flex-[0.4] bg-[#1B2B4B] p-8 rounded-[2rem] flex flex-col items-center justify-center text-center relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
-             <p className="text-white/60 text-[9px] font-bold uppercase tracking-[0.3em] mb-4">TOTAL PAYABLE</p>
-             <p className="text-white text-5xl font-black tracking-tighter mb-4">₹{Number(invoice.amount).toLocaleString()}</p>
-             <p className="text-[#F47920] text-[10px] font-black uppercase tracking-widest bg-white/10 px-4 py-1.5 rounded-full">DUE BY {formatDate(invoice.dueDate)}</p>
+             <p className="text-white/60 text-[9px] font-bold uppercase tracking-[0.3em] mb-4">TOTAL AMOUNT DUE</p>
+             <p className="text-white text-5xl font-black tracking-tighter mb-4">₹{(Number(String(invoice.amount).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}</p>
+             <p className="text-[#F47920] text-[10px] font-black uppercase tracking-widest bg-white/10 px-4 py-1.5 rounded-full text-center">Due by {formatFullDate(invoice.dueDate)}</p>
           </div>
         </div>
 
         {/* Modern Table Section */}
         <div className="flex-1">
           <div className="bg-[#1B2B4B] rounded-t-3xl px-10 py-5 grid grid-cols-12 gap-4">
-             <span className="col-span-6 text-white text-[9px] font-black uppercase tracking-[0.2em]">SERVICE DESCRIPTION</span>
+             <span className="col-span-4 text-white text-[9px] font-black uppercase tracking-[0.2em]">DESCRIPTION</span>
              <span className="col-span-3 text-center text-white text-[9px] font-black uppercase tracking-[0.2em]">PERIOD</span>
-             <span className="col-span-3 text-right text-white text-[9px] font-black uppercase tracking-[0.2em]">SUBTOTAL</span>
+             <span className="col-span-2 text-right text-white text-[9px] font-black uppercase tracking-[0.2em]">PLAN</span>
+             <span className="col-span-3 text-right text-white text-[9px] font-black uppercase tracking-[0.2em]">TOTAL</span>
           </div>
           <div className="border-x border-b border-[#DDE4EF] rounded-b-3xl overflow-hidden bg-white shadow-sm">
              <div className="px-10 py-10 grid grid-cols-12 gap-4 items-center">
-                <div className="col-span-6 flex flex-col gap-2">
+                <div className="col-span-4 flex flex-col gap-2">
                    <span className="text-[14px] font-black text-[#1B2B4B] uppercase tracking-tight">{lineItem.description}</span>
                    <div className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-[#F47920]" />
@@ -230,8 +233,11 @@ export default function InvoicePreviewModal({
                      {billingPeriodLabel}
                    </span>
                 </div>
+                <div className="col-span-2 text-right">
+                   <span className="text-[14px] font-black text-[#1B2B4B]">₹{(Number(String(lineItem.rate).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}</span>
+                </div>
                 <div className="col-span-3 text-right">
-                   <span className="text-[16px] font-black text-[#1B2B4B]">₹{Number(lineItem.price).toLocaleString()}.00</span>
+                   <span className="text-[16px] font-black text-[#1B2B4B]">₹{(Number(String(lineItem.total).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}.00</span>
                 </div>
              </div>
              

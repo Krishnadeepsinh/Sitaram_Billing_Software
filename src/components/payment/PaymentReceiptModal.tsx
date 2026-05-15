@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { Download, Loader2, Send, X, CheckCircle2, ShieldCheck, CreditCard, Transaction } from "lucide-react";
+import { Download, Loader2, Send, X, CheckCircle2, ShieldCheck, CreditCard, Activity, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/mockData";
+import { formatDate, formatFullDate } from "@/lib/mockData";
 import { toast } from "sonner";
 import { InvoiceHeader } from "../invoice/InvoiceHeader";
 import { InvoiceCustomerBlock } from "../invoice/InvoiceCustomerBlock";
@@ -77,9 +77,11 @@ export default function PaymentReceiptModal({
     element.style.top = "0";
 
     try {
-      // Use html-to-image for faster, more stable capture than html2canvas
       const { toPng } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
+
+      // Small delay to ensure DOM is painted after display: block
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const dataUrl = await toPng(element, {
         quality: 1,
@@ -135,7 +137,7 @@ export default function PaymentReceiptModal({
       const pdfBlob = await generatePdfBlob();
       const fileName = `Receipt_${payment.id.slice(-6).toUpperCase()}.pdf`;
       const file = new File([pdfBlob], fileName, { type: "application/pdf" });
-      const message = `*PAYMENT RECEIPT*\nHello ${subscriber?.name || "Customer"},\nThank you for your payment of *Rs. ${payment.amount}*.\nRef: ${payment.id.slice(-6).toUpperCase()}\nDate: ${formatDate(payment.date)}`;
+      const message = `*PAYMENT RECEIPT*\nHello ${subscriber?.name || "Customer"},\nThank you for your payment of *Rs. ${payment.amount}*.\nRef: ${payment.id.slice(-6).toUpperCase()}\nDate: ${formatFullDate(payment.date)}`;
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: `Receipt ${payment.id.slice(-6).toUpperCase()}`, text: message });
@@ -167,9 +169,9 @@ export default function PaymentReceiptModal({
         <div className="grid grid-cols-4 gap-4">
           {[
             { label: "RECEIPT NO.", value: `REC-${payment.id.slice(-6).toUpperCase()}`, icon: ShieldCheck, color: "text-[#1B2B4B]", bg: "bg-[#F4F7FB]" },
-            { label: "PAYMENT DATE", value: formatDate(payment.date), icon: CheckCircle2, color: "text-[#1B2B4B]", bg: "bg-[#F4F7FB]" },
-            { label: "METHOD", value: payment.method, icon: CreditCard, color: "text-white", bg: "bg-[#1B2B4B]" },
-            { label: "STATUS", value: "SUCCESSFUL", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" }
+            { label: "PAYMENT DATE", value: formatFullDate(payment.date), icon: Calendar, color: "text-[#1B2B4B]", bg: "bg-[#F4F7FB]" },
+            { label: "METHOD", value: payment.method || "CASH", icon: CreditCard, color: "text-white", bg: "bg-[#1B2B4B]" },
+            { label: "ACCOUNT TYPE", value: isCableMode ? "CABLE TV" : "BROADBAND", icon: Activity, color: "text-emerald-600", bg: "bg-emerald-50" }
           ].map((card, i) => (
             <div key={i} className={`p-6 rounded-[1.5rem] flex flex-col gap-2 border border-black/5 shadow-sm ${card.bg}`}>
               <div className="flex justify-between items-center">
@@ -211,7 +213,7 @@ export default function PaymentReceiptModal({
           <div className="flex-[0.4] bg-[#1B2B4B] p-10 rounded-[2.5rem] flex flex-col items-center justify-center text-center relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
              <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.3em] mb-4">TOTAL AMOUNT PAID</p>
-             <p className="text-white text-5xl font-black tracking-tighter mb-4">₹{Number(payment.amount).toLocaleString()}</p>
+             <p className="text-white text-5xl font-black tracking-tighter mb-4">₹{(Number(String(payment.amount).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}</p>
              <p className="text-[#F47920] text-[9px] font-black uppercase tracking-widest bg-white/10 px-6 py-2 rounded-full border border-white/10">PAYMENT CONFIRMED</p>
           </div>
         </div>
@@ -233,7 +235,7 @@ export default function PaymentReceiptModal({
                      <span>Transaction Reference: {payment.id.slice(-12).toUpperCase()}</span>
                    </div>
                 </div>
-                <span className="text-[18px] font-black text-[#1B2B4B]">₹{Number(payment.amount).toLocaleString()}.00</span>
+                <span className="text-[18px] font-black text-[#1B2B4B]">₹{(Number(String(payment.amount).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}.00</span>
              </div>
              <div className="px-10 py-4 bg-[#F8FAFC] border-t border-[#DDE4EF]/50 flex justify-between items-center">
                 <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest">Additional Arrears Cleared</span>
@@ -241,7 +243,7 @@ export default function PaymentReceiptModal({
              </div>
              <div className="px-10 py-4 bg-emerald-50 border-t border-emerald-100 flex justify-between items-center">
                 <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest flex items-center gap-2">
-                  <CheckCircle2 className="h-3 w-3" /> ALL DUES CLEARED
+                   <CheckCircle2 className="h-3 w-3" /> ALL DUES CLEARED
                 </span>
                 <span className="text-[12px] font-black text-emerald-700">BALANCE: ₹0.00</span>
              </div>
@@ -252,7 +254,7 @@ export default function PaymentReceiptModal({
         <div className="p-8 rounded-2xl bg-[#FFF7ED] border border-[#FED7AA] shadow-sm">
           <p className="text-[#F47920] text-[8px] font-black uppercase tracking-widest mb-3">AMOUNT RECEIVED IN WORDS</p>
           <p className="text-[13px] font-black text-[#1B2B4B] italic uppercase leading-tight">
-            {numberToWords(Number(payment.amount))} Rupees Only
+            {numberToWords(Number(String(payment.amount).replace(/[^0-9.]/g, '')) || 0)} Rupees Only
           </p>
         </div>
         
@@ -346,4 +348,3 @@ export default function PaymentReceiptModal({
     </div>
   );
 }
-

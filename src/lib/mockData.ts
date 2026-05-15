@@ -150,6 +150,17 @@ export const formatDate = (dateStr: string) => {
   return `${d}/${m}/${y}`;
 };
 
+export const formatFullDate = (dateStr: string) => {
+  if (!dateStr) return "N/A";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "N/A";
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+};
+
 export const formatMonthRanges = (dates: Date[]) => {
   if (dates.length === 0) return "";
   

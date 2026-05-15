@@ -76,11 +76,11 @@ def draw_string(c, x, y, text, font=None, size=None, align="left"):
             current_font = "Gujarati"
     c.setFont(current_font, f_size)
     if align == "center":
-        draw_string(c, x, y, text, align="center")
+        c.drawCentredString(x, y, text)
     elif align == "right":
-        draw_string(c, x, y, text, align="right")
+        c.drawRightString(x, y, text)
     else:
-        draw_string(c, x, y, text)
+        c.drawString(x, y, text)
     c.setFont(f_name, f_size)
 
 def safe_str(s):

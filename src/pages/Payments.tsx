@@ -698,9 +698,8 @@ export default function Payments() {
                     ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-4">
                 <Button type="button" variant="ghost" className="flex-1 h-10 bg-secondary hover:bg-secondary/80 text-foreground" onClick={closeAddModal}>Cancel</Button>
                 <Button 
                   type="submit" 

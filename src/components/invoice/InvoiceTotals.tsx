@@ -1,4 +1,4 @@
-import { QRCodeCanvas } from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import { numberToWords } from "@/lib/utils";
 
 type InvoiceTotalsProps = {
@@ -28,7 +28,7 @@ export function InvoiceTotals({ brand, invoice, invoices = [] }: InvoiceTotalsPr
         <div className="w-[180px] bg-[#F4F7FB] p-5 rounded-[1.5rem] border border-[#DDE4EF] flex flex-col items-center">
           <p className="text-[#1B2B4B] text-[8px] font-black uppercase tracking-[0.2em] mb-4">SCAN TO PAY</p>
           <div className="p-3 bg-white rounded-2xl border border-[#DDE4EF] mb-4">
-            <QRCodeCanvas
+            <QRCodeSVG
               value={`upi://pay?pa=${brand.upiId}&pn=${encodeURIComponent(brand.name)}&am=${grandTotal.toFixed(2)}&cu=INR`}
               size={110}
               bgColor="#ffffff"

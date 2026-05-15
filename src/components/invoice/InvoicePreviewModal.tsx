@@ -87,10 +87,15 @@ export default function InvoicePreviewModal({
       const { jsPDF } = await import("jspdf");
 
       const dataUrl = await toPng(element, {
-        quality: 0.95,
-        pixelRatio: 1.5, // High enough for print, low enough for stability
-        skipFonts: false,
-        fontEmbedCSS: "", // Reduce overhead
+        quality: 1,
+        pixelRatio: 2, 
+        backgroundColor: "#ffffff",
+        cacheBust: true,
+        includeQueryParams: true,
+        style: {
+          visibility: "visible",
+          display: "block",
+        }
       });
 
       const pdf = new jsPDF({

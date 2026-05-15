@@ -564,7 +564,7 @@ export default function Payments() {
                 const sub = subscribers.find(s => s.id === p.subscriberId);
                 const items = getPaymentItems(p);
                 return (
-                  <tr key={p.id}>
+                  <tr key={p.id} className="group hover:bg-secondary/5 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         <span className="text-foreground font-semibold font-mono-num">#{p.id.slice(-8).toUpperCase()}</span>

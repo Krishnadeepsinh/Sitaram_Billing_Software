@@ -57,30 +57,35 @@ def make_qr_image(text):
 
 def draw_logo(c, x, y, size):
     """loads logo from public dir and draws with size 14x14mm as requested"""
-    # Prefer specific sitaram logo, then generic variants
-    paths = [
-        "public/sitaram_logo_512x512.png",
-        "public/logo-transparent.png",
-        "public/logo.png",
-        "public/logo.jpg",
-        "logo.jpg",
-        "logo.png"
-    ]
+    # Robust path discovery for different environments (local vs Vercel)
+    possible_roots = [os.getcwd(), os.path.dirname(os.path.abspath(__file__)), "/var/task", "/var/task/public"]
+    possible_names = ["logo-mark.png", "sitaram_logo_512x512.png", "logo-transparent.png", "logo.png", "logo.jpg"]
+    
     logo_img = None
-    for p in paths:
-        if os.path.exists(p):
-            logo_img = ImageReader(p)
-            break
+    for root in possible_roots:
+        for name in possible_names:
+            # Try direct, then public/
+            for p in [os.path.join(root, name), os.path.join(root, "public", name)]:
+                if os.path.exists(p):
+                    try:
+                        logo_img = ImageReader(p)
+                        break
+                    except:
+                        continue
+            if logo_img: break
+        if logo_img: break
     
     if logo_img:
         c.drawImage(logo_img, x, y, width=size, height=size, mask='auto')
     else:
-        # Dynamic fallback if no logo found
+        # High-fidelity fallback that looks like a real logo
         c.setFillColor(ORANGE)
-        rrect(c, x, y, size, size, 2*mm, fill=ORANGE, stroke=False)
+        c.roundRect(x, y, size, size, 2*mm, stroke=0, fill=1)
         c.setFillColor(WHITE)
-        c.setFont("Helvetica-Bold", 4.5)
+        c.setFont("Helvetica-Bold", 3.5)
         c.drawCentredString(x + size/2, y + size/2 + 0.5*mm, "SITARAM")
+        c.setFont("Helvetica-Bold", 2)
+        c.drawCentredString(x + size/2, y + size/2 - 1.5*mm, "CABLE & BROADBAND")
 
 def hline(c, x1, x2, y, col, w):
     c.setStrokeColor(col)
@@ -116,13 +121,21 @@ def draw_shared_header(c, doc_type, brand, data):
     logo_y = header_y + (48*mm - logo_size)/2
     draw_logo(c, margin, logo_y, logo_size)
     
+    # Vertical Bar to match React UI
+    c.setFillColor(ORANGE)
+    c.setStrokeColor(ORANGE)
+    c.setLineWidth(0.8*mm)
+    c.line(margin + logo_size/2, logo_y - 2*mm, margin + logo_size/2, logo_y - 6*mm)
+    
     text_x = margin + logo_size + 4*mm
     c.setFillColor(ORANGE)
-    c.setFont("Helvetica-Bold", 7.5)
-    c.drawString(text_x, header_y + 28*mm, "SITARAM CABLE & BROADBAND")
+    c.setFont("Helvetica-Bold", 6.5)
+    c.drawString(text_x, header_y + 28*mm, "OFFICIAL DOCUMENT")
+    
     c.setFillColor(WHITE)
     c.setFont("Helvetica-Bold", 18)
-    c.drawString(text_x, header_y + 20*mm, brand.get('name', 'SITARAM CABLE & BROADBAND'))
+    c.drawString(text_x, header_y + 20*mm, brand.get('name', 'SITARAM CABLE & BROADBAND').upper())
+    
     c.setFillColor(LABEL)
     c.setFont("Helvetica", 7.5)
     # Filter out None or empty values for address/phone

@@ -378,20 +378,20 @@ export default function InvoicePreviewModal({
             <div style={styles.payBox}>
               <div style={styles.payTitle}>Payment Instructions</div>
               {[
-                `Pay via UPI: ${brand.upiId}`,
-                "GPay / PhonePe / Paytm accepted",
-                "Cash payment at office also accepted",
-                "Share screenshot after online payment",
-                `Contact us for any billing queries`,
-              ].map((txt, i) => (
+                { label: "Pay via UPI", value: brand.upiId },
+                { label: "Accepted", value: "GPay / PhonePe / Paytm" },
+                { label: "Office Payment", value: "Cash also accepted at office" },
+                { label: "Confirmation", value: "Share screenshot after payment" },
+                { label: "Support", value: `Call/WhatsApp: ${brand.phone}` },
+              ].map((item, i) => (
                 <div style={styles.payItem} key={i}>
                   <span style={styles.payNum}>{i + 1}.</span>
-                  <span>{txt}</span>
+                  <div style={{ display: "flex", flexWrap: "nowrap", gap: 6 }}>
+                    <span style={{ fontWeight: 600, color: "#7a8fa6" }}>{item.label}:</span>
+                    <span style={{ fontWeight: 700 }}>{item.value}</span>
+                  </div>
                 </div>
               ))}
-              <div style={{ ...styles.payItem, marginTop: 4 }}>
-                <span style={{ ...styles.payNum, width: "auto", marginLeft: 24 }}>Phone: {brand.phone}</span>
-              </div>
             </div>
             <div style={styles.qrBox}>
               <div style={styles.qrTitle}>SCAN & PAY</div>

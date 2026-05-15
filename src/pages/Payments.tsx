@@ -516,7 +516,6 @@ export default function Payments() {
                            {p.method}
                          </div>
                       </div>
-                   </div>
                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-2 rounded-lg">
                       <Calendar className="h-3 w-3" /> {formatDate(p.date)}
                       <span className="text-border">|</span>
@@ -609,7 +608,6 @@ export default function Payments() {
                           p.method === 'Cash' ? "text-amber-600 bg-amber-50" : "text-blue-600 bg-blue-50")}>
                           {p.method}
                         </span>
-                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity">

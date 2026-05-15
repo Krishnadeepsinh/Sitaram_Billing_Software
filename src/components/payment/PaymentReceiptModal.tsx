@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { InvoiceHeader } from "../invoice/InvoiceHeader";
 import { InvoiceCustomerBlock } from "../invoice/InvoiceCustomerBlock";
 import { getInvoiceServiceDates } from "../invoice/invoicePreviewUtils";
+import { numberToWords } from "@/lib/utils";
 
 type PaymentReceiptModalProps = {
   brand: {
@@ -163,29 +164,57 @@ export default function PaymentReceiptModal({
   }, [payment, subscribers, plans, invoices, payments, isCableMode]);
 
   const handleDownloadPDF = async () => {
-    if (!contentRef.current) return;
     setIsProcessing(true);
     try {
-      const element = contentRef.current;
-      const html2pdf = (await import("html2pdf.js")).default;
-      
-      const options = {
-        margin: 0,
-        filename: `Receipt_${payment.id.slice(-8).toUpperCase()}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          windowWidth: 794,
+      const payload = {
+        type: 'receipt',
+        number: payment.id.slice(-8).toUpperCase(),
+        date: formatDate(payment.date),
+        method: payment.method,
+        amount: payment.amount,
+        customerNo: subscriber?.customerNo || '-',
+        customerName: subscriber?.name || 'N/A',
+        customerAddress: `${subscriber?.area || ''}\nBhavnagar, Gujarat`,
+        stbNumber: subscriber?.customerId || subscriber?.customerUsername || 'N/A',
+        customerMobile: subscriber?.phone || 'N/A',
+        amountInWords: numberToWords(Number(payment.amount)),
+        brand: {
+          name: brand.name,
+          address: brand.address,
+          phone: brand.phone,
+          upiId: brand.upiId
         },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        items: paymentItems.map(item => ({
+          desc: item.desc,
+          subDesc: item.subDesc || '',
+          period: item.period,
+          qty: item.qty,
+          total: item.total
+        }))
       };
 
-      await html2pdf().set(options).from(element).save();
-      toast.success("Receipt downloaded successfully");
+      const response = await fetch('/api/generate_pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate PDF");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Receipt_${payload.number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Professional Receipt downloaded");
     } catch (error) {
-      toast.error("Failed to generate PDF");
+      console.error("Receipt Generation Error:", error);
+      toast.error("Failed to generate professional Receipt");
     } finally {
       setIsProcessing(false);
     }

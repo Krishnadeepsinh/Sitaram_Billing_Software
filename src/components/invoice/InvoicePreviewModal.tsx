@@ -8,6 +8,7 @@ import { InvoiceMeta } from "./InvoiceMeta";
 import { InvoiceCustomerBlock } from "./InvoiceCustomerBlock";
 import { InvoiceTotals } from "./InvoiceTotals";
 import { getBillingPeriodLabel, getInvoiceLabel, getInvoiceLineItem, getInvoiceServiceDates, getInvoiceStatusLabel } from "./invoicePreviewUtils";
+import { numberToWords } from "@/lib/utils";
 
 type InvoicePreviewModalProps = {
   brand: {
@@ -89,47 +90,65 @@ export default function InvoicePreviewModal({
   const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
 
   const handleDownloadPDF = async () => {
-    if (!contentRef.current) {
-      toast.error("Invoice content not ready. Please try again.");
-      return;
-    }
-    
     setIsProcessing(true);
     try {
-      const element = contentRef.current;
-      const html2pdf = (await import("html2pdf.js")).default;
-      
-      const options = {
-        margin: [0, 0],
-        filename: `Invoice_${invoice.invoiceNumber || invoice.number || 'INV'}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: 794,
-          logging: false,
-          onclone: (doc: Document) => {
-            const clonedElement = doc.getElementById("invoice-content");
-            if (clonedElement) {
-              clonedElement.style.transform = "none";
-              clonedElement.style.margin = "0";
-              clonedElement.style.width = "794px";
-              clonedElement.style.height = "auto";
-              clonedElement.style.display = "flex"; // Force visibility in clone
-            }
-          }
+      const payload = {
+        type: 'invoice',
+        number: invoice.invoiceNumber || invoice.number || 'INV',
+        date: formatDate(invoice.date),
+        billingPeriod: billingPeriodLabel,
+        dueDate: formatDate(invoice.dueDate),
+        customerId: subscriber?.customerId || subscriber?.customerUsername || 'N/A',
+        planPeriod: `${formatDate(serviceDates.rechargeDate)} - ${formatDate(serviceDates.expiryDate)}`,
+        status: invoice.status,
+        customerNo: subscriber?.customerNo || '-',
+        customerName: subscriber?.name || 'N/A',
+        customerAddress: `${subscriber?.area || ''}\nBhavnagar, Gujarat`,
+        stbNumber: subscriber?.customerId || subscriber?.customerUsername || 'N/A',
+        customerMobile: subscriber?.phone || 'N/A',
+        planName: lineItem.description,
+        planMonths: lineItem.quantity,
+        amount: invoice.amount,
+        discount: invoice.discountAmount || 0,
+        amountInWords: numberToWords(Number(invoice.amount) - (invoice.discountAmount || 0)),
+        brand: {
+          name: brand.name,
+          address: brand.address,
+          phone: brand.phone,
+          upiId: brand.upiId
         },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        history: invoices
+          .filter(inv => inv.subscriberId === invoice.subscriberId && inv.id !== invoice.id)
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .map(inv => ({
+            date: formatDate(inv.date),
+            amount: inv.amount,
+            method: 'Cash/Online'
+          }))
       };
 
-      await html2pdf().set(options).from(element).save();
-      toast.success("Invoice downloaded successfully");
+      const response = await fetch('/api/generate_pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate PDF");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Invoice_${payload.number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Professional Invoice downloaded");
     } catch (error) {
       console.error("PDF Generation Error:", error);
-      toast.error("Failed to generate PDF");
+      toast.error("Failed to generate professional PDF");
     } finally {
       setIsProcessing(false);
     }

@@ -557,30 +557,6 @@ export default function Payments() {
 
       {/* Voucher Modal */}
       {isReceiptOpen && selectedPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-3xl bg-slate-900 border border-white/10 rounded-xl shadow-xl flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                  <Receipt className="h-4 w-4" />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-white">Payment Receipt</h2>
-                  <p className="text-xs text-slate-400">Receipt details</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" onClick={handleDownloadReceipt} className="h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs">
-                  <Download className="h-3 w-3 mr-1.5" /> Download
-                </Button>
-                <Button size="sm" onClick={() => handleWhatsApp(selectedPayment)} className="h-8 rounded-lg bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600/20 text-xs border border-emerald-500/20">
-                  <Share2 className="h-3 w-3 mr-1.5" /> Share
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setIsReceiptOpen(false)} className="h-8 w-8 p-0 text-slate-400 hover:text-white"><X className="h-4 w-4" /></Button>
-              </div>
-            </div>
-
-      {isReceiptOpen && selectedPayment && (
         <PaymentReceiptModal
           brand={brand}
           customerIdLabel={customerIdLabel}
@@ -588,9 +564,6 @@ export default function Payments() {
           subscribers={subscribers}
           onClose={() => setIsReceiptOpen(false)}
         />
-      )}
-          </div>
-        </div>
       )}
 
       {/* Delete Confirmation Modal */}

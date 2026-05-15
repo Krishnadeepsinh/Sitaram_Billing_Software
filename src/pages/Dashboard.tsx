@@ -115,6 +115,8 @@ export default function Dashboard() {
     }
   };
 
+  const businessMode = useBusinessMode();
+
   return (
     <div className="space-y-6 pb-20">
       {/* Header section */}
@@ -124,11 +126,11 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
             <div className={cn(
               "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border animate-in fade-in zoom-in duration-300",
-              useBusinessMode() === "cable" 
+              businessMode === "cable" 
                 ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
                 : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
             )}>
-              {useBusinessMode()} Mode
+              {businessMode} Mode
             </div>
           </div>
           <p className="text-sm text-slate-400">Overview of your operations and revenue.</p>

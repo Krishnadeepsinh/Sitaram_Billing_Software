@@ -550,10 +550,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (Object.keys(mapped).length === 0) return;
 
         const fields = Object.keys(mapped).map(k => `${k} = ?`).join(', ');
-        const targetId = String(id || "").trim().toLowerCase();
+        const targetId = String(id || "").trim();
         
         await db.execute({ 
-          sql: `UPDATE subscribers SET ${fields} WHERE LOWER(TRIM(id)) = ?`, 
+          sql: `UPDATE subscribers SET ${fields} WHERE id = ?`, 
           args: [...Object.values(mapped), targetId] 
         });
         

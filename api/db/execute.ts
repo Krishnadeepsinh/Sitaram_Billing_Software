@@ -12,6 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const db = getDb(mode === "cable" ? "cable" : "broadband");
 
   try {
+    if (!query) return res.status(400).json({ error: "Missing query" });
     const result = await db.execute(query);
     return res.status(200).json(result);
   } catch (error) {

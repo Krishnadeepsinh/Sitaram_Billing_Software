@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const db = getDb(mode === "cable" ? "cable" : "broadband");
 
   try {
-    const result = await db.batch(queries || [], txMode || "write");
+    const result = await db.batch((queries as any) || [], txMode || "write");
     return res.status(200).json(result);
   } catch (error) {
     console.error(error);

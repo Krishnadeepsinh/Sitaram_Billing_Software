@@ -215,55 +215,6 @@ Due Date: ${formatDate(invoice.dueDate)}`;
       console.error("Share flow error:", error);
       toast.dismiss(toastId);
       toast.error("Could not prepare the PDF for sharing.");
-      const message = `*INVOICE: ${invoice.number}*
-Hello ${subscriber?.name || "Customer"},
-Please find attached your invoice for *${billingPeriodLabel}*.
-Amount: Rs. ${invoice.amount}
-Recharge Date: ${serviceDates.rechargeDate ? formatDate(serviceDates.rechargeDate) : "-"}
-Expiry Date: ${serviceDates.expiryDate ? formatDate(serviceDates.expiryDate) : "-"}
-Due Date: ${formatDate(invoice.dueDate)}`;
-
-      const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-      const canShareFile = isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] });
-
-      if (canShareFile) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: `Invoice ${invoice.number}`,
-            text: message,
-          });
-          toast.dismiss(toastId);
-          toast.success("Bill and message shared successfully!");
-        } catch (shareError: any) {
-          if (shareError.name === "AbortError") {
-            toast.dismiss(toastId);
-            toast.info("Sharing cancelled");
-          } else {
-            throw shareError;
-          }
-        }
-      } else {
-        saveAs(pdfBlob, fileName);
-
-        const cleanPhone = String(subscriber?.phone || "").replace(/\D/g, "");
-        const phoneWithCountry = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-        const isDesktop = !/Android|iPhone|iPad/i.test(navigator.userAgent);
-        const waBase = isDesktop ? "https://web.whatsapp.com/send" : "https://wa.me";
-        const whatsappUrl = `${waBase}/${phoneWithCountry}?text=${encodeURIComponent(message)}`;
-        const whatsappWindow = window.open(whatsappUrl, "_blank");
-
-        if (!whatsappWindow) {
-          toast.error("Popup blocked. Please allow popups for this site to open WhatsApp.");
-        }
-
-        toast.dismiss(toastId);
-        toast.success("Bill downloaded. Please drag the PDF into the WhatsApp window.");
-      }
-    } catch (error) {
-      console.error("Share flow error:", error);
-      toast.dismiss(toastId);
-      toast.error("Could not prepare the PDF for sharing.");
     } finally {
       setIsProcessing(false);
     }

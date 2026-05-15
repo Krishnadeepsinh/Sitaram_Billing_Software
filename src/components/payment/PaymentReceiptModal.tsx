@@ -300,18 +300,20 @@ export default function PaymentReceiptModal({
         fontSize: 13,
         borderBottom: "1px solid #eef1f6",
         color: "#4a5568",
-        lineHeight: 1.5,
+        lineHeight: 1.2,
+        alignItems: "center",
       },
       allocRowTotal: {
         display: "flex",
         justifyContent: "space-between",
+        alignItems: "center",
         padding: "14px 16px",
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: 700,
         color: "#1a2e5a",
         borderBottom: "1px solid #eef1f6",
         background: "#f0f4fa",
-        lineHeight: 1.5,
+        lineHeight: 1.2,
       },
       allocRowBalance: {
         display: "flex",
@@ -457,15 +459,15 @@ export default function PaymentReceiptModal({
             <div style={styles.allocTitle}>Payment Allocation Summary</div>
             <div style={styles.allocRow}>
               <span>Subtotal:</span>
-              <span>Rs. {amount.toFixed(2)}</span>
+              <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
             </div>
             <div style={styles.allocRowTotal}>
               <span>Total Paid:</span>
-              <span>Rs. {amount.toFixed(2)}</span>
+              <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
             </div>
             <div style={styles.allocRowBalance}>
               <span style={{ flexShrink: 0 }}>Remaining Balance:</span>
-              <span style={{ textAlign: "right", marginLeft: 16 }}>Rs. 0.00 (FULLY CLEARED)</span>
+              <span style={{ textAlign: "right", marginLeft: 16, whiteSpace: "nowrap" }}>Rs. 0.00 (FULLY CLEARED)</span>
             </div>
           </div>
 

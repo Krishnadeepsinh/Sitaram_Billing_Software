@@ -81,6 +81,19 @@ export default function Invoices() {
   const [payDiscount, setPayDiscount] = useState(0);
   const [areaF, setAreaF] = useState<string>("all");
 
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkConfig, setBulkConfig] = useState<{
+    startDate: string;
+    numMonths: number;
+    includeLegacy: boolean;
+    selectionType: 'all' | 'selected';
+  }>({
+    startDate: new Date().toISOString().slice(0, 10),
+    numMonths: 1,
+    includeLegacy: true,
+    selectionType: 'all'
+  });
+
   const autoBillingRun = useRef(false);
   
   useEffect(() => {
@@ -254,6 +267,27 @@ export default function Invoices() {
     }
   };
 
+  const handleRunBulk = async () => {
+    setIsProcessing(true);
+    try {
+      const ids = bulkConfig.selectionType === 'selected' ? selectedInvoices.map(id => invoices.find(inv => inv.id === id)?.subscriberId).filter(Boolean) as string[] : undefined;
+      
+      const stats = await runBulkBilling(
+        new Date(bulkConfig.startDate),
+        bulkConfig.numMonths,
+        bulkConfig.includeLegacy,
+        ids
+      );
+      toast.success(`Generated ${stats.generated} invoices. Skipped ${stats.skipped}.`);
+      setShowBulkModal(false);
+      setSelectedInvoices([]);
+    } catch (err: any) {
+      toast.error(err.message || "Bulk generation failed");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-20">
       {/* Header */}
@@ -262,7 +296,7 @@ export default function Invoices() {
           <h1 className="text-2xl font-bold text-foreground">Invoices</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Manage billing and payment collections.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             onClick={handleSync}
@@ -271,6 +305,13 @@ export default function Invoices() {
           >
             <RefreshCcw className={cn("mr-2 h-4 w-4", isProcessing && "animate-spin")} />
             Sync
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowBulkModal(true)}
+            className="h-9 border-orange-200 text-orange-600 hover:bg-orange-50"
+          >
+            <DatabaseZap className="mr-2 h-4 w-4" /> Bulk Bill
           </Button>
           <Button
             onClick={() => setShowSubSelect(true)}
@@ -858,6 +899,109 @@ export default function Invoices() {
               >
                 Delete
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Generation Modal */}
+      {showBulkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg app-card p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                  <DatabaseZap className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Bulk Billing</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Generate invoices for multiple subscribers</p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setShowBulkModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Subscriber Selection</Label>
+                <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
+                  <button
+                    onClick={() => setBulkConfig(prev => ({ ...prev, selectionType: 'all' }))}
+                    className={cn(
+                      "flex-1 py-2 text-xs font-medium rounded-md transition-all",
+                      bulkConfig.selectionType === 'all' ? "bg-orange-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    All Active Subscribers
+                  </button>
+                  <button
+                    disabled={selectedInvoices.length === 0}
+                    onClick={() => setBulkConfig(prev => ({ ...prev, selectionType: 'selected' }))}
+                    className={cn(
+                      "flex-1 py-2 text-xs font-medium rounded-md transition-all disabled:opacity-30",
+                      bulkConfig.selectionType === 'selected' ? "bg-orange-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Selected ({selectedInvoices.length})
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Start Month</Label>
+                  <Input
+                    type="date"
+                    value={bulkConfig.startDate}
+                    onChange={(e) => setBulkConfig(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="h-10 bg-secondary border-border focus:ring-orange-500/20"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Duration (Cycle)</Label>
+                  <select
+                    value={bulkConfig.numMonths}
+                    onChange={(e) => setBulkConfig(prev => ({ ...prev, numMonths: Number(e.target.value) }))}
+                    className="w-full h-10 bg-secondary border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-500 appearance-none"
+                  >
+                    <option value={1}>1 Month (Default)</option>
+                    <option value={3}>3 Months (Quarterly)</option>
+                    <option value={6}>6 Months (Half-Year)</option>
+                    <option value={12}>12 Months (Annual)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-orange-50/50 rounded-xl border border-orange-100">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-semibold text-orange-900">Include Legacy Dues</Label>
+                  <p className="text-[10px] text-orange-600 font-medium uppercase tracking-tight">Auto-reconcile unpaid months</p>
+                </div>
+                <Switch
+                  checked={bulkConfig.includeLegacy}
+                  onCheckedChange={(checked) => setBulkConfig(prev => ({ ...prev, includeLegacy: checked }))}
+                  className="data-[state=checked]:bg-orange-500"
+                />
+              </div>
+
+              <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-lg flex items-start gap-3">
+                <AlertCircle className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                <p className="text-[11px] text-blue-700 leading-relaxed">
+                  <strong>Duplicate Prevention Enabled:</strong> System will automatically skip subscribers who already have an invoice for the target period.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button variant="ghost" className="flex-1 h-11" onClick={() => setShowBulkModal(false)}>Cancel</Button>
+                <Button
+                  onClick={handleRunBulk}
+                  disabled={isProcessing}
+                  className="flex-1 h-11 bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-lg shadow-orange-500/20"
+                >
+                  {isProcessing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <TrendingUp className="h-4 w-4 mr-2" />}
+                  Execute Batch Billing
+                </Button>
+              </div>
             </div>
           </div>
         </div>

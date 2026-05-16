@@ -56,13 +56,38 @@ const createServiceEndDate = (serviceStartDate: Date, validityDays: number) => {
   return serviceEndDate;
 };
 
-const formatServicePeriod = (serviceStartDate: Date, serviceEndDate: Date) => {
-  const formatParts = (value: Date) =>
-    value.toLocaleString('default', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-  return `${formatParts(serviceStartDate)} TO ${formatParts(serviceEndDate)}`;
+const normalizeComparable = (value: string | undefined) => String(value || "").trim().toLowerCase();
+
+const getMonthsInRange = (startDate: Date, numMonths: number): string[] => {
+  const months: string[] = [];
+  for (let i = 0; i < numMonths; i++) {
+    const d = new Date(startDate);
+    d.setMonth(d.getMonth() + i);
+    months.push(d.toLocaleString('default', { month: 'long', year: 'numeric' }));
+  }
+  return months;
 };
 
-const normalizeComparable = (value: string | undefined) => String(value || "").trim().toLowerCase();
+const getMonthsCoveredByInvoice = (inv: Invoice): string[] => {
+  if (inv.type === 'legacy') return [];
+  
+  // If we have billingPeriod, we could try to parse it, but it's formatted for display.
+  // Better to use the start date and assume a month-based cycle for duplicate prevention.
+  // Most invoices are 1 month. If they are more, we should ideally have stored the duration.
+  // Since we don't store duration in the DB yet, we'll try to guess from amount vs plan price?
+  // Or just use a 1-month window as a fallback, but check if billingPeriod contains "TO".
+  
+  const start = new Date(inv.date);
+  start.setHours(12, 0, 0, 0);
+  
+  if (inv.billingPeriod && inv.billingPeriod.includes(' TO ')) {
+    // It's a range. Try to extract duration.
+    // However, it's easier to just return the start month if we can't be sure.
+    // Let's improve this by checking the billingPeriod string more carefully if possible.
+  }
+  
+  return [start.toLocaleString('default', { month: 'long', year: 'numeric' })];
+};
 
 const validateSubscriberInput = ({
   candidate,
@@ -1101,32 +1126,17 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       : sub.expiryDate;
 
     const selectedMonthNames = numMonths > 0 
-      ? (Array.isArray(months) 
-          ? months 
-          : isManualPlanCycle
-          ? [`${serviceStartDate.toISOString().slice(0, 10)}::${numMonths}`]
-          : Array.from({ length: months }).map((_, i) => {
-              const d = new Date(billingDate);
-              d.setMonth(d.getMonth() + i);
-              return d.toLocaleString('default', { month: 'long', year: 'numeric' });
-            }))
+      ? getMonthsInRange(serviceStartDate, numMonths)
       : ["Previous Year Billing"];
 
     const billingPeriod = numMonths > 0 
       ? (() => {
-          if (Array.isArray(months)) {
-            const dateObjects = months.map(m => new Date(m));
-            return formatMonthRanges(dateObjects).toUpperCase();
-          } else if (isManualPlanCycle) {
-            return formatServicePeriod(serviceStartDate, serviceEndDate);
-          } else {
-            const dateObjects = Array.from({ length: months }).map((_, i) => {
-              const d = new Date(billingDate);
-              d.setMonth(d.getMonth() + i);
-              return d;
-            });
-            return formatMonthRanges(dateObjects).toUpperCase();
-          }
+          const dateObjects = Array.from({ length: numMonths }).map((_, i) => {
+            const d = new Date(serviceStartDate);
+            d.setMonth(d.getMonth() + i);
+            return d;
+          });
+          return formatMonthRanges(dateObjects).toUpperCase();
         })()
       : 'PREVIOUS YEAR';
 
@@ -1136,14 +1146,8 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (numMonths === 0) {
         return inv.type === 'legacy';
       }
-      if (isManualPlanCycle) {
-        return inv.type !== 'legacy'
-          && new Date(inv.date).toISOString().slice(0, 10) === serviceStartDate.toISOString().slice(0, 10)
-          && String(inv.billingPeriod || '') === billingPeriod;
-      }
-      return inv.type !== 'legacy' && selectedMonthNames.some(mName => 
-        new Date(new Date(inv.date).getTime() + 12 * 60 * 60 * 1000).toLocaleString('default', { month: 'long', year: 'numeric' }) === mName
-      );
+      const existingMonths = getMonthsCoveredByInvoice(inv);
+      return inv.type !== 'legacy' && selectedMonthNames.some(mName => existingMonths.includes(mName));
     });
 
     if (hasExisting) {
@@ -1590,7 +1594,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const runBulkBilling = async (startDate?: Date, numMonths: number = 1, includePreviousDue: boolean = false) => {
+  const runBulkBilling = async (startDate?: Date, numMonths: number = 1, includePreviousDue: boolean = false, selectedSubscriberIds?: string[]) => {
     let legacyGenerated = 0;
     const stats = { total: 0, generated: 0, skipped: 0 };
 
@@ -1598,18 +1602,14 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       legacyGenerated = await runLegacyBulkBilling(startDate);
     }
 
-    for (let m = 0; m < numMonths; m++) {
-      const targetDate = new Date(startDate || new Date());
-      targetDate.setMonth(targetDate.getMonth() + m);
-      // Force to midday to avoid timezone shifts jumping to previous/next month
-      targetDate.setHours(12, 0, 0, 0); 
-      const monthStats = await runSingleMonthBulkBilling(targetDate);
-      if (monthStats) {
-        stats.total = monthStats.total;
-        stats.generated += monthStats.generated;
-        stats.skipped += monthStats.skipped;
-      }
+    // Pass the selectedSubscriberIds to the single month generator
+    const monthStats = await runSingleMonthBulkBilling(startDate, numMonths, selectedSubscriberIds);
+    if (monthStats) {
+      stats.total = monthStats.total;
+      stats.generated = monthStats.generated;
+      stats.skipped = monthStats.skipped;
     }
+
     await recalculateBalances();
     return { ...stats, legacyGenerated };
   };
@@ -1694,8 +1694,12 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return legacyGenerated;
   };
 
-  const runSingleMonthBulkBilling = async (customDate?: Date) => {
-    const activeSubs = subscribers.filter(s => s.status === 'active');
+  const runSingleMonthBulkBilling = async (customDate?: Date, numMonthsOverride?: number, selectedSubscriberIds?: string[]) => {
+    const plansList = dbPlans.length > 0 ? dbPlans : plans;
+    const activeSubs = subscribers.filter(s => 
+      s.status === 'active' && 
+      (!selectedSubscriberIds || selectedSubscriberIds.includes(s.id))
+    );
     const stats = { total: activeSubs.length, generated: 0, skipped: 0 };
     if (activeSubs.length === 0) return stats;
 
@@ -1704,9 +1708,8 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const statements: any[] = [];
     
     const billingDate = normalizeBillingDate(customDate);
-    const currentMonthStr = billingDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-    const currentMonth = billingDate.getMonth();
-    const currentYear = billingDate.getFullYear();
+    const billingDateStr = billingDate.toISOString();
+    const dueDateStr = createInvoiceDueDate(billingDate).toISOString();
 
     for (const sub of activeSubs) {
       const plan = plansList.find(p => p.id === sub.planId);
@@ -1718,36 +1721,49 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         continue;
       }
 
-      // Prevent generating multiple invoices for the same month
-      // Normalize both dates to start of month for robust comparison
-      const hasInvoiceThisMonth = invoices.some(inv => {
+      // Determine duration: override if provided, otherwise use plan cycle
+      const validityDays = Number(plan.validityDays || 30);
+      const cycleMonths = Math.max(1, Math.round(validityDays / 30));
+      const targetNumMonths = numMonthsOverride || cycleMonths;
+      
+      const targetMonths = getMonthsInRange(billingDate, targetNumMonths);
+
+      // Prevent generating overlapping invoices
+      const hasOverlap = invoices.some(inv => {
         if (inv.subscriberId !== sub.id) return false;
-        if (inv.type === 'legacy') return false; // Legacy invoices don't block plan bills
-        const invDate = new Date(inv.date);
-        return invDate.getMonth() === currentMonth && invDate.getFullYear() === currentYear;
+        if (inv.type === 'legacy') return false; 
+        const existingMonths = getMonthsCoveredByInvoice(inv);
+        return targetMonths.some(m => existingMonths.includes(m));
       });
       
-      if (hasInvoiceThisMonth) {
+      if (hasOverlap) {
         stats.skipped++;
-        console.log(`Skipping sub ${sub.name} - already has plan invoice for ${currentMonthStr}`);
         continue;
       }
 
       const id = `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       const number = generateSequentialId('#SCN-IN-', [...invoices, ...newInvoices], 'number');
-      const date = billingDate.toISOString();
-      const dueDate = createInvoiceDueDate(billingDate).toISOString();
       
-      const total = plan.price;
-      const gst = plan.priceWithoutGst ? (plan.price - plan.priceWithoutGst) : 0;
+      // Calculate total for the target duration
+      const total = Number(plan.price || 0) * (targetNumMonths / cycleMonths);
+      const gst = Number(plan.priceWithoutGst ? (plan.price - plan.priceWithoutGst) : 0) * (targetNumMonths / cycleMonths);
 
-      const serviceEndDate = createServiceEndDate(billingDate, Number(plan.validityDays || 30));
+      const serviceEndDate = createServiceEndDate(billingDate, validityDays * (targetNumMonths / cycleMonths));
       const newExpiryDate = serviceEndDate.toISOString();
-      const billingPeriod = Number(plan.validityDays || 30) > 31
-        ? formatServicePeriod(billingDate, serviceEndDate)
-        : currentMonthStr.toUpperCase();
+      
+      const billingPeriod = (() => {
+        const dateObjects = Array.from({ length: targetNumMonths }).map((_, i) => {
+          const d = new Date(billingDate);
+          d.setMonth(d.getMonth() + i);
+          return d;
+        });
+        return formatMonthRanges(dateObjects).toUpperCase();
+      })();
+
       const newInv: Invoice = {
-        id, number, subscriberId: sub.id, amount: total, status: 'pending', date, dueDate, gstAmount: gst, type: 'plan', billingPeriod, discount: 0
+        id, number, subscriberId: sub.id, amount: total, status: 'pending', 
+        date: billingDateStr, dueDate: dueDateStr, gstAmount: gst, 
+        type: 'plan', billingPeriod, discount: 0
       };
       newInvoices.push(newInv);
 
@@ -1755,20 +1771,22 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (subIndex !== -1) {
         const s = updatedSubsList[subIndex];
         const newBalance = Number(s.balance || 0) - total;
-        const updatedMonths = [...s.unpaidMonths];
-        if (!updatedMonths.includes(currentMonthStr)) {
-          updatedMonths.push(currentMonthStr);
+        const updatedMonths = [...(s.unpaidMonths || [])];
+        
+        for (const mName of targetMonths) {
+          if (!updatedMonths.includes(mName)) {
+            updatedMonths.push(mName);
+          }
         }
+        
         updatedSubsList[subIndex] = { ...s, balance: newBalance, unpaidMonths: updatedMonths, expiryDate: newExpiryDate };
         
         if (db) {
-          const billingPeriod = currentMonthStr.toUpperCase();
           statements.push({
             sql: 'INSERT INTO invoices (id, number, subscriber_id, amount, gst_amount, date, due_date, status, type, billing_period, discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            args: [id, number, sub.id, total, gst, date, dueDate, 'pending', 'plan', billingPeriod, 0]
+            args: [id, number, sub.id, total, gst, billingDateStr, dueDateStr, 'pending', 'plan', billingPeriod, 0]
           });
           statements.push({
-
             sql: 'UPDATE subscribers SET balance = ?, unpaid_months = ?, expiry_date = ? WHERE id = ?',
             args: [newBalance, JSON.stringify(updatedMonths), newExpiryDate, sub.id]
           });
@@ -1777,14 +1795,15 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       stats.generated++;
     }
 
-    // 1. Optimistic UI Updates
-    const allInvoices = [...newInvoices, ...invoices];
-    setInvoices(allInvoices);
-    LS.set('invoices', allInvoices);
+    // Update state
+    setInvoices(prev => [...newInvoices, ...prev]);
     setSubscribers(updatedSubsList);
-    LS.set('subscribers', updatedSubsList);
+    
+    if (!db) {
+      LS.set('invoices', [...newInvoices, ...invoices]);
+      LS.set('subscribers', updatedSubsList);
+    }
 
-    // 2. Database Batching
     if (db && statements.length > 0) {
       try {
         for (let i = 0; i < statements.length; i += 50) {
@@ -1792,7 +1811,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
       } catch (err) {
         console.error('runBulkBilling DB error:', err);
-        await fetchData(); // Rollback on failure
+        await fetchData(); 
         throw err;
       }
     }

@@ -15,7 +15,12 @@ CREATE TABLE IF NOT EXISTS subscribers (
   expiry_date TEXT,
   balance REAL DEFAULT 0,
   auto_billing INTEGER DEFAULT 1,
-  unpaid_months TEXT -- JSON array as string
+  unpaid_months TEXT, -- JSON array as string
+  house_no TEXT,
+  landmark TEXT,
+  installation_date TEXT,
+  opening_balance REAL DEFAULT 0,
+  customer_no TEXT
 );
 
 CREATE TABLE IF NOT EXISTS plans (
@@ -23,7 +28,10 @@ CREATE TABLE IF NOT EXISTS plans (
   name TEXT NOT NULL,
   price REAL NOT NULL,
   validity_days INTEGER NOT NULL,
-  speed_mbps INTEGER NOT NULL
+  speed_mbps INTEGER NOT NULL,
+  price_without_gst REAL,
+  provider_plan_id TEXT,
+  category TEXT
 );
 
 CREATE TABLE IF NOT EXISTS payments (
@@ -33,6 +41,10 @@ CREATE TABLE IF NOT EXISTS payments (
   method TEXT NOT NULL,
   agent TEXT NOT NULL,
   date TEXT NOT NULL,
+  discount REAL DEFAULT 0,
+  invoice_id TEXT,
+  balance_at_payment REAL,
+  created_at TEXT,
   FOREIGN KEY (subscriber_id) REFERENCES subscribers(id)
 );
 
@@ -45,6 +57,11 @@ CREATE TABLE IF NOT EXISTS invoices (
   date TEXT NOT NULL,
   due_date TEXT NOT NULL,
   status TEXT DEFAULT 'pending',
+  type TEXT,
+  billing_period TEXT,
+  discount REAL DEFAULT 0,
+  service_start TEXT,
+  service_end TEXT,
   FOREIGN KEY (subscriber_id) REFERENCES subscribers(id)
 );
 

@@ -34,7 +34,8 @@ const ReceiptContent = ({
   brand, 
   isCableMode, 
   customerIdLabel, 
-  plans 
+  plans,
+  invoices,
 }: { 
   id?: string;
   payment: any;
@@ -44,6 +45,7 @@ const ReceiptContent = ({
   isCableMode: boolean;
   customerIdLabel: string;
   plans: any[];
+  invoices?: any[];
 }) => {
   const parseAmount = (val: any) => {
     if (typeof val === 'number') return isNaN(val) ? 0 : val;
@@ -58,7 +60,7 @@ const ReceiptContent = ({
 
   const numToWords = (n: number) => {
     if (isNaN(n)) return "Zero Rupees Only";
-    const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nin[...]"];
     const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
     const helper = (num: number): string => {
       if (num < 20) return ones[num];
@@ -92,29 +94,7 @@ const ReceiptContent = ({
     metaCellLast: { flex: 1, padding: "14px 20px" },
     metaLabel: { fontSize: 10, color: "#059669", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 },
     metaValue: { fontSize: 14, fontWeight: 700, color: "#1a2e5a", marginTop: 3 },
-    statusPaid: { display: "inline-block", background: "#dcfce7", color: "#166534", fontWeight: 800, fontSize: 13, padding: "3px 12px", borderRadius: 4, marginTop: 3, border: "1px solid #bbf7d0" },
-    amountBanner: { background: "linear-gradient(135deg, #2e7d32 0%, #388e3c 60%, #43a047 100%)", color: "#ffffff", textAlign: "center", padding: "40px 36px" },
-    amountLabel: { fontSize: 13, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", opacity: 0.85, marginBottom: 10 },
-    amountValue: { fontSize: 56, fontWeight: 900, letterSpacing: -1, lineHeight: 1 },
-    amountWords: { fontSize: 14, opacity: 0.8, marginTop: 10 },
-    body: { padding: "22px 36px 28px" },
-    twoCol: { display: "flex", gap: 16, marginBottom: 16 },
-    infoBox: { flex: 1 },
-    sectionTitle: { background: "#1a2e5a", color: "#ffffff", fontSize: 12, fontWeight: 700, padding: "10px 16px", letterSpacing: 0.8, textTransform: "uppercase", borderRadius: "4px 4px 0 0" },
-    infoContent: { border: "1px solid #dce4ef", borderTop: "none", padding: "18px 20px", borderRadius: "0 0 4px 4px", background: "#fcfdff" },
-    infoRow: { display: "flex", marginBottom: 10, fontSize: 13, lineHeight: 1.4, alignItems: "center" },
-    infoKey: { color: "#7a8fa6", fontWeight: 600, width: 100, flexShrink: 0, fontSize: 12 },
-    infoVal: { color: "#1a2e5a", fontWeight: 700, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-    addressText: { color: "#1a2e5a", fontWeight: 500, lineHeight: 1.6, fontSize: 14 },
-    allocBox: { border: "1px solid #dce4ef", borderRadius: 4, overflow: "hidden", marginTop: 0 },
-    allocTitle: { background: "#1a2e5a", color: "#ffffff", fontSize: 12, fontWeight: 700, padding: "10px 16px", letterSpacing: 0.8, textTransform: "uppercase" },
-    allocRow: { display: "flex", justifyContent: "space-between", padding: "12px 16px", fontSize: 13, borderBottom: "1px solid #eef1f6", color: "#4a5568", lineHeight: 1.2, alignItems: "center" },
-    allocRowTotal: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", fontSize: 14, fontWeight: 700, color: "#1a2e5a", borderBottom: "1px solid #eef1f6", background: "#f0f4fa", lineHeight: 1.2 },
-    allocRowBalance: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "16px 16px", fontSize: 14, fontWeight: 700, color: "#1b5e20", background: "#e8f5e9", lineHeight: 1.4 },
-    verifiedArea: { display: "flex", justifyContent: "center", marginTop: 80, marginBottom: 30 },
-    verifiedStamp: { border: "3px solid #2e7d32", borderRadius: "50%", width: 150, height: 150, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#2e7d32", fontWeight: 800, fontSize: 20, letterSpacing: 1, textTransform: "uppercase", position: "relative" },
-    checkmark: { fontSize: 56, lineHeight: 1, marginBottom: 2 },
-    footer: { background: "#1a2e5a", color: "#a0b4d0", fontSize: 10, textAlign: "center", padding: "10px 20px", marginTop: 20 },
+    statusPaid: { display: "inline-block", background: "#dcfce7", color: "#166534", fontWeight: 800, fontSize: 13, padding: "3px 12px", borderRadius: 4, marginTop: 3, border: "1px solid #bbf7d0" }[...]
   };
 
   const LogoImg = () => <img src={logoBase64} width="72" height="72" alt="Logo" style={{ display: "block", objectFit: "contain" }} />;
@@ -453,11 +433,12 @@ export default function PaymentReceiptModal({
               isCableMode={isCableMode} 
               customerIdLabel={customerIdLabel}
               plans={plans}
+              invoices={invoices}
             />
           </div>
         </div>
-        <div style={{ position: "absolute", opacity: 0, pointerEvents: "none", zIndex: -9999 }}>
-          <div id="receipt-content-print">
+        <div style={{ position: "absolute", left: "-9999px", top: 0, width: 794, pointerEvents: "none" }}>
+          <div id="receipt-content-print" style={{ background: "#ffffff", width: 794 }}>
             <ReceiptContent 
               payment={payment} 
               subscriber={subscriber} 
@@ -466,16 +447,17 @@ export default function PaymentReceiptModal({
               isCableMode={isCableMode} 
               customerIdLabel={customerIdLabel}
               plans={plans}
+              invoices={invoices}
             />
           </div>
         </div>
         <div className="p-10 bg-white border-t border-slate-100 flex gap-6 shrink-0">
           <Button variant="outline" onClick={onClose} className="h-16 px-8 text-slate-500 border-slate-200 hover:bg-slate-50 font-bold uppercase tracking-wider text-xs">Discard</Button>
           <div className="flex-1 flex gap-4">
-            <Button variant="outline" onClick={handleSharePDF} disabled={isProcessing} className="flex-1 h-16 text-emerald-600 border-emerald-200 hover:bg-emerald-50 font-bold uppercase tracking-wider text-xs">
+            <Button variant="outline" onClick={handleSharePDF} disabled={isProcessing} className="flex-1 h-16 text-emerald-600 border-emerald-200 hover:bg-emerald-50 font-bold uppercase tracking-[...]
               <Send className="mr-2 h-5 w-5" /> WhatsApp / Share
             </Button>
-            <Button onClick={handleDownloadPDF} disabled={isProcessing} className="flex-1 h-16 bg-[#1a2e5a] hover:bg-[#15254a] text-white font-bold uppercase tracking-wider text-xs shadow-lg shadow-blue-900/20">
+            <Button onClick={handleDownloadPDF} disabled={isProcessing} className="flex-1 h-16 bg-[#1a2e5a] hover:bg-[#15254a] text-white font-bold uppercase tracking-wider text-xs shadow-lg shad[...]
               {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />} Download PDF
             </Button>
           </div>

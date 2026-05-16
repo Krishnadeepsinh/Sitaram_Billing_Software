@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 export default function AppLayout() {
   const { isLoading } = useBilling();
+  const activeBusinessMode = useBusinessMode();
 
   return (
     <SidebarProvider>

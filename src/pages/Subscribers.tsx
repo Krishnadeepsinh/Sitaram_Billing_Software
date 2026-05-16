@@ -418,7 +418,7 @@ export default function Subscribers() {
 
       {/* Filters */}
       <div className="app-card p-3 flex flex-row items-center gap-3 overflow-x-auto no-scrollbar">
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative min-w-[280px] md:min-w-[400px] flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder="Search by name, ID, phone or area..."
@@ -438,7 +438,7 @@ export default function Subscribers() {
             <Label htmlFor="dues-only" className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Overdue Only</Label>
           </div>
           <select
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[110px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[120px]"
             value={statusF}
             onChange={(e: any) => setStatusF(e.target.value)}
           >
@@ -447,7 +447,7 @@ export default function Subscribers() {
             <option value="inactive">Inactive</option>
           </select>
           <select
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[110px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[120px] max-w-[150px]"
             value={areaF}
             onChange={(e) => setAreaF(e.target.value)}
           >
@@ -455,7 +455,7 @@ export default function Subscribers() {
             {areas.filter(a => a !== "all").map(a => <option key={a} value={a}>{a}</option>)}
           </select>
           <select
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[110px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[120px] max-w-[150px]"
             value={planF}
             onChange={(e) => setPlanF(e.target.value)}
           >

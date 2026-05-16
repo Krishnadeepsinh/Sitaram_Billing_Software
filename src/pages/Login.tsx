@@ -50,13 +50,9 @@ export default function Login() {
       <div className="relative w-full max-w-sm">
         <div className="app-card p-8 space-y-6">
           {/* Logo + Brand */}
-          <div className="text-center space-y-2">
-            <Logo size="xl" showText={false} className="mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-foreground">SITARAM</h1>
-            <p className="text-orange-500 text-sm font-semibold uppercase tracking-widest">
-              Cable & Broadband
-            </p>
-            <p className="text-sm text-muted-foreground pt-1">
+          <div className="flex flex-col items-center">
+            <Logo size="xl" showText={true} showModeLabel={false} className="justify-center mb-2" />
+            <p className="text-sm text-muted-foreground text-center max-w-[250px] mt-4">
               Connecting every home through one billing workspace
             </p>
           </div>

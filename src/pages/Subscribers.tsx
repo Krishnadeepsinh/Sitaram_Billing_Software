@@ -10,8 +10,10 @@ import {
   Trash2, History, FileText, Wifi, ChevronRight,
   Activity, Wallet, X, User, Shield, CreditCard,
   Network, Signal, Globe, ArrowUpRight, Zap, DatabaseZap,
-  ShieldCheck, LayoutGrid, ListFilter, Users, Download, Check
+  ShieldCheck, LayoutGrid, ListFilter, Users, Download, Check,
+  Info
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useBilling } from "@/context/BillingContext";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
@@ -541,9 +543,77 @@ export default function Subscribers() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className={cn("text-sm font-semibold font-mono-num", balance >= 0 ? "text-green-600" : "text-red-600")}>
-                          {formatCurrency(balance)}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("text-sm font-semibold font-mono-num", balance >= 0 ? "text-green-600" : "text-red-600")}>
+                            {formatCurrency(balance)}
+                          </span>
+                          
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-5 w-5 rounded-full p-0 text-muted-foreground hover:text-orange-500 hover:bg-orange-50">
+                                <Info className="h-3.5 w-3.5" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-3" align="start">
+                              <div className="space-y-3">
+                                <h4 className="font-semibold text-sm border-b pb-1.5">Dues Breakdown</h4>
+                                <div className="space-y-2 text-xs">
+                                  {(() => {
+                                    const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
+                                    const legacyDues = subInvoices
+                                      .filter(i => i.type === 'legacy')
+                                      .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+                                    const planDues = subInvoices
+                                      .filter(i => i.type === 'plan')
+                                      .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+                                    const openingBalance = Number(s.openingBalance) || 0;
+                                    
+                                    return (
+                                      <>
+                                        {openingBalance !== 0 && (
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Opening Balance:</span>
+                                            <span className={cn("font-mono-num font-medium", openingBalance > 0 ? "text-red-500" : "text-green-600")}>
+                                              {formatCurrency(-openingBalance)}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {legacyDues > 0 && (
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Previous Year Dues:</span>
+                                            <span className="font-mono-num font-medium text-red-500">{formatCurrency(-legacyDues)}</span>
+                                          </div>
+                                        )}
+                                        {planDues > 0 && (
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Current Plan Dues:</span>
+                                            <span className="font-mono-num font-medium text-red-500">{formatCurrency(-planDues)}</span>
+                                          </div>
+                                        )}
+                                        <div className="pt-1.5 mt-1.5 border-t flex justify-between items-center font-bold text-sm">
+                                          <span>Net Balance:</span>
+                                          <span className={cn(balance >= 0 ? "text-green-600" : "text-red-600")}>
+                                            {formatCurrency(balance)}
+                                          </span>
+                                        </div>
+                                        {balance > 0 && (
+                                          <div className="mt-1 p-1.5 bg-green-50 text-green-700 rounded text-[10px] italic">
+                                            Subscriber has {formatCurrency(balance)} in advance credit.
+                                          </div>
+                                        )}
+                                        {balance === 0 && (
+                                          <div className="mt-1 p-1.5 bg-slate-50 text-slate-500 rounded text-[10px] italic">
+                                            No pending dues.
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                         <span className="text-xs text-muted-foreground mt-0.5">{plan?.name || "Unassigned"}</span>
                         {balance < -0.01 && (
                           <div className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-tight leading-tight">
@@ -683,7 +753,64 @@ export default function Subscribers() {
                   <span className="text-slate-700 truncate block" title={plan?.name}>{plan?.name || "Unassigned"}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 text-xs block mb-0.5">Balance</span>
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <span className="text-slate-500 text-xs block">Balance</span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="text-muted-foreground hover:text-orange-500">
+                          <Info className="h-3 w-3" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64 p-3" side="top" align="end">
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-sm border-b pb-1.5">Dues Breakdown</h4>
+                          <div className="space-y-2 text-xs">
+                            {(() => {
+                              const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
+                              const legacyDues = subInvoices
+                                .filter(i => i.type === 'legacy')
+                                .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+                              const planDues = subInvoices
+                                .filter(i => i.type === 'plan')
+                                .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+                              const openingBalance = Number(s.openingBalance) || 0;
+                              
+                              return (
+                                <>
+                                  {openingBalance !== 0 && (
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-muted-foreground">Opening Balance:</span>
+                                      <span className={cn("font-mono-num font-medium", openingBalance > 0 ? "text-red-500" : "text-green-600")}>
+                                        {formatCurrency(-openingBalance)}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {legacyDues > 0 && (
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-muted-foreground">Prev. Year Dues:</span>
+                                      <span className="font-mono-num font-medium text-red-500">{formatCurrency(-legacyDues)}</span>
+                                    </div>
+                                  )}
+                                  {planDues > 0 && (
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-muted-foreground">Plan Dues:</span>
+                                      <span className="font-mono-num font-medium text-red-500">{formatCurrency(-planDues)}</span>
+                                    </div>
+                                  )}
+                                  <div className="pt-1.5 mt-1.5 border-t flex justify-between items-center font-bold text-sm">
+                                    <span>Net Balance:</span>
+                                    <span className={cn(balance >= 0 ? "text-green-600" : "text-red-600")}>
+                                      {formatCurrency(balance)}
+                                    </span>
+                                  </div>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                   <span className={cn("font-medium", balance >= 0 ? "text-green-600" : "text-red-600")}>
                     {formatCurrency(balance)}
                   </span>

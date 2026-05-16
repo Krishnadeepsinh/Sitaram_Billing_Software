@@ -7,7 +7,7 @@ import {
   Trash2, Send, Wifi, Wallet, Check, MapPin, Phone, Eye, 
   RefreshCcw, AlertCircle, History, CreditCard, Activity, 
   Calendar, ShieldCheck, ArrowUpRight, Network, Signal, 
-  TrendingUp, DatabaseZap
+  TrendingUp, DatabaseZap, Zap, Users
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useBilling } from "@/context/BillingContext";

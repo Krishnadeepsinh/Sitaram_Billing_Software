@@ -752,12 +752,30 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const sub = subscribers.find(s => s.id === pData.subscriberId);
         if (sub) {
           const plan = plansList.find(pl => pl.id === sub.planId);
-          const currentBalance = Number(sub.balance) || 0;
-          const balanceAfterCash = currentBalance + (Number(amount) || 0);
-          // Discount can only reduce debt (if any remains after cash)
-          const remainingDebt = balanceAfterCash < 0 ? Math.abs(balanceAfterCash) : 0;
-          const effectiveDiscount = Math.min(Number(discount) || 0, remainingDebt);
-          const newBalance = balanceAfterCash + effectiveDiscount;
+          const totalCash = (Number(amount) || 0);
+          const totalDiscount = (Number(discount) || 0);
+          
+          // Absolute recalculation for the new balance to ensure consistency
+          // We need to know the total invoiced and total paid so far
+          const calcInvoicesRes = await db.execute({ 
+            sql: "SELECT SUM(amount) as total FROM invoices WHERE subscriber_id = ?", 
+            args: [sub.id] 
+          });
+          const sumInvoiced = Number(calcInvoicesRes.rows[0].total || 0);
+          
+          const subPaymentsRes = await db.execute({ 
+            sql: "SELECT SUM(amount) as cash, SUM(discount) as disc FROM payments WHERE subscriber_id = ?", 
+            args: [sub.id] 
+          });
+          const prevCash = Number(subPaymentsRes.rows[0].cash || 0);
+          const prevDisc = Number(subPaymentsRes.rows[0].disc || 0);
+          
+          const allCash = prevCash + totalCash;
+          const allDisc = prevDisc + totalDiscount;
+          const openingBal = Number(sub.openingBalance || 0);
+          const totalDebt = sumInvoiced + openingBal;
+          
+          const newBalance = allCash - Math.max(0, totalDebt - allDisc);
           
           let updatedMonths = [...(sub.unpaidMonths || [])];
           if (plan && plan.price > 0) {
@@ -1557,12 +1575,9 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const openingBal = Number(sub.opening_balance || 0);
         const totalDebt = totalInvoiced + openingBal;
         
-        let balance = (totalCash + totalDiscount) - totalDebt;
-        // Logic: Discounts should never create an 'Advance' (positive balance).
-        // Only actual cash overpayments create credit.
-        if (balance > 0) {
-            balance = Math.max(0, totalCash - totalDebt);
-        }
+        // Formula: Balance = Total Cash - Net Debt (Debt after discounts)
+        // This ensures discounts only reduce debt and don't create advance credit.
+        const balance = totalCash - Math.max(0, totalDebt - totalDiscount);
 
         let updatedMonths: string[] = [];
         if (balance < -0.01) {

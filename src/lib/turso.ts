@@ -4,7 +4,9 @@ export type BusinessMode = "cable" | "broadband";
 
 export const getActiveBusinessMode = (): BusinessMode => {
   if (typeof window === "undefined") return "broadband";
-  return localStorage.getItem("businessMode") === "cable" ? "cable" : "broadband";
+  const saved = localStorage.getItem("businessMode");
+  if (saved === "cable" || saved === "broadband") return saved;
+  return "broadband"; // Default to broadband if not set
 };
 
 export let activeBusinessMode = getActiveBusinessMode();

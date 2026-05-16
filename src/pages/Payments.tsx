@@ -324,7 +324,7 @@ export default function Payments() {
      try {
       setIsSubmitting(true);
       // The amount recorded in the DB is the actual cash collected
-      const cashAmount = Number(formData.amount || 0) - Number(formData.discount || 0);
+      const cashAmount = Number(formData.amount || 0);
       const discount = Number(formData.discount || 0);
       const newPay = await recordPayment({ 
         ...formData, 
@@ -336,7 +336,8 @@ export default function Payments() {
       toast.success("Transaction Record Created");
       closeAddModal();
       setSelectedPayment(newPay);
-      setIsReceiptOpen(true);
+      // Removed automatic receipt opening as requested
+      // setIsReceiptOpen(true);
     } catch (err) { toast.error("Transaction failed"); } finally { setIsSubmitting(false); }
   };
 

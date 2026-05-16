@@ -417,8 +417,8 @@ export default function Subscribers() {
       </div>
 
       {/* Filters */}
-      <div className="app-card p-3 flex flex-row items-center gap-3 overflow-x-auto no-scrollbar">
-        <div className="relative min-w-[280px] md:min-w-[400px] flex-1">
+      <div className="app-card p-2 md:p-3 flex flex-row items-center gap-2 md:gap-3 overflow-x-auto no-scrollbar">
+        <div className="relative min-w-[180px] md:min-w-[300px] flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder="Search by name, ID, phone or area..."
@@ -428,17 +428,17 @@ export default function Subscribers() {
           />
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-slate-50">
+          <div className="flex items-center gap-2 h-10 px-2 md:px-3 rounded-lg border border-slate-200 bg-slate-50">
             <Switch
               id="dues-only"
               checked={showDuesOnly}
               onCheckedChange={setShowDuesOnly}
               className="data-[state=checked]:bg-orange-500 scale-90"
             />
-            <Label htmlFor="dues-only" className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Overdue Only</Label>
+            <Label htmlFor="dues-only" className="cursor-pointer text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Overdue Only</Label>
           </div>
           <select
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[120px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 md:px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[100px] md:min-w-[120px]"
             value={statusF}
             onChange={(e: any) => setStatusF(e.target.value)}
           >
@@ -447,7 +447,7 @@ export default function Subscribers() {
             <option value="inactive">Inactive</option>
           </select>
           <select
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[120px] max-w-[150px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 md:px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[100px] md:min-w-[120px] max-w-[140px] md:max-w-[160px]"
             value={areaF}
             onChange={(e) => setAreaF(e.target.value)}
           >
@@ -455,7 +455,7 @@ export default function Subscribers() {
             {areas.filter(a => a !== "all").map(a => <option key={a} value={a}>{a}</option>)}
           </select>
           <select
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[120px] max-w-[150px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-2 md:px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[100px] md:min-w-[120px] max-w-[140px] md:max-w-[160px]"
             value={planF}
             onChange={(e) => setPlanF(e.target.value)}
           >

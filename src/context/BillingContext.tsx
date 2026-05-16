@@ -1098,7 +1098,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!sub) throw new Error('Subscriber not found');
     
     const numMonths = Array.isArray(months) ? months.length : months;
-    if (!isLegacy && sub.status !== 'active') {
+    if (numMonths > 0 && sub.status !== 'active') {
       throw new Error('Cannot generate regular plan invoice for inactive subscriber');
     }
     
@@ -1791,7 +1791,8 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const newBalance = Number(s.balance || 0) - total;
         const updatedMonths = [...(s.unpaidMonths || [])];
         
-        for (const mName of targetMonths) {
+        for (const mDate of monthsToInvoice) {
+          const mName = mDate.toLocaleString('default', { month: 'short' });
           if (!updatedMonths.includes(mName)) {
             updatedMonths.push(mName);
           }
@@ -1801,8 +1802,8 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         
         if (db) {
           statements.push({
-            sql: 'INSERT INTO invoices (id, number, subscriber_id, amount, gst_amount, date, due_date, status, type, billing_period, discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            args: [id, number, sub.id, total, gst, billingDateStr, dueDateStr, 'pending', 'plan', billingPeriod, 0]
+            sql: 'INSERT INTO invoices (id, number, subscriber_id, amount, gst_amount, date, due_date, status, type, billing_period, discount, service_start, service_end) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            args: [id, number, sub.id, total, gst, billingDateStr, dueDateStr, 'pending', 'plan', billingPeriod, 0, monthsToInvoice[0].toISOString(), serviceEndDate.toISOString()]
           });
           statements.push({
             sql: 'UPDATE subscribers SET balance = ?, unpaid_months = ?, expiry_date = ? WHERE id = ?',

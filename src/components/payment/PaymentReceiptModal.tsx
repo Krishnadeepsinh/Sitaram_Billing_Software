@@ -119,13 +119,56 @@ const ReceiptContent = ({
 
   const LogoImg = () => <img src={logoBase64} width="72" height="72" alt="Logo" style={{ display: "block", objectFit: "contain" }} />;
 
+  const getPaymentItems = (p: any) => {
+    if (!p) return [];
+    const items: any[] = [];
+    let remaining = parseAmount(p.amount) + parseAmount(p.discount);
+
+    // Find invoices covered by this payment
+    const coveredInvoices = (invoices || []).filter(inv => inv.subscriberId === p.subscriberId)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Basic heuristic: if it's a legacy invoice, it's previous due
+    for (const inv of coveredInvoices) {
+      if (remaining <= 0) break;
+      const invAmt = parseAmount(inv.amount);
+      const covered = Math.min(invAmt, remaining);
+      if (covered > 0) {
+        const sDates = getInvoiceServiceDates(inv, subscriber, plans);
+        const periodStr = inv.type === 'legacy' ? "PREVIOUS YEAR DUE" : (inv.billingPeriod || "CURRENT PLAN");
+        const datesStr = (sDates.rechargeDate && sDates.expiryDate) 
+          ? `(${formatFullDate(sDates.rechargeDate)} - ${formatFullDate(sDates.expiryDate)})`
+          : "";
+        
+        items.push({
+          desc: `${inv.type === 'legacy' ? 'Previous' : 'Plan'} Subscription`,
+          detail: `${periodStr} ${datesStr}`,
+          amount: covered
+        });
+        remaining -= covered;
+      }
+    }
+
+    if (remaining > 0.1) {
+      items.push({
+        desc: "Account Credit / Advance",
+        detail: "Added to wallet balance",
+        amount: remaining
+      });
+    }
+
+    return items;
+  };
+
+  const paymentItems = getPaymentItems(payment);
+
   const customerInfo = [
     { k: "Full Name", v: subscriber?.name || "N/A" },
     { k: customerIdLabel, v: subscriber?.customerId || subscriber?.id || "N/A" },
     { k: "Mobile No", v: subscriber?.phone || "N/A" },
     { k: "Area", v: subscriber?.area || "N/A" },
     { k: "Service Type", v: isCableMode ? "Digital Cable TV" : "Broadband - Fiber" },
-    { k: "Transaction ID", v: payment.id.toUpperCase() },
+    { k: "Transaction ID", v: String(payment?.id || "").toUpperCase() },
   ].filter(i => i.v && i.v !== "N/A");
 
   return (
@@ -148,7 +191,7 @@ const ReceiptContent = ({
       <div style={styles.metaRow}>
         <div style={styles.metaCell}>
           <div style={styles.metaLabel}>Receipt No</div>
-          <div style={styles.metaValue}>REC-{payment.id.slice(-6).toUpperCase()}</div>
+          <div style={styles.metaValue}>REC-{String(payment?.id || "000000").slice(-6).toUpperCase()}</div>
         </div>
         <div style={styles.metaCell}>
           <div style={styles.metaLabel}>Payment Date</div>
@@ -208,24 +251,33 @@ const ReceiptContent = ({
         </div>
 
         <div style={styles.allocBox}>
-          <div style={styles.allocTitle}>Payment Allocation Summary</div>
+          <div style={styles.allocTitle}>Payment Allocation Details</div>
+          {paymentItems.map((item, idx) => (
+            <div key={idx} style={styles.allocRow}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ fontWeight: 600, color: "#1a2e5a" }}>{item.desc}</span>
+                <span style={{ fontSize: 11, color: "#7a8fa6" }}>{item.detail}</span>
+              </div>
+              <span style={{ fontWeight: 700, color: "#1a2e5a" }}>Rs. {item.amount.toFixed(2)}</span>
+            </div>
+          ))}
           <div style={styles.allocRow}>
             <span style={{ whiteSpace: "nowrap" }}>Subtotal:</span>
             <span style={{ whiteSpace: "nowrap" }}>Rs. {subtotal.toFixed(2)}</span>
           </div>
           {discount > 0 && (
             <div style={styles.allocRow}>
-              <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>Discount:</span>
+              <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>Discount (Gift/Off):</span>
               <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>- Rs. {discount.toFixed(2)}</span>
             </div>
           )}
           <div style={styles.allocRowTotal}>
-            <span style={{ whiteSpace: "nowrap" }}>Total Paid:</span>
+            <span style={{ whiteSpace: "nowrap" }}>Net Paid Amount:</span>
             <span style={{ whiteSpace: "nowrap" }}>Rs. {amount.toFixed(2)}</span>
           </div>
           <div style={styles.allocRowBalance}>
-            <span style={{ flexShrink: 0, whiteSpace: "nowrap" }}>Remaining Balance:</span>
-            <span style={{ textAlign: "right", marginLeft: 16, whiteSpace: "nowrap" }}>Rs. 0.00 (FULLY CLEARED)</span>
+            <span style={{ flexShrink: 0, whiteSpace: "nowrap" }}>Current Status:</span>
+            <span style={{ textAlign: "right", marginLeft: 16, whiteSpace: "nowrap" }}>FULLY PAID & CLEARED</span>
           </div>
         </div>
 
@@ -298,10 +350,12 @@ export default function PaymentReceiptModal({
     if (!element) throw new Error("Document not ready");
 
     try {
+      console.log("Starting PDF generation for element:", element.id);
       const { toPng } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Give browser time to paint the hidden element
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       const dataUrl = await toPng(element, {
         quality: 1.0,
@@ -351,9 +405,11 @@ export default function PaymentReceiptModal({
     setIsProcessing(true);
     try {
       const pdfBlob = await generatePdfBlob();
-      const fileName = `Receipt_${payment.id.slice(-6).toUpperCase()}.pdf`;
+      if (!pdfBlob) throw new Error("PDF generation failed");
+      
+      const fileName = `Receipt_${String(payment?.id || "").slice(-6).toUpperCase()}.pdf`;
       const file = new File([pdfBlob], fileName, { type: "application/pdf" });
-      const message = `*PAYMENT RECEIPT*\nHello ${subscriber?.name || "Customer"},\nThank you for your payment of *Rs. ${payment.amount}*.\nRef: ${payment.id.slice(-6).toUpperCase()}\nDate: ${formatFullDate(payment.date)}`;
+      const message = `*PAYMENT RECEIPT*\nHello ${subscriber?.name || "Customer"},\nThank you for your payment of *Rs. ${payment.amount}*.\nRef: ${String(payment?.id || "").slice(-6).toUpperCase()}\nDate: ${formatFullDate(payment.date)}`;
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: `Receipt ${payment.id.slice(-6).toUpperCase()}`, text: message });

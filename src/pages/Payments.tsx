@@ -50,20 +50,45 @@ export default function Payments() {
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [bulkMethod, setBulkMethod] = useState<"Cash" | "UPI">("Cash");
 
-  const getSubscriberDueAmount = (subscriberId: string) => {
+  const getSubscriberDueBreakdown = (subscriberId: string) => {
     const sub = (subscribers || []).find((item) => item.id === subscriberId);
-    if (!sub) return 0;
+    if (!sub) return { previousDue: 0, currentDue: 0, total: 0 };
 
-    const totalInvoiced = (invoices || [])
-      .filter((inv) => inv.subscriberId === subscriberId)
-      .reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
+    const invs = (invoices || []).filter((inv) => inv.subscriberId === subscriberId);
+    const previousDue = invs.filter(inv => inv.type === 'legacy').reduce((s, inv) => s + Number(inv.amount || 0), 0);
+    const currentDue = invs.filter(inv => inv.type !== 'legacy').reduce((s, inv) => s + Number(inv.amount || 0), 0);
+    
     const totalPaid = (payments || [])
       .filter((payment) => payment.subscriberId === subscriberId)
       .reduce((sum, payment) => sum + Number(payment.amount || 0) + (Number(payment.discount) || 0), 0);
-    const effectiveBalance = totalPaid - totalInvoiced - Number(sub.openingBalance || 0);
+    
+    const opening = Number(sub.openingBalance || 0);
+    const totalInvoiced = previousDue + currentDue;
+    
+    // Simple allocation logic
+    let remainingCredit = totalPaid;
+    let remOpening = opening;
+    let remPrev = previousDue;
+    let remCurr = currentDue;
 
-    return effectiveBalance < 0 ? Math.abs(effectiveBalance) : 0;
+    const useCredit = (amt: number) => {
+      const take = Math.min(amt, remainingCredit);
+      remainingCredit -= take;
+      return amt - take;
+    };
+
+    remOpening = useCredit(remOpening);
+    remPrev = useCredit(remPrev);
+    remCurr = useCredit(remCurr);
+
+    return {
+      previousDue: remOpening + remPrev,
+      currentDue: remCurr,
+      total: remOpening + remPrev + remCurr
+    };
   };
+
+  const getSubscriberDueAmount = (subscriberId: string) => getSubscriberDueBreakdown(subscriberId).total;
 
   const closeAddModal = () => {
     setIsAddOpen(false);
@@ -230,8 +255,13 @@ export default function Payments() {
       } else {
         const invDate = new Date(inv.date);
         invDate.setHours(12, 0, 0, 0);
+        const sDates = getInvoiceServiceDates(inv, sub, plans);
+        const dateRange = (sDates.rechargeDate && sDates.expiryDate) 
+          ? `${formatDate(sDates.rechargeDate)} - ${formatDate(sDates.expiryDate)}`
+          : (inv.billingPeriod || invDate.toLocaleString('default', { month: 'short', year: '2-digit' }).toUpperCase());
+          
         items.push({ 
-          desc: `${isCableMode ? 'Cable TV' : 'Broadband'} Service (${inv.billingPeriod || invDate.toLocaleString('default', { month: 'short', year: '2-digit' }).toUpperCase()})`, 
+          desc: `${isCableMode ? 'Cable TV' : 'Broadband'} Service (${dateRange})`, 
           subDesc: `${planName} Plan`, 
           date: formatDate(inv.date), 
           qty: "1", 
@@ -830,7 +860,34 @@ export default function Payments() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Total Bill Amount (₹)</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-foreground">Total Bill Amount (₹)</label>
+                    {formData.subscriberId && (
+                      <div className="group relative">
+                        <button type="button" className="text-blue-500 hover:text-blue-600 transition-colors">
+                          <Activity className="h-3.5 w-3.5" />
+                        </button>
+                        <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl p-3 z-50 invisible group-hover:visible transition-all opacity-0 group-hover:opacity-100">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Due Breakdown</p>
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-slate-500">Prev. Year Due:</span>
+                              <span className="font-bold text-red-600">₹{getSubscriberDueBreakdown(formData.subscriberId).previousDue.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-slate-500">Current Plan:</span>
+                              <span className="font-bold text-orange-600">₹{getSubscriberDueBreakdown(formData.subscriberId).currentDue.toLocaleString()}</span>
+                            </div>
+                            <div className="h-px bg-slate-100 my-1" />
+                            <div className="flex justify-between text-xs font-bold text-slate-900">
+                              <span>Total Net Due:</span>
+                              <span>₹{getSubscriberDueBreakdown(formData.subscriberId).total.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <Input 
                     type="number" 
                     value={formData.amount || ""} 

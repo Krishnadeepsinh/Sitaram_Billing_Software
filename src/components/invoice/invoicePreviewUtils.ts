@@ -2,8 +2,13 @@ import { formatMonthRanges } from "@/lib/mockData";
 
 const MIDDAY_BUFFER_MS = 12 * 60 * 60 * 1000;
 
-export const getInvoiceDisplayDate = (dateValue?: string) =>
-  new Date(new Date(dateValue || new Date().toISOString()).getTime() + MIDDAY_BUFFER_MS);
+export const getInvoiceDisplayDate = (dateValue?: string) => {
+  const d = new Date(dateValue || new Date().toISOString());
+  if (isNaN(d.getTime())) {
+    return new Date(new Date().getTime() + MIDDAY_BUFFER_MS);
+  }
+  return new Date(d.getTime() + MIDDAY_BUFFER_MS);
+};
 
 export const getInvoiceLabel = (invoice: any, isCableMode: boolean) => {
   if (invoice?.type === "legacy") return "Previous Due";
@@ -20,7 +25,8 @@ export const getBillingPeriodLabel = (invoice: any, subscriber?: any, plans?: an
   if (invoice?.type === "legacy") return "PREVIOUS YEAR";
   
   if (subscriber && plans) {
-    const plan = plans.find((item) => item.id === (invoice.planId || subscriber.planId));
+    const planId = invoice?.planId || subscriber?.planId;
+    const plan = plans.find((item) => item.id === planId);
     const grossAmount = Number(invoice?.amount || 0) + Number(invoice?.discount || 0);
     const basePrice = Math.max(1, Number(plan?.price || grossAmount || 1));
     const cycles = Math.max(1, Math.round(grossAmount / basePrice));
@@ -43,22 +49,34 @@ export const getBillingPeriodLabel = (invoice: any, subscriber?: any, plans?: an
 };
 
 export const getInvoiceServiceDates = (invoice: any, subscriber: any, plans: any[]) => {
-  if (invoice?.type === "legacy") {
-    return { rechargeDate: "", expiryDate: "" };
+  try {
+    if (invoice?.type === "legacy") {
+      return { rechargeDate: "", expiryDate: "" };
+    }
+
+    const plan = (plans || []).find((item) => item.id === subscriber?.planId);
+    const grossAmount = Number(invoice?.amount || 0) + Number(invoice?.discount || 0);
+    const basePrice = Math.max(1, Number(plan?.price || grossAmount || 1));
+    const cycles = Math.max(1, Math.round(grossAmount / basePrice));
+    
+    const rechargeDate = getInvoiceDisplayDate(invoice?.date);
+    if (isNaN(rechargeDate.getTime())) {
+      return { rechargeDate: new Date().toISOString(), expiryDate: new Date().toISOString() };
+    }
+    
+    const expiryDate = new Date(rechargeDate);
+    const validity = Number(plan?.validityDays || 30);
+    expiryDate.setDate(expiryDate.getDate() + Math.max(1, validity * cycles) - 1);
+
+    return {
+      rechargeDate: rechargeDate.toISOString(),
+      expiryDate: isNaN(expiryDate.getTime()) ? rechargeDate.toISOString() : expiryDate.toISOString(),
+    };
+  } catch (e) {
+    console.error("Error in getInvoiceServiceDates:", e);
+    const now = new Date().toISOString();
+    return { rechargeDate: now, expiryDate: now };
   }
-
-  const plan = plans.find((item) => item.id === subscriber?.planId);
-  const grossAmount = Number(invoice?.amount || 0) + Number(invoice?.discount || 0);
-  const basePrice = Math.max(1, Number(plan?.price || grossAmount || 1));
-  const cycles = Math.max(1, Math.round(grossAmount / basePrice));
-  const rechargeDate = getInvoiceDisplayDate(invoice?.date);
-  const expiryDate = new Date(rechargeDate);
-  expiryDate.setDate(expiryDate.getDate() + Math.max(1, Number(plan?.validityDays || 30) * cycles) - 1);
-
-  return {
-    rechargeDate: rechargeDate.toISOString(),
-    expiryDate: expiryDate.toISOString(),
-  };
 };
 
 export const getConnectionId = (subscriber: any, invoice: any) =>

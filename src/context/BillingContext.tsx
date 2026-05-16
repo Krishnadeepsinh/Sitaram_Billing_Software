@@ -1009,7 +1009,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (sub) {
           const amount = Number(payment.amount);
           const currentBalance = Number(sub.balance) || 0;
-          const newBalance = currentBalance - amount;
+          const newBalance = currentBalance - amount - Number(payment.discount || 0);
           
           const plan = plansList.find(p => p.id === sub.planId);
           let updatedMonths = [...(sub.unpaidMonths || [])];
@@ -1033,14 +1033,6 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             { sql: 'UPDATE subscribers SET balance = ?, unpaid_months = ? WHERE id = ?', args: [newBalance, JSON.stringify(updatedMonths), sub.id] }
           ];
 
-          // Restore discount to invoice if applicable
-          if (payment.invoiceId && Number(payment.discount || 0) > 0) {
-            batch.push({
-              sql: 'UPDATE invoices SET amount = amount + ?, discount = CASE WHEN discount <= ? THEN 0 ELSE discount - ? END WHERE id = ?',
-              args: [Number(payment.discount), Number(payment.discount), Number(payment.discount), payment.invoiceId]
-            });
-          }
-
           // Sync statuses chronologically (Legacy first)
           const subInvoicesRes = await db.execute({ 
             sql: "SELECT id, amount, status, type, discount FROM invoices WHERE subscriber_id = ? ORDER BY CASE WHEN type = 'legacy' THEN 0 ELSE 1 END, date ASC", 
@@ -1048,17 +1040,15 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           });
           
           const subInvoices = subInvoicesRes.rows.map(r => mapRow(subInvoicesRes.columns, r));
-          const totalInvoiced = subInvoices.reduce((s, i) => {
-            let amt = Number(i.amount || 0);
-            if (payment.invoiceId && String(i.id) === payment.invoiceId) amt += Number(payment.discount || 0);
-            return s + amt;
-          }, 0);
+          const totalInvoiced = subInvoices.reduce((s, i) => s + Number(i.amount || 0), 0);
           const totalPaid = newBalance + totalInvoiced + (Number(sub.openingBalance) || 0);
           
           let covered = totalPaid;
+          const currentOpeningBal = Number(sub.openingBalance) || 0;
+          covered -= currentOpeningBal;
+
           for (const inv of subInvoices) {
-            let invAmount = Number(inv.amount || 0);
-            if (payment.invoiceId && String(inv.id) === payment.invoiceId) invAmount += Number(payment.discount || 0);
+            const invAmount = Number(inv.amount || 0);
             
             if (covered >= invAmount - 0.01) {
               if (inv.status !== 'paid') {
@@ -1069,6 +1059,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
               if (inv.status === 'paid') {
                 batch.push({ sql: "UPDATE invoices SET status = 'pending' WHERE id = ?", args: [String(inv.id)] });
               }
+              covered -= invAmount; // Keep reducing to track deficit correctly
             }
           }
 

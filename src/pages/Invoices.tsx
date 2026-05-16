@@ -254,7 +254,7 @@ export default function Invoices() {
       await recordPayment({
         subscriberId: payInv.subscriberId,
         invoiceId: payInv.id,
-        amount: customAmount,
+        amount: customAmount - payDiscount,
         discount: payDiscount,
         method: payMethod,
         date: paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString(),

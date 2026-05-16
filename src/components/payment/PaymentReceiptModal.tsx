@@ -124,17 +124,19 @@ const ReceiptContent = ({
   const getPaymentItems = (p: any) => {
     if (!p) return [];
     const items: any[] = [];
-    let remaining = parseAmount(p.amount) + parseAmount(p.discount);
+    let remainingCash = parseAmount(p.amount);
+    let remainingDiscount = parseAmount(p.discount);
 
     // Find invoices covered by this payment
     const coveredInvoices = (invoices || []).filter(inv => inv.subscriberId === p.subscriberId)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    // Basic heuristic: if it's a legacy invoice, it's previous due
     for (const inv of coveredInvoices) {
-      if (remaining <= 0) break;
+      if (remainingCash <= 0 && remainingDiscount <= 0) break;
       const invAmt = parseAmount(inv.amount);
-      const covered = Math.min(invAmt, remaining);
+      const totalAvailable = remainingCash + remainingDiscount;
+      const covered = Math.min(invAmt, totalAvailable);
+      
       if (covered > 0) {
         const sDates = getInvoiceServiceDates(inv, subscriber, plans);
         const periodStr = inv.type === 'legacy' ? "PREVIOUS YEAR DUE" : (inv.billingPeriod || "CURRENT PLAN");
@@ -147,15 +149,21 @@ const ReceiptContent = ({
           detail: `${periodStr} ${datesStr}`,
           amount: covered
         });
-        remaining -= covered;
+
+        // Use discount first to cover the invoice
+        const discountUsed = Math.min(covered, remainingDiscount);
+        remainingDiscount -= discountUsed;
+        // Use cash for the rest
+        const cashUsed = covered - discountUsed;
+        remainingCash -= cashUsed;
       }
     }
 
-    if (remaining > 0.1) {
+    if (remainingCash > 0.1) {
       items.push({
         desc: "Account Credit / Advance",
         detail: "Added to wallet balance",
-        amount: remaining
+        amount: remainingCash
       });
     }
 

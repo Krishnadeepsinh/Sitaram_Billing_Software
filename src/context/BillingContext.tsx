@@ -744,7 +744,11 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (sub) {
           const plan = plansList.find(pl => pl.id === sub.planId);
           const currentBalance = Number(sub.balance) || 0;
-          const newBalance = currentBalance + (Number(amount) || 0) + (Number(discount) || 0);
+          const balanceAfterCash = currentBalance + (Number(amount) || 0);
+          // Discount can only reduce debt (if any remains after cash)
+          const remainingDebt = balanceAfterCash < 0 ? Math.abs(balanceAfterCash) : 0;
+          const effectiveDiscount = Math.min(Number(discount) || 0, remainingDebt);
+          const newBalance = balanceAfterCash + effectiveDiscount;
           
           let updatedMonths = [...(sub.unpaidMonths || [])];
           if (plan && plan.price > 0) {

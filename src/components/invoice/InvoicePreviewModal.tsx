@@ -205,9 +205,9 @@ export default function InvoicePreviewModal({
       infoBox: { flex: 1 },
       sectionTitle: { background: "#1a2e5a", color: "#ffffff", fontSize: 11, fontWeight: 700, padding: "7px 14px", letterSpacing: 0.8, textTransform: "uppercase", borderRadius: "4px 4px 0 0" },
       infoContent: { border: "1px solid #dce4ef", borderTop: "none", padding: "12px 14px", borderRadius: "0 0 4px 4px", background: "#fcfdff" },
-      infoRow: { display: "flex", marginBottom: 6, fontSize: 12 },
-      infoKey: { color: "#7a8fa6", fontWeight: 600, width: 130, flexShrink: 0, fontSize: 11 },
-      infoVal: { color: "#1a2e5a", fontWeight: 600 },
+      infoRow: { display: "flex", marginBottom: 6, fontSize: 12, alignItems: "center" },
+      infoKey: { color: "#7a8fa6", fontWeight: 600, width: 110, flexShrink: 0, fontSize: 11 },
+      infoVal: { color: "#1a2e5a", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 },
       addressText: { color: "#1a2e5a", fontWeight: 500, lineHeight: 1.7, fontSize: 12 },
       table: { width: "100%", borderCollapse: "collapse", marginBottom: 0 },
       thRow: { background: "#1a2e5a" },
@@ -240,7 +240,9 @@ export default function InvoicePreviewModal({
     
     // Service Dates
     const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
-    const servicePeriodLabel = billingPeriodLabel;
+    const servicePeriodLabel = (serviceDates.rechargeDate && serviceDates.expiryDate)
+      ? `${formatFullDate(serviceDates.rechargeDate)} to ${formatFullDate(serviceDates.expiryDate)}`
+      : billingPeriodLabel;
 
     return (
       <div id={id} style={styles.page}>

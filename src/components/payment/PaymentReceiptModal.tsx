@@ -5,6 +5,7 @@ import { formatFullDate } from "@/lib/mockData";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { logoBase64 } from "@/assets/logoBase64";
+import { getBillingPeriodLabel, getInvoiceServiceDates } from "../invoice/invoicePreviewUtils";
 
 type PaymentReceiptModalProps = {
   brand: {
@@ -276,9 +277,9 @@ export default function PaymentReceiptModal({
         borderRadius: "0 0 4px 4px",
         background: "#fcfdff",
       },
-      infoRow: { display: "flex", marginBottom: 10, fontSize: 13, lineHeight: 1.4 },
-      infoKey: { color: "#7a8fa6", fontWeight: 600, width: 110, flexShrink: 0, fontSize: 12 },
-      infoVal: { color: "#1a2e5a", fontWeight: 700, flex: 1, wordBreak: "break-word" },
+      infoRow: { display: "flex", marginBottom: 10, fontSize: 13, lineHeight: 1.4, alignItems: "center" },
+      infoKey: { color: "#7a8fa6", fontWeight: 600, width: 100, flexShrink: 0, fontSize: 12 },
+      infoVal: { color: "#1a2e5a", fontWeight: 700, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
       addressText: { color: "#1a2e5a", fontWeight: 500, lineHeight: 1.6, fontSize: 14 },
       allocBox: {
         border: "1px solid #dce4ef",
@@ -363,10 +364,21 @@ export default function PaymentReceiptModal({
 
     const LogoImg = () => <img src={logoBase64} width="72" height="72" alt="Logo" style={{ display: "block", objectFit: "contain" }} />;
 
+    const invoice = useMemo(
+      () => invoices.find((inv) => inv.id === payment.invoiceId),
+      [payment.invoiceId, invoices],
+    );
+    const billingPeriodLabel = getBillingPeriodLabel(invoice, subscriber, plans);
+    const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
+    const servicePeriodLabel = (serviceDates.rechargeDate && serviceDates.expiryDate)
+      ? `${formatFullDate(serviceDates.rechargeDate)} to ${formatFullDate(serviceDates.expiryDate)}`
+      : billingPeriodLabel;
+
     const customerInfo = [
       { k: "Full Name", v: subscriber?.name || "N/A" },
       { k: customerIdLabel, v: subscriber?.customerId || subscriber?.id || "N/A" },
       { k: "Mobile No", v: subscriber?.phone || "N/A" },
+      { k: "Area", v: subscriber?.area || "N/A" },
       { k: "Service Type", v: isCableMode ? "Digital Cable TV" : "Broadband - Fiber" },
       { k: "Transaction ID", v: payment.id.toUpperCase() },
     ].filter(i => i.v && i.v !== "N/A");
@@ -428,6 +440,7 @@ export default function PaymentReceiptModal({
                   ["Method", payment.method || "UPI / GPay"],
                   ["Paid To", brand.upiId],
                   ["Towards", isCableMode ? "Cable TV Subscription" : "Broadband Subscription"],
+                  ["Service Period", servicePeriodLabel],
                   ["Transaction", "CONFIRMED"],
                 ] as [string, string][]).map(([k, v]) => (
                   <div style={styles.infoRow} key={k}>

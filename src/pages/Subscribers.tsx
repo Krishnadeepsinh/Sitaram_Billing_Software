@@ -113,10 +113,19 @@ export default function Subscribers() {
     // Check if any is legacy
     const hasLegacy = pendingInvoices.some(i => i.type === 'legacy');
     
-    // Collect months from plan invoices
     const planDates = pendingInvoices
       .filter(i => i.type === 'plan')
-      .map(i => new Date(i.date));
+      .flatMap(i => {
+        const sub = subscribers.find(s => s.id === subId);
+        const plan = dbPlans.find(p => p.id === sub?.planId);
+        const price = plan?.price || 1;
+        const count = Math.max(1, Math.round((Number(i.amount) + Number(i.discount || 0)) / price));
+        return Array.from({ length: count }).map((_, idx) => {
+          const d = new Date(i.date);
+          d.setMonth(d.getMonth() + idx);
+          return d;
+        });
+      });
     
     let display = formatMonthRanges(planDates);
     if (hasLegacy) {

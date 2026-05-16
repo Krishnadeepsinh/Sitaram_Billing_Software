@@ -15,9 +15,27 @@ export const getInvoiceStatusLabel = (invoice: any, isCableMode: boolean) => {
   return isCableMode ? "CABLE BILL" : "BROADBAND BILL";
 };
 
-export const getBillingPeriodLabel = (invoice: any) => {
+export const getBillingPeriodLabel = (invoice: any, subscriber?: any, plans?: any[]) => {
   if (invoice?.billingPeriod) return invoice.billingPeriod;
   if (invoice?.type === "legacy") return "PREVIOUS YEAR";
+  
+  if (subscriber && plans) {
+    const plan = plans.find((item) => item.id === (invoice.planId || subscriber.planId));
+    const grossAmount = Number(invoice?.amount || 0) + Number(invoice?.discount || 0);
+    const basePrice = Math.max(1, Number(plan?.price || grossAmount || 1));
+    const cycles = Math.max(1, Math.round(grossAmount / basePrice));
+    
+    if (cycles > 1) {
+      const startDate = getInvoiceDisplayDate(invoice?.date);
+      const months = Array.from({ length: cycles }).map((_, i) => {
+        const d = new Date(startDate);
+        d.setMonth(startDate.getMonth() + i);
+        return d;
+      });
+      return formatMonthRanges(months).toUpperCase();
+    }
+  }
+
   return getInvoiceDisplayDate(invoice?.date).toLocaleString("default", {
     month: "long",
     year: "numeric",

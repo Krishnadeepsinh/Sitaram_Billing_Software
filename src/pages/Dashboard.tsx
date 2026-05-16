@@ -131,7 +131,19 @@ export default function Dashboard() {
         (Number(sub.openingBalance) || 0);
       
       const pendingInvoices = (invoices || []).filter(i => i.subscriberId === sub.id && i.status === 'pending');
-      const months = formatMonthRanges(pendingInvoices.filter(i => i.type === 'plan').map(i => new Date(i.date)));
+      const planDates = pendingInvoices
+        .filter(i => i.type === 'plan')
+        .flatMap(i => {
+          const plan = plansList.find(p => p.id === sub.planId);
+          const price = plan?.price || 1;
+          const count = Math.max(1, Math.round((Number(i.amount) + Number(i.discount || 0)) / price));
+          return Array.from({ length: count }).map((_, idx) => {
+            const d = new Date(i.date);
+            d.setMonth(d.getMonth() + idx);
+            return d;
+          });
+        });
+      const months = formatMonthRanges(planDates);
       const hasLegacy = pendingInvoices.some(i => i.type === 'legacy');
       
       return { ...sub, balance, dueMonths: months, hasLegacy };

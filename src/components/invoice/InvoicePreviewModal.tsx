@@ -66,7 +66,7 @@ export default function InvoicePreviewModal({
     () => subscribers.find((item) => item.id === invoice.subscriberId),
     [invoice.subscriberId, subscribers],
   );
-  const billingPeriodLabel = getBillingPeriodLabel(invoice);
+  const billingPeriodLabel = getBillingPeriodLabel(invoice, subscriber, plans);
 
   const generatePdfBlob = async () => {
     const element = document.getElementById("invoice-content-print");
@@ -240,9 +240,7 @@ export default function InvoicePreviewModal({
     
     // Service Dates
     const serviceDates = getInvoiceServiceDates(invoice, subscriber, plans);
-    const servicePeriodLabel = invoice.type === "legacy" 
-      ? billingPeriodLabel 
-      : `${formatFullDate(serviceDates.rechargeDate)} - ${formatFullDate(serviceDates.expiryDate)}`;
+    const servicePeriodLabel = billingPeriodLabel;
 
     return (
       <div id={id} style={styles.page}>

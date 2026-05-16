@@ -482,12 +482,12 @@ export default function Subscribers() {
                     {selectedIds.length === filtered.length && filtered.length > 0 && <Zap className="h-3 w-3 text-white fill-current" />}
                   </div>
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap w-16">No.</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subscriber</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{customerIdLabel} / Area</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Plan & Balance</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap w-[60px]">No.</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[220px]">Subscriber</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[180px]">{customerIdLabel} / Area</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground min-w-[200px]">Plan & Balance</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[120px]">Status</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right w-[180px]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -506,121 +506,142 @@ export default function Subscribers() {
                 const plan = dbPlans.find(p => p.id === s.planId);
                 const balance = effectiveBalances[s.id] || 0;
                 return (
-                  <tr key={s.id} className={cn("border-b border-border/50 hover:bg-secondary/40 transition-colors group last:border-0", selectedIds.includes(s.id) && "bg-orange-50/50 hover:bg-orange-50/70")}>
+                  <tr key={s.id} className={cn("border-b border-slate-100 hover:bg-slate-50/50 transition-all group last:border-0", selectedIds.includes(s.id) && "bg-orange-50/40 hover:bg-orange-50/60")}>
                     <td className="px-4 py-3">
                       <div 
                         className={cn(
-                          "h-5 w-5 rounded border border-border flex items-center justify-center cursor-pointer transition-colors",
-                          selectedIds.includes(s.id) ? "bg-orange-500 border-orange-500" : "bg-background group-hover:border-orange-200"
+                          "h-5 w-5 rounded border border-slate-300 flex items-center justify-center cursor-pointer transition-all",
+                          selectedIds.includes(s.id) ? "bg-orange-500 border-orange-500 shadow-sm" : "bg-white group-hover:border-orange-300"
                         )}
                         onClick={() => toggleSelect(s.id)}
                       >
                         {selectedIds.includes(s.id) && <Zap className="h-3 w-3 text-white fill-current" />}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="h-8 w-8 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center font-bold text-xs">
+                    <td className="px-4 py-3 text-center">
+                      <div className="h-8 w-8 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs shadow-sm">
                         {s.customerNo || '?'}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-foreground"><Highlight text={s.name} query={q} /></span>
-                        <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
-                          <Phone className="h-3 w-3" />
-                          <span>{s.phone || 'N/A'}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs shrink-0 border border-slate-200 shadow-sm">
+                          {s.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-bold text-slate-800 text-sm truncate leading-tight"><Highlight text={s.name} query={q} /></span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <Phone className="h-2.5 w-2.5 text-slate-400" />
+                            <span className="text-[11px] text-slate-500 font-mono">{s.phone || 'N/A'}</span>
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-foreground"><Highlight text={s.customerId || "N/A"} query={q} /></span>
-                        <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          <span><Highlight text={s.area} query={q} /></span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-tight truncate"><Highlight text={s.customerId || "N/A"} query={q} /></span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <MapPin className="h-2.5 w-2.5 text-slate-400 shrink-0" />
+                          <span className="text-[11px] text-slate-500 truncate"><Highlight text={s.area} query={q} /></span>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-1.5">
-                          <span className={cn("text-sm font-semibold font-mono-num", balance >= 0 ? "text-green-600" : "text-red-600")}>
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-xs font-bold text-slate-700 truncate">{plan?.name || "Unassigned"}</span>
+                          <span className={cn(
+                            "text-[11px] font-bold mt-0.5",
+                            balance >= 0 ? "text-emerald-600" : "text-red-500"
+                          )}>
                             {formatCurrency(balance)}
                           </span>
-                          
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-5 w-5 rounded-full p-0 text-muted-foreground hover:text-orange-500 hover:bg-orange-50">
-                                <Info className="h-3.5 w-3.5" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-64 p-3" align="start">
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-sm border-b pb-1.5">Dues Breakdown</h4>
-                                <div className="space-y-2 text-xs">
-                                  {(() => {
-                                    const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
-                                    
-                                      const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
-                                        const paidAgainst = payments
-                                          .filter(p => p.invoiceId === inv.id)
-                                          .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
-                                        return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
-                                      }, 0);
+                        </div>
+                        
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full p-0 text-slate-400 hover:text-orange-500 hover:bg-orange-50 transition-colors">
+                              <Info className="h-3.5 w-3.5" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 p-0 rounded-xl border-slate-200 shadow-xl overflow-hidden" align="start">
+                            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                              <h4 className="font-bold text-slate-700 text-sm flex items-center gap-2">
+                                <Wallet className="h-4 w-4 text-orange-500" />
+                                Financial Summary
+                              </h4>
+                            </div>
+                            <div className="p-4 space-y-3">
+                              <div className="space-y-2 text-xs">
+                                {(() => {
+                                  const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
+                                  
+                                  const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
+                                    const paidAgainst = payments
+                                      .filter(p => p.invoiceId === inv.id)
+                                      .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
+                                    return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
+                                  }, 0);
 
-                                    const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
-                                    const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));
-                                    const openingBalance = Number(s.openingBalance) || 0;
-                                    
-                                    return (
-                                      <>
+                                  const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
+                                  const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));
+                                  const openingBalance = Number(s.openingBalance) || 0;
+                                  
+                                  return (
+                                    <>
+                                      <div className="grid grid-cols-2 gap-y-2.5">
                                         {openingBalance !== 0 && (
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Opening Balance:</span>
-                                            <span className={cn("font-mono-num font-medium", openingBalance > 0 ? "text-red-500" : "text-green-600")}>
-                                              {formatCurrency(-openingBalance)}
+                                          <>
+                                            <span className="text-slate-500">Opening Balance</span>
+                                            <span className={cn("text-right font-bold", openingBalance > 0 ? "text-red-500" : "text-emerald-600")}>
+                                              {formatCurrency(Math.abs(openingBalance))} {openingBalance > 0 ? '(Dr)' : '(Cr)'}
                                             </span>
-                                          </div>
+                                          </>
                                         )}
                                         {legacyDues > 0 && (
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Previous Year Dues:</span>
-                                            <span className="font-mono-num font-medium text-red-500">{formatCurrency(-legacyDues)}</span>
-                                          </div>
+                                          <>
+                                            <span className="text-slate-500">Legacy Unpaid</span>
+                                            <span className="text-right font-bold text-red-500">{formatCurrency(legacyDues)}</span>
+                                          </>
                                         )}
                                         {planDues > 0 && (
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Current Plan Dues:</span>
-                                            <span className="font-mono-num font-medium text-red-500">{formatCurrency(-planDues)}</span>
-                                          </div>
+                                          <>
+                                            <span className="text-slate-500">Active Plan Dues</span>
+                                            <span className="text-right font-bold text-red-500">{formatCurrency(planDues)}</span>
+                                          </>
                                         )}
-                                        <div className="pt-1.5 mt-1.5 border-t flex justify-between items-center font-bold text-sm">
-                                          <span>Net Balance:</span>
-                                          <span className={cn(balance >= 0 ? "text-green-600" : "text-red-600")}>
-                                            {formatCurrency(balance)}
-                                          </span>
+                                      </div>
+
+                                      <div className="pt-3 mt-1 border-t border-slate-100 flex justify-between items-center">
+                                        <span className="text-slate-800 font-bold">Net Balance</span>
+                                        <span className={cn("px-2 py-0.5 rounded text-[11px] font-bold", 
+                                          balance >= 0 ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-700 border border-red-100"
+                                        )}>
+                                          {formatCurrency(balance)}
+                                        </span>
+                                      </div>
+
+                                      {balance > 0 && (
+                                        <div className="mt-3 p-2 bg-blue-50/50 border border-blue-100 text-blue-700 rounded-lg text-[10px] flex items-start gap-2">
+                                          <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-1 shrink-0" />
+                                          <span>Subscriber has {formatCurrency(balance)} in advance credit.</span>
                                         </div>
-                                        {balance > 0 && (
-                                          <div className="mt-1 p-1.5 bg-green-50 text-green-700 rounded text-[10px] italic">
-                                            Subscriber has {formatCurrency(balance)} in advance credit.
-                                          </div>
-                                        )}
-                                        {balance === 0 && (
-                                          <div className="mt-1 p-1.5 bg-slate-50 text-slate-500 rounded text-[10px] italic">
-                                            No pending dues.
-                                          </div>
-                                        )}
-                                      </>
-                                    );
-                                  })()}
-                                </div>
+                                      )}
+                                      {balance === 0 && (
+                                        <div className="mt-3 p-2 bg-slate-50 border border-slate-200 text-slate-500 rounded-lg text-[10px] text-center">
+                                          Account is fully settled.
+                                        </div>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <span className="text-xs text-muted-foreground mt-0.5">{plan?.name || "Unassigned"}</span>
-                        {balance < -0.01 && (
-                          <div className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-tight leading-tight">
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+
+                        {balance < 0 && (
+                          <div className="px-1.5 py-0.5 rounded-md bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 whitespace-nowrap">
                             {getOverdueMonthsDisplay(s.id)}
                           </div>
                         )}
@@ -646,37 +667,37 @@ export default function Subscribers() {
                       />
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1">
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-orange-600 hover:bg-orange-50"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-orange-600 hover:bg-orange-50 transition-colors"
                           onClick={() => handleOpenHistory(s)}
                           title="View Ledger"
                         >
                           <History className="h-4 w-4" />
                         </Button>
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-green-600 hover:bg-green-50"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors"
                           onClick={() => handleOpenInvoice(s)}
                           title="Generate Invoice"
                         >
                           <FileText className="h-4 w-4" />
                         </Button>
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                           onClick={() => handleCollectPayment(s)}
                           title="Collect Payment"
                         >
                           <Wallet className="h-4 w-4" />
                         </Button>
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                           onClick={() => handleOpenEdit(s)}
                           title="Edit Subscriber"
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
+                          variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                           onClick={() => setConfirmModal({ type: 'delete', id: s.id })}
                           title="Delete Subscriber"
                         >
@@ -759,65 +780,75 @@ export default function Subscribers() {
                 <div>
                   <div className="flex items-center gap-1 mb-0.5">
                     <span className="text-slate-500 text-xs block">Balance</span>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="text-muted-foreground hover:text-orange-500">
-                          <Info className="h-3 w-3" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-64 p-3" side="top" align="end">
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-sm border-b pb-1.5">Dues Breakdown</h4>
-                          <div className="space-y-2 text-xs">
-                            {(() => {
-                              const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
-                              
-                              const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
-                                const paidAgainst = payments
-                                  .filter(p => p.invoiceId === inv.id)
-                                  .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
-                                return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
-                              }, 0);
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="text-slate-400 hover:text-orange-500 transition-colors">
+                              <Info className="h-3.5 w-3.5" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 p-0 rounded-xl border-slate-200 shadow-xl overflow-hidden" side="top" align="end">
+                            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                              <h4 className="font-bold text-slate-700 text-sm flex items-center gap-2">
+                                <Wallet className="h-4 w-4 text-orange-500" />
+                                Financial Summary
+                              </h4>
+                            </div>
+                            <div className="p-4 space-y-3">
+                              <div className="space-y-2 text-xs">
+                                {(() => {
+                                  const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
+                                  
+                                  const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
+                                    const paidAgainst = payments
+                                      .filter(p => p.invoiceId === inv.id)
+                                      .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
+                                    return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
+                                  }, 0);
 
-                              const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
-                              const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));
-                              const openingBalance = Number(s.openingBalance) || 0;
-                              
-                              return (
-                                <>
-                                  {openingBalance !== 0 && (
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-muted-foreground">Opening Balance:</span>
-                                      <span className={cn("font-mono-num font-medium", openingBalance > 0 ? "text-red-500" : "text-green-600")}>
-                                        {formatCurrency(-openingBalance)}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {legacyDues > 0 && (
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-muted-foreground">Prev. Year Dues:</span>
-                                      <span className="font-mono-num font-medium text-red-500">{formatCurrency(-legacyDues)}</span>
-                                    </div>
-                                  )}
-                                  {planDues > 0 && (
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-muted-foreground">Plan Dues:</span>
-                                      <span className="font-mono-num font-medium text-red-500">{formatCurrency(-planDues)}</span>
-                                    </div>
-                                  )}
-                                  <div className="pt-1.5 mt-1.5 border-t flex justify-between items-center font-bold text-sm">
-                                    <span>Net Balance:</span>
-                                    <span className={cn(balance >= 0 ? "text-green-600" : "text-red-600")}>
-                                      {formatCurrency(balance)}
-                                    </span>
-                                  </div>
-                                </>
-                              );
-                            })()}
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                                  const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
+                                  const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));
+                                  const openingBalance = Number(s.openingBalance) || 0;
+                                  
+                                  return (
+                                    <>
+                                      <div className="grid grid-cols-2 gap-y-2.5">
+                                        {openingBalance !== 0 && (
+                                          <>
+                                            <span className="text-slate-500">Opening Balance</span>
+                                            <span className={cn("text-right font-bold", openingBalance > 0 ? "text-red-500" : "text-emerald-600")}>
+                                              {formatCurrency(Math.abs(openingBalance))} {openingBalance > 0 ? '(Dr)' : '(Cr)'}
+                                            </span>
+                                          </>
+                                        )}
+                                        {legacyDues > 0 && (
+                                          <>
+                                            <span className="text-slate-500">Legacy Unpaid</span>
+                                            <span className="text-right font-bold text-red-500">{formatCurrency(legacyDues)}</span>
+                                          </>
+                                        )}
+                                        {planDues > 0 && (
+                                          <>
+                                            <span className="text-slate-500">Active Plan Dues</span>
+                                            <span className="text-right font-bold text-red-500">{formatCurrency(planDues)}</span>
+                                          </>
+                                        )}
+                                      </div>
+
+                                      <div className="pt-3 mt-1 border-t border-slate-100 flex justify-between items-center">
+                                        <span className="text-slate-800 font-bold">Net Balance</span>
+                                        <span className={cn("px-2 py-0.5 rounded text-[11px] font-bold", 
+                                          balance >= 0 ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-700 border border-red-100"
+                                        )}>
+                                          {formatCurrency(balance)}
+                                        </span>
+                                      </div>
+                                    </>
+                                  );
+                                })()}
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                   </div>
                   <span className={cn("font-medium", balance >= 0 ? "text-green-600" : "text-red-600")}>
                     {formatCurrency(balance)}
@@ -1103,33 +1134,42 @@ export default function Subscribers() {
                       <option value="inactive">Inactive</option>
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-slate-400">Installation Date</Label>
-                    <Input 
-                      type="date"
-                      value={formData.installationDate}
-                      onChange={e => setFormData({...formData, installationDate: e.target.value})}
-                      className="h-10 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm text-slate-400">Opening Balance</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        type="number"
-                        value={formData.openingBalance || ''}
-                        onChange={e => setFormData({...formData, openingBalance: Number(e.target.value)})}
-                        placeholder="0.00" 
-                        className="h-10 flex-1 rounded-lg border-slate-200 bg-slate-50 text-slate-700 focus-visible:ring-orange-400"
-                      />
-                      <select
-                        value={formData.openingBalanceType}
-                        onChange={e => setFormData({...formData, openingBalanceType: e.target.value as any})}
-                        className="h-10 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 px-3 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none"
-                      >
-                        <option value="debit">Due (Dr)</option>
-                        <option value="credit">Advance (Cr)</option>
-                      </select>
+                  <div className="pt-4 border-t border-slate-100 mt-2 space-y-4">
+                    <div className="px-4 py-3 rounded-xl bg-indigo-50/30 border border-indigo-100/50 space-y-4">
+                      <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Initial Setup</h4>
+                      <div className="space-y-2">
+                        <Label className="text-sm text-slate-500">Installation Date</Label>
+                        <Input 
+                          type="date"
+                          value={formData.installationDate}
+                          onChange={e => setFormData({...formData, installationDate: e.target.value})}
+                          className="h-10 rounded-lg border-slate-200 bg-white text-slate-700 focus-visible:ring-indigo-400"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm text-slate-500">Opening Balance</Label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₹</span>
+                            <Input 
+                              type="number"
+                              value={formData.openingBalance || ''}
+                              onChange={e => setFormData({...formData, openingBalance: Number(e.target.value)})}
+                              placeholder="0.00" 
+                              className="h-10 pl-7 rounded-lg border-slate-200 bg-white text-slate-700 focus-visible:ring-indigo-400 w-full"
+                            />
+                          </div>
+                          <select
+                            value={formData.openingBalanceType}
+                            onChange={e => setFormData({...formData, openingBalanceType: e.target.value as any})}
+                            className="h-10 rounded-lg border border-slate-200 bg-white text-slate-700 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-400 appearance-none min-w-[120px] font-medium text-sm"
+                          >
+                            <option value="debit">Due (Dr)</option>
+                            <option value="credit">Advance (Cr)</option>
+                          </select>
+                        </div>
+                        <p className="text-[10px] text-slate-400 italic">This is the balance at the time of adding the subscriber to this system.</p>
+                      </div>
                     </div>
                   </div>
                 </div>

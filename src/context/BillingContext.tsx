@@ -1007,9 +1007,23 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       try {
         const sub = subscribers.find(s => s.id === payment.subscriberId);
         if (sub) {
-          const amount = Number(payment.amount);
-          const currentBalance = Number(sub.balance) || 0;
-          const newBalance = currentBalance - amount - Number(payment.discount || 0);
+          const calcInvoicesRes = await db.execute({ 
+            sql: "SELECT SUM(amount) as total FROM invoices WHERE subscriber_id = ?", 
+            args: [sub.id] 
+          });
+          const sumInvoiced = Number(calcInvoicesRes.rows[0].total || 0);
+          
+          const subPaymentsRes = await db.execute({ 
+            sql: "SELECT SUM(amount) as cash, SUM(discount) as disc FROM payments WHERE subscriber_id = ? AND id != ?", 
+            args: [sub.id, id] 
+          });
+          const newCash = Number(subPaymentsRes.rows[0].cash || 0);
+          const newDisc = Number(subPaymentsRes.rows[0].disc || 0);
+          
+          const openingBal = Number(sub.openingBalance || 0);
+          const totalDebt = sumInvoiced + openingBal;
+          
+          const newBalance = newCash - Math.max(0, totalDebt - newDisc);
           
           const plan = plansList.find(p => p.id === sub.planId);
           let updatedMonths = [...(sub.unpaidMonths || [])];

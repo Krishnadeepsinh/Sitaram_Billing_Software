@@ -688,22 +688,22 @@ export default function Payments() {
 
       {/* Bulk Payment Modal */}
       {isBulkOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-2xl app-card shadow-xl overflow-hidden my-auto">
-            <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
-                  <Banknote className="h-4 w-4" />
+                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                  <Banknote className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-foreground">Bulk Payment Collection</h2>
-                  <p className="text-xs text-muted-foreground">Recording payments for {bulkSubscribers.length} customers</p>
+                  <h2 className="text-xl font-bold text-foreground">Bulk Payment</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Recording payments for {bulkSubscribers.length} customers</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsBulkOpen(false)} className="h-8 w-8 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setIsBulkOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
             
-            <div className="p-4 max-h-[60vh] overflow-y-auto space-y-3">
+            <div className="flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar">
               <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border mb-4">
                 {['Cash', 'UPI'].map(m => (
                   <button 
@@ -764,29 +764,29 @@ export default function Payments() {
               ))}
             </div>
 
-            <div className="p-4 border-t border-border bg-secondary/30">
-              <div className="flex justify-between items-center mb-4">
+            <div className="p-6 border-t border-border bg-secondary/30 flex-shrink-0">
+              <div className="flex justify-between items-center mb-6">
                 <div>
-                  <span className="text-xs text-muted-foreground block">Total Collection</span>
-                  <span className="text-xl font-bold text-orange-600">
+                  <span className="text-xs text-muted-foreground block font-medium uppercase tracking-wider mb-1">Total Collection</span>
+                  <span className="text-2xl font-bold text-orange-600">
                     ₹{bulkSubscribers.reduce((sum, s) => sum + (s.amount - s.discount), 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-muted-foreground block">Total Discounts</span>
-                  <span className="text-sm font-bold text-foreground">
+                  <span className="text-xs text-muted-foreground block font-medium uppercase tracking-wider mb-1">Total Discounts</span>
+                  <span className="text-base font-bold text-foreground">
                     ₹{bulkSubscribers.reduce((sum, s) => sum + s.discount, 0).toLocaleString()}
                   </span>
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button variant="ghost" className="flex-1 h-10 bg-secondary hover:bg-secondary/80 text-foreground" onClick={() => setIsBulkOpen(false)}>Cancel</Button>
+                <Button variant="ghost" className="flex-1 h-12 bg-secondary hover:bg-secondary/80 text-foreground font-semibold" onClick={() => setIsBulkOpen(false)}>Cancel</Button>
                 <Button 
                   onClick={handleBulkSubmit}
                   disabled={isSubmitting} 
-                  className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-white"
+                  className="flex-1 h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-500/20"
                 >
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                  {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Check className="h-5 w-5 mr-2" />}
                   Confirm All Payments
                 </Button>
               </div>
@@ -797,22 +797,23 @@ export default function Payments() {
 
       {/* Creation Modal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-md app-card shadow-xl overflow-hidden my-auto">
-            <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
-                  <Wallet className="h-4 w-4" />
+                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                  <Wallet className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-foreground">Record Payment</h2>
-                  <p className="text-xs text-muted-foreground">Add a new payment record</p>
+                  <h2 className="text-xl font-bold text-foreground">Record Payment</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Add a new payment record</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={closeAddModal} className="h-8 w-8 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={closeAddModal} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+              <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Customer</label>
                 <select 
@@ -884,18 +885,19 @@ export default function Payments() {
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-4">
-                <Button type="button" variant="ghost" className="flex-1 h-10 bg-secondary hover:bg-secondary/80 text-foreground" onClick={closeAddModal}>Cancel</Button>
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting || !formData.subscriberId} 
-                  className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-white"
-                >
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-                  Save Payment
-                </Button>
-              </div>
-            </form>
+                <div className="flex gap-3 pt-6 border-t border-border mt-4 flex-shrink-0">
+                  <Button type="button" variant="ghost" className="flex-1 h-12 bg-secondary hover:bg-secondary/80 text-foreground font-semibold" onClick={closeAddModal}>Cancel</Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting || !formData.subscriberId} 
+                    className="flex-1 h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-500/20"
+                  >
+                    {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Check className="h-5 w-5 mr-2" />}
+                    Save Payment
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

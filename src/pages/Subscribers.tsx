@@ -782,20 +782,22 @@ export default function Subscribers() {
 
       {/* Invoice Modal */}
       {showInvoiceModal && invoiceSub && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowInvoiceModal(false)} />
-          <div className="bg-white w-full md:max-w-md max-h-[90vh] rounded-t-2xl md:rounded-xl border border-slate-200 relative z-10 flex flex-col shadow-xl animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95">
-            <div className="p-5 border-b border-slate-200 flex justify-between items-center shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-800">Generate Invoice</h2>
-                <p className="text-sm text-slate-400">{invoiceSub.name}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Generate Invoice</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">{invoiceSub.name}</p>
+                </div>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={() => setShowInvoiceModal(false)}>
-                <X className="h-5 w-5" />
-              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setShowInvoiceModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
             
-            <div className="p-5 space-y-6 overflow-y-auto custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
               <div className="flex p-1 bg-slate-50 border border-slate-200 rounded-lg">
                 <button
                   onClick={() => setBillingType("plan")}
@@ -869,15 +871,15 @@ export default function Subscribers() {
               )}
             </div>
 
-            <div className="p-5 border-t border-slate-200 flex gap-3 shrink-0 bg-white md:rounded-b-xl">
-              <Button variant="outline" className="flex-1 h-10 border-slate-200 hover:bg-slate-100 text-slate-700" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
+            <div className="p-6 border-t border-border flex gap-3 shrink-0 bg-secondary/10">
+              <Button variant="outline" className="flex-1 h-11 border-border hover:bg-secondary text-foreground" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
               <Button 
                 onClick={handleGenerateInvoice} 
                 disabled={isSaving} 
-                className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-slate-800"
+                className="flex-1 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold"
               >
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Generate
+                Generate Invoice
               </Button>
             </div>
           </div>
@@ -886,17 +888,19 @@ export default function Subscribers() {
 
       {/* Add/Edit Subscriber Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="bg-white w-full md:max-w-2xl max-h-[95vh] rounded-t-2xl md:rounded-xl border border-slate-200 relative z-10 flex flex-col shadow-xl animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95">
-            <div className="p-5 border-b border-slate-200 flex justify-between items-center shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-800">{editingSub ? "Edit Subscriber" : "Add Subscriber"}</h2>
-                <p className="text-sm text-slate-400">Enter subscriber details</p>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-xl max-h-[95vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                  <Users className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">{editingSub ? "Edit Subscriber" : "Add Subscriber"}</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Enter subscriber details</p>
+                </div>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={() => setShowModal(false)}>
-                <X className="h-5 w-5" />
-              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
@@ -997,15 +1001,15 @@ export default function Subscribers() {
               </div>
             </div>
 
-            <div className="p-5 border-t border-slate-200 flex gap-3 shrink-0 bg-white md:rounded-b-xl">
-              <Button variant="outline" className="flex-1 h-10 border-slate-200 hover:bg-slate-100 text-slate-700" onClick={() => setShowModal(false)}>Cancel</Button>
+            <div className="p-6 border-t border-border flex gap-3 shrink-0 bg-secondary/10">
+              <Button variant="outline" className="flex-1 h-11 border-border hover:bg-secondary text-foreground font-semibold" onClick={() => setShowModal(false)}>Cancel</Button>
               <Button 
                 onClick={handleSave} 
-                disabled={isSaving}
-                className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-slate-800"
+                disabled={isSaving} 
+                className="flex-1 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-500/20"
               >
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {editingSub ? "Save Changes" : "Add Subscriber"}
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                {editingSub ? "Update Record" : "Create Subscriber"}
               </Button>
             </div>
           </div>

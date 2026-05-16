@@ -656,8 +656,8 @@ export default function Invoices() {
       {/* Creation Modal */}
       {showSubSelect && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg app-card p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
-            <div className="flex items-center justify-between mb-6">
+          <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
                   <FileText className="h-5 w-5" />
@@ -670,7 +670,7 @@ export default function Invoices() {
               <Button variant="ghost" size="icon" onClick={() => setShowSubSelect(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
             
-            <div className="space-y-5">
+            <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-muted-foreground">Area</Label>
@@ -750,7 +750,7 @@ export default function Invoices() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-4 border-t border-border mt-4 flex-shrink-0">
                 <Button variant="ghost" className="flex-1 text-muted-foreground hover:text-foreground" onClick={() => setShowSubSelect(false)}>Cancel</Button>
                 <Button 
                   onClick={handleGenerateSingle} 
@@ -769,8 +769,8 @@ export default function Invoices() {
       {/* Settlement Terminal Modal */}
       {payInv && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-md app-card p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
-            <div className="flex items-center justify-between mb-6">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
                   <Wallet className="h-5 w-5" />
@@ -782,6 +782,8 @@ export default function Invoices() {
               </div>
               <Button variant="ghost" size="icon" onClick={() => setPayInv(null)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
+
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
 
             <div className="bg-secondary p-4 rounded-xl border border-border mb-6 flex justify-between items-center">
               <div>
@@ -863,7 +865,7 @@ export default function Invoices() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-4 border-t border-border mt-4 flex-shrink-0">
                 <Button variant="ghost" className="flex-1 h-11 bg-secondary hover:bg-secondary/80 text-foreground" onClick={() => setPayInv(null)}>Cancel</Button>
                 <Button 
                   onClick={handlePay} 
@@ -911,8 +913,8 @@ export default function Invoices() {
       {/* Bulk Generation Modal */}
       {showBulkModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg app-card p-6 sm:p-8 shadow-xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
-            <div className="flex items-center justify-between mb-6">
+          <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
                   <DatabaseZap className="h-5 w-5" />
@@ -925,7 +927,7 @@ export default function Invoices() {
               <Button variant="ghost" size="icon" onClick={() => setShowBulkModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
 
-            <div className="space-y-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">Subscriber Selection</Label>
                 <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
@@ -1040,8 +1042,8 @@ export default function Invoices() {
                 </p>
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <Button variant="ghost" className="flex-1 h-11" onClick={() => setShowBulkModal(false)}>Cancel</Button>
+              <div className="flex gap-3 pt-4 border-t border-border mt-4 flex-shrink-0">
+                <Button variant="ghost" className="flex-1 h-11 text-muted-foreground hover:text-foreground" onClick={() => setShowBulkModal(false)}>Cancel</Button>
                 <Button
                   onClick={handleRunBulk}
                   disabled={isProcessing}

@@ -183,74 +183,80 @@ export default function Plans() {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-0">
-            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-              <h2 className="text-base font-semibold text-foreground">{editingPlan ? "Edit Plan" : "New Plan"}</h2>
-              <button onClick={() => setShowModal(false)} className="h-7 w-7 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground">
-                <X className="h-4 w-4" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
+              <h2 className="text-lg font-bold text-foreground">{editingPlan ? "Edit Plan" : "Create New Plan"}</h2>
+              <button onClick={() => setShowModal(false)} className="h-8 w-8 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors">
+                <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="px-6 py-5 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Plan Name</label>
+            
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 custom-scrollbar">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Plan Name</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Standard 100Mbps"
-                  className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg"
+                  className="h-10 bg-secondary/50 border-border focus:ring-orange-500/20 rounded-xl"
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Price (Rs.)</label>
-                  <Input
-                    type="number"
-                    value={formData.price || ''}
-                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                    className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg font-mono-num"
-                  />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Monthly Price (₹)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
+                    <Input
+                      type="number"
+                      value={formData.price || ''}
+                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                      className="h-10 pl-7 bg-secondary/50 border-border focus:ring-orange-500/20 rounded-xl font-mono"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Validity (Days)</label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Validity (Days)</Label>
                   <Input
                     type="number"
                     value={formData.validityDays || ''}
                     onChange={(e) => setFormData({ ...formData, validityDays: Number(e.target.value) })}
-                    className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg font-mono-num"
+                    className="h-10 bg-secondary/50 border-border focus:ring-orange-500/20 rounded-xl font-mono"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">
                     {isCableMode ? "Units" : "Speed (Mbps)"}
-                  </label>
+                  </Label>
                   <Input
                     type="number"
                     value={formData.speedMbps || ''}
                     onChange={(e) => setFormData({ ...formData, speedMbps: Number(e.target.value) })}
-                    className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg font-mono-num"
+                    className="h-10 bg-secondary/50 border-border focus:ring-orange-500/20 rounded-xl font-mono"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Plan Code (Optional)</label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-muted-foreground">Provider Code (Optional)</Label>
                   <Input
                     value={formData.providerPlanId}
                     onChange={(e) => setFormData({ ...formData, providerPlanId: e.target.value })}
                     placeholder="ISP Code"
-                    className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg"
+                    className="h-10 bg-secondary/50 border-border focus:ring-orange-500/20 rounded-xl"
                   />
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-border flex justify-end gap-2 bg-secondary/20">
-              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+
+            <div className="px-6 py-4 border-t border-border flex gap-3 bg-secondary/10 flex-shrink-0">
+              <Button variant="outline" className="flex-1 h-11 font-semibold" onClick={() => setShowModal(false)}>Cancel</Button>
               <Button
                 onClick={handleSave}
                 disabled={!formData.name || isSaving}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                className="flex-1 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-500/20"
               >
-                {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Save Plan
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                {editingPlan ? "Update Plan" : "Create Plan"}
               </Button>
             </div>
           </div>
@@ -259,23 +265,24 @@ export default function Plans() {
 
       {/* Delete Confirmation */}
       {confirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-sm p-0">
-            <div className="px-6 py-4 border-b border-border">
-              <h3 className="text-base font-semibold text-foreground">Delete Plan?</h3>
-            </div>
-            <div className="px-6 py-5">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Delete Plan?</h3>
               <p className="text-sm text-muted-foreground">
-                This action cannot be undone. Subscribers on this plan will need to be reassigned.
+                This action cannot be undone. Subscribers on this plan will need to be manually reassigned.
               </p>
             </div>
-            <div className="px-6 py-4 border-t border-border flex justify-end gap-2 bg-secondary/20">
-              <Button variant="outline" onClick={() => setConfirmModal(null)}>Cancel</Button>
+            <div className="px-6 py-4 border-t border-border flex gap-3 bg-secondary/10">
+              <Button variant="outline" className="flex-1 h-10 font-semibold" onClick={() => setConfirmModal(null)}>Cancel</Button>
               <Button
-                className="bg-red-500 hover:bg-red-600 text-white"
+                className="flex-1 h-10 bg-red-500 hover:bg-red-600 text-white font-bold"
                 onClick={() => { executeDelete(confirmModal.id); setConfirmModal(null); }}
               >
-                Delete Plan
+                Delete
               </Button>
             </div>
           </div>

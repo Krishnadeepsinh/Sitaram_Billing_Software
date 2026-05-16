@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Plus, Wifi, Edit2, Trash2, Loader2, Shield, Activity,
   ChevronRight, X, Signal, Zap, DatabaseZap, Clock,
-  ArrowUpRight, ShieldCheck, Network, Globe
+  ArrowUpRight, ShieldCheck, Network, Globe, Check
 } from "lucide-react";
 import { formatCurrency } from "@/lib/mockData";
 import { cn } from "@/lib/utils";

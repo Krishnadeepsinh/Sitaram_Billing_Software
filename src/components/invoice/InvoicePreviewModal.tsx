@@ -417,15 +417,17 @@ export default function InvoicePreviewModal({
   return (
     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="bg-white w-full max-w-5xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative z-10 max-h-[96vh]">
-        <div className="px-10 py-6 bg-white flex justify-between items-center border-b border-slate-100">
+      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col relative z-10 max-h-[95vh] animate-in zoom-in-95 duration-200">
+        <div className="px-6 py-5 bg-white flex justify-between items-center border-b border-slate-100 shrink-0">
           <div className="flex items-center gap-4">
-            <div className="h-3 w-3 rounded-full bg-[#e8522a] animate-pulse" />
-            <div className="flex flex-col"><span className="text-[11px] font-black uppercase tracking-[0.2em]">Invoice Preview</span></div>
+            <div className="h-3 w-3 rounded-full bg-orange-600 animate-pulse" />
+            <div className="flex flex-col"><span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Invoice Preview</span></div>
           </div>
-          <button onClick={onClose}><X className="h-6 w-6" /></button>
+          <button onClick={onClose} className="h-10 w-10 rounded-full hover:bg-slate-50 flex items-center justify-center transition-colors">
+            <X className="h-6 w-6 text-slate-400" />
+          </button>
         </div>
-        <div ref={containerRef} className="flex-1 overflow-auto bg-[#EDF1F7] flex justify-center p-12 scrollbar-hide">
+        <div ref={containerRef} className="flex-1 overflow-y-auto bg-slate-100 flex justify-center p-4 sm:p-12 custom-scrollbar">
           <div ref={contentRef} className="origin-top transition-all" style={{ transform: `scale(${scale})`, marginBottom: `${(scale - 1) * contentHeight}px` }}>
             <InvoiceContent id="invoice-content" />
           </div>
@@ -435,12 +437,14 @@ export default function InvoicePreviewModal({
             <InvoiceContent />
           </div>
         </div>
-        <div className="p-10 bg-white border-t border-slate-100 flex gap-6">
-          <Button variant="outline" onClick={onClose}>Discard</Button>
-          <div className="flex-1 flex gap-4">
-            <Button variant="outline" onClick={handleSharePDF} disabled={isProcessing} className="flex-1 h-16 text-[#e8522a]"><Send className="mr-2" /> Share</Button>
-            <Button onClick={handleDownloadPDF} disabled={isProcessing} className="flex-1 h-16 bg-[#1a2e5a]">
-              {isProcessing ? <Loader2 className="mr-2 animate-spin" /> : <Download className="mr-2" />} Download
+        <div className="p-6 bg-white border-t border-slate-100 flex flex-col sm:flex-row gap-4 shrink-0">
+          <Button variant="outline" onClick={onClose} className="h-12 order-2 sm:order-1 sm:w-32">Close</Button>
+          <div className="flex-1 flex gap-3 order-1 sm:order-2">
+            <Button variant="outline" onClick={handleSharePDF} disabled={isProcessing} className="flex-1 h-12 text-orange-600 border-orange-200 hover:bg-orange-50 font-bold uppercase tracking-wider text-xs">
+              <Send className="mr-2 h-4 w-4" /> WhatsApp / Share
+            </Button>
+            <Button onClick={handleDownloadPDF} disabled={isProcessing} className="flex-1 h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase tracking-wider text-xs shadow-lg shadow-slate-900/20">
+              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />} Download PDF
             </Button>
           </div>
         </div>

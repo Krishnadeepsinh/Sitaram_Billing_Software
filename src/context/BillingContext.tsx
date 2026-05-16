@@ -154,7 +154,7 @@ interface BillingContextType {
   deletePlan: (id: string) => Promise<void>;
   generateInvoice: (subId: string, months?: number | string[], skipFetch?: boolean, customDate?: Date, includePreviousDue?: boolean, subObj?: Subscriber, discount?: number) => Promise<void>;
   deleteInvoice: (id: string, skipFetch?: boolean) => Promise<void>;
-  runBulkBilling: (startDate?: Date, numMonths?: number, includePreviousDue?: boolean) => Promise<{ legacyGenerated: number; total: number; generated: number; skipped: number }>;
+  runBulkBilling: (startDate?: Date, numMonths?: number, includePreviousDue?: boolean, selectedSubscriberIds?: string[]) => Promise<{ legacyGenerated: number; total: number; generated: number; skipped: number }>;
   bulkDeleteInvoices: (ids: string[]) => Promise<void>;
   recordPayment: (payment: Omit<Payment, 'id'> & { invoiceId?: string, discount?: number }) => Promise<Payment>;
   deletePayment: (id: string) => Promise<void>;
@@ -179,7 +179,7 @@ interface BillingContextType {
   updateCompanySettings: (settings: CompanySettings) => Promise<void>;
   refreshData: () => Promise<void>;
   runAutoLegacyBilling: () => Promise<void>;
-  recalculateBalances: () => Promise<boolean>;
+  recalculateBalances: (targetSubId?: string) => Promise<boolean>;
   importBackupData: (data: any) => Promise<void>;
 }
 

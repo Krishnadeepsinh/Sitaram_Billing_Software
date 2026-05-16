@@ -10,7 +10,7 @@ import {
   Trash2, History, FileText, Wifi, ChevronRight,
   Activity, Wallet, X, User, Shield, CreditCard,
   Network, Signal, Globe, ArrowUpRight, Zap, DatabaseZap,
-  ShieldCheck, LayoutGrid, ListFilter, Users, Download
+  ShieldCheck, LayoutGrid, ListFilter, Users, Download, Check
 } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { toast } from "sonner";
@@ -1092,13 +1092,10 @@ export default function Subscribers() {
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
-            </div>
           </div>
         </div>
-      )}
-
-      {/* Modals... */}
-      {/* (Rest of the file remains same) */}
+      </div>
+    )}
     </div>
   );
 }

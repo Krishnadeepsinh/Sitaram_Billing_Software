@@ -95,49 +95,51 @@ export default function Expenses() {
                 <Plus className="mr-2 h-4 w-4" />Log Expense
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-card border border-border rounded-2xl shadow-xl max-w-sm w-full p-0">
-              <DialogHeader className="px-6 py-4 border-b border-border">
+            <DialogContent className="bg-card border border-border rounded-2xl shadow-xl max-w-sm w-full p-0 overflow-hidden flex flex-col max-h-[90vh]">
+              <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
                 <DialogTitle className="text-base font-semibold text-foreground flex items-center gap-2">
                   <Receipt className="h-4 w-4 text-orange-500" />New Expense
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleAddExpense} className="px-6 py-5 space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</Label>
-                  <Input value={formData.description} onChange={e => setFormData(p => ({...p, description: e.target.value}))}
-                    placeholder="e.g. Rent, fuel, maintenance"
-                    className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <form id="expense-form" onSubmit={handleAddExpense} className="px-6 py-5 space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Amount (Rs.)</Label>
-                    <Input type="number" value={formData.amount} onChange={e => setFormData(p => ({...p, amount: e.target.value}))}
-                      placeholder="0.00"
-                      className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg font-mono-num" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</Label>
-                    <Input type="date" value={formData.date} onChange={e => setFormData(p => ({...p, date: e.target.value}))}
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</Label>
+                    <Input value={formData.description} onChange={e => setFormData(p => ({...p, description: e.target.value}))}
+                      placeholder="e.g. Rent, fuel, maintenance"
                       className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg" />
                   </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(Object.keys(categoryIcon) as Expense['category'][]).map(cat => (
-                      <button key={cat} type="button" onClick={() => setFormData(p => ({...p, category: cat}))}
-                        className={cn("flex flex-col items-center justify-center rounded-lg border p-2 transition-colors text-xs font-medium",
-                          formData.category === cat ? "border-orange-400 bg-orange-50 text-orange-600" : "border-border bg-secondary/30 text-muted-foreground hover:bg-secondary")}>
-                        {(() => { const Icon = categoryIcon[cat]; return <Icon className="mb-1 h-3.5 w-3.5" />; })()}
-                        {cat}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Amount (Rs.)</Label>
+                      <Input type="number" value={formData.amount} onChange={e => setFormData(p => ({...p, amount: e.target.value}))}
+                        placeholder="0.00"
+                        className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg font-mono-num" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</Label>
+                      <Input type="date" value={formData.date} onChange={e => setFormData(p => ({...p, date: e.target.value}))}
+                        className="h-9 bg-input border-border focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg" />
+                    </div>
                   </div>
-                </div>
-              </form>
-              <div className="px-6 py-4 border-t border-border flex justify-end gap-2 bg-secondary/20">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(Object.keys(categoryIcon) as Expense['category'][]).map(cat => (
+                        <button key={cat} type="button" onClick={() => setFormData(p => ({...p, category: cat}))}
+                          className={cn("flex flex-col items-center justify-center rounded-lg border p-2 transition-colors text-xs font-medium",
+                            formData.category === cat ? "border-orange-400 bg-orange-50 text-orange-600" : "border-border bg-secondary/30 text-muted-foreground hover:bg-secondary")}>
+                          {(() => { const Icon = categoryIcon[cat]; return <Icon className="mb-1 h-3.5 w-3.5" />; })()}
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </form>
+              </div>
+              <div className="px-6 py-4 border-t border-border flex justify-end gap-2 bg-secondary/20 shrink-0">
                 <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={isSubmitting} onClick={handleAddExpense} className="bg-orange-500 hover:bg-orange-600 text-white">
+                <Button type="submit" form="expense-form" disabled={isSubmitting} className="bg-orange-500 hover:bg-orange-600 text-white">
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Save
                 </Button>
               </div>

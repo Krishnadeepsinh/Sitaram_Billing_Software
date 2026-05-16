@@ -769,113 +769,118 @@ export default function Invoices() {
       {/* Settlement Terminal Modal */}
       {payInv && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
-            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
+          <div className="bg-card w-full max-w-lg max-h-[90vh] rounded-3xl border border-border shadow-2xl flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
+            {/* Fixed Header */}
+            <div className="px-6 py-5 border-b border-border flex items-center justify-between shrink-0 bg-secondary/20">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
-                  <Wallet className="h-5 w-5" />
+                <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-orange-600" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">Record Payment</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Collect pending dues</p>
+                  <h3 className="text-lg font-bold text-foreground">Payment Terminal</h3>
+                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Collect & Record Payments</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setPayInv(null)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
+              <button onClick={() => setPayInv(null)} className="h-8 w-8 rounded-full hover:bg-secondary flex items-center justify-center transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
             </div>
 
+            {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-
-            <div className="bg-secondary p-4 rounded-xl border border-border mb-6 flex justify-between items-center">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Subscriber</p>
-                <p className="text-sm font-semibold text-foreground">{subMap[payInv.subscriberId]?.name}</p>
+              <div className="bg-secondary p-4 rounded-xl border border-border mb-6 flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Subscriber</p>
+                  <p className="text-sm font-semibold text-foreground">{subMap[payInv.subscriberId]?.name}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground mb-1">Due Amount</p>
+                  <p className="text-lg font-bold text-green-600">{formatCurrency(getInvoiceDueAmount(payInv.id))}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground mb-1">Due Amount</p>
-                <p className="text-lg font-bold text-green-600">{formatCurrency(getInvoiceDueAmount(payInv.id))}</p>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-muted-foreground">Payment Method</Label>
+                    <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
+                      {(["Cash", "UPI"] as const).map(m => (
+                        <button 
+                          key={m} 
+                          type="button"
+                          onClick={() => setPayMethod(m)} 
+                          className={cn(
+                            "flex-1 py-1.5 text-xs font-medium rounded-md transition-colors",
+                            payMethod === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {m}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-muted-foreground">Payment Date</Label>
+                    <input 
+                      type="date" 
+                      value={paymentDate} 
+                      onChange={(e) => setPaymentDate(e.target.value)} 
+                      className="w-full h-10 bg-input border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-400" 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-foreground">Discount (₹)</Label>
+                    <Input 
+                      type="number" 
+                      value={payDiscount || ''} 
+                      onChange={(e) => setPayDiscount(Number(e.target.value))} 
+                      className="h-10 bg-input border-border rounded-lg px-3 text-sm text-foreground focus-visible:border-orange-400" 
+                      placeholder="0.00" 
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-foreground">Total Bill Amount (₹)</Label>
+                    <Input 
+                      type="number" 
+                      value={customAmount || ''} 
+                      onChange={(e) => setCustomAmount(Number(e.target.value))} 
+                      className="h-10 bg-input border-emerald-500/30 rounded-lg px-3 text-sm font-bold text-emerald-600 focus-visible:border-emerald-500" 
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Preview of Net Collection & Credit */}
+                <div className="space-y-3 pt-1">
+                  <div className="p-3 bg-secondary/50 rounded-xl border border-dashed border-border flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Cash/UPI to Collect</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-[10px] text-muted-foreground font-medium">₹</span>
+                      <span className="text-lg font-bold text-orange-600">{((customAmount || 0) - (payDiscount || 0)).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-green-50/50 rounded-lg border border-green-100/50 flex justify-between items-center px-3">
+                    <span className="text-[10px] font-bold text-green-700/70 uppercase tracking-tight">Total Credit to Customer</span>
+                    <span className="text-sm font-bold text-green-700">₹{(customAmount || 0).toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground">Payment Method</Label>
-                  <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
-                    {(["Cash", "UPI"] as const).map(m => (
-                      <button 
-                        key={m} 
-                        type="button"
-                        onClick={() => setPayMethod(m)} 
-                        className={cn(
-                          "flex-1 py-1.5 text-xs font-medium rounded-md transition-colors",
-                          payMethod === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground">Payment Date</Label>
-                  <input 
-                    type="date" 
-                    value={paymentDate} 
-                    onChange={(e) => setPaymentDate(e.target.value)} 
-                    className="w-full h-10 bg-input border border-border rounded-lg px-3 text-sm text-foreground outline-none focus:border-orange-400" 
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-foreground">Discount (₹)</Label>
-                  <Input 
-                    type="number" 
-                    value={payDiscount || ''} 
-                    onChange={(e) => setPayDiscount(Number(e.target.value))} 
-                    className="h-10 bg-input border-border rounded-lg px-3 text-sm text-foreground focus-visible:border-orange-400" 
-                    placeholder="0.00" 
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-medium text-foreground">Total Bill Amount (₹)</Label>
-                  <Input 
-                    type="number" 
-                    value={customAmount || ''} 
-                    onChange={(e) => setCustomAmount(Number(e.target.value))} 
-                    className="h-10 bg-input border-emerald-500/30 rounded-lg px-3 text-sm font-bold text-emerald-600 focus-visible:border-emerald-500" 
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              {/* Live Preview of Net Collection & Credit */}
-              <div className="space-y-3 pt-1">
-                <div className="p-3 bg-secondary/50 rounded-xl border border-dashed border-border flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Cash/UPI to Collect</span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-[10px] text-muted-foreground font-medium">₹</span>
-                    <span className="text-lg font-bold text-orange-600">{((customAmount || 0) - (payDiscount || 0)).toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="p-2 bg-green-50/50 rounded-lg border border-green-100/50 flex justify-between items-center px-3">
-                  <span className="text-[10px] font-bold text-green-700/70 uppercase tracking-tight">Total Credit to Customer</span>
-                  <span className="text-sm font-bold text-green-700">₹{(customAmount || 0).toLocaleString()}</span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4 border-t border-border mt-4 flex-shrink-0">
-                <Button variant="ghost" className="flex-1 h-11 bg-secondary hover:bg-secondary/80 text-foreground" onClick={() => setPayInv(null)}>Cancel</Button>
-                <Button 
-                  onClick={handlePay} 
-                  disabled={isProcessing} 
-                  className="flex-1 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold"
-                >
-                  {isProcessing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
-                  Confirm Payment
-                </Button>
-              </div>
+            {/* Fixed Footer */}
+            <div className="flex gap-3 p-6 border-t border-border flex-shrink-0 bg-secondary/10">
+              <Button variant="ghost" className="flex-1 h-11 bg-secondary hover:bg-secondary/80 text-foreground" onClick={() => setPayInv(null)}>Cancel</Button>
+              <Button 
+                onClick={handlePay} 
+                disabled={isProcessing} 
+                className="flex-1 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold"
+              >
+                {isProcessing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
+                Confirm Payment
+              </Button>
             </div>
           </div>
         </div>
@@ -913,21 +918,35 @@ export default function Invoices() {
       {/* Bulk Generation Modal */}
       {showBulkModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
-            <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
-                  <DatabaseZap className="h-5 w-5" />
+          <div className="bg-card w-full max-w-lg max-h-[90vh] rounded-3xl border border-border shadow-2xl flex flex-col relative z-10 animate-in zoom-in-95 duration-200">
+              {/* Fixed Header */}
+              <div className="px-6 py-5 border-b border-border flex items-center justify-between shrink-0 bg-secondary/20">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                    <Zap className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">Bulk Billing Engine</h3>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Process batch invoices</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-foreground">Bulk Billing</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Generate invoices for multiple subscribers</p>
-                </div>
+                <button onClick={() => setShowBulkModal(false)} className="h-8 w-8 rounded-full hover:bg-secondary flex items-center justify-center transition-colors">
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setShowBulkModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
-            </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+              {/* Scrollable Body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                <div className="p-4 rounded-2xl bg-orange-500/5 border border-orange-500/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-orange-600" />
+                    <div>
+                      <p className="text-sm font-bold text-orange-900">{bulkConfig.selectedIds.length} Subscribers Selected</p>
+                      <p className="text-[10px] text-orange-600 font-medium">Ready for batch processing</p>
+                    </div>
+                  </div>
+                </div>
+
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">Subscriber Selection</Label>
                 <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border">
@@ -1041,18 +1060,21 @@ export default function Invoices() {
                   <strong>Duplicate Prevention Enabled:</strong> System will automatically skip subscribers who already have an invoice for the target period.
                 </p>
               </div>
+            </div>
 
-              <div className="flex gap-3 pt-4 border-t border-border mt-4 flex-shrink-0">
-                <Button variant="ghost" className="flex-1 h-11 text-muted-foreground hover:text-foreground" onClick={() => setShowBulkModal(false)}>Cancel</Button>
-                <Button
-                  onClick={handleRunBulk}
-                  disabled={isProcessing}
-                  className="flex-1 h-11 bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-lg shadow-orange-500/20"
-                >
-                  {isProcessing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <TrendingUp className="h-4 w-4 mr-2" />}
-                  Execute Batch Billing
-                </Button>
-              </div>
+            {/* Fixed Footer */}
+            <div className="flex gap-3 p-6 border-t border-border shrink-0 bg-secondary/10">
+              <Button variant="ghost" className="flex-1 h-11 text-muted-foreground hover:text-foreground" onClick={() => setShowBulkModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRunBulk}
+                disabled={isProcessing}
+                className="flex-1 h-11 bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-lg shadow-orange-500/20"
+              >
+                {isProcessing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <TrendingUp className="h-4 w-4 mr-2" />}
+                Execute Batch Billing
+              </Button>
             </div>
           </div>
         </div>

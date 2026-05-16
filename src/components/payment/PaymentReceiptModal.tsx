@@ -277,7 +277,7 @@ const ReceiptContent = ({
           </div>
           {discount > 0 && (
             <div style={styles.allocRow}>
-              <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>Discount (Gift/Off):</span>
+              <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>Discount (Off):</span>
               <span style={{ whiteSpace: "nowrap", color: "#e8522a", fontWeight: 600 }}>- Rs. {discount.toFixed(2)}</span>
             </div>
           )}

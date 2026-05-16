@@ -1222,6 +1222,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         discount,
         serviceStart: serviceStartStr || undefined,
         serviceEnd: serviceEndStr || undefined
+      };
       const updatedInvoices = [newInv, ...invoices];
       setInvoices(updatedInvoices);
       

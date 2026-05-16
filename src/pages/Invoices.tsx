@@ -20,6 +20,7 @@ import { getBrandSettings } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
 const InvoicePreviewModal = lazy(() => import("@/components/invoice/InvoicePreviewModal"));
+const PaymentReceiptModal = lazy(() => import("@/components/payment/PaymentReceiptModal"));
 
 const Highlight = ({ text, query }: { text: string; query: string }) => {
   if (!query || !text) return <>{text || ""}</>;
@@ -70,6 +71,8 @@ export default function Invoices() {
   const [customAmount, setCustomAmount] = useState<number>(0);
   const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptPayment, setReceiptPayment] = useState<any>(null);
   const [confirmModal, setConfirmModal] = useState<{ type: 'bulk' | 'delete' | 'bulkDelete', id?: string } | null>(null);
   const [billingMonth, setBillingMonth] = useState(new Date().getMonth());
   const [billingYear, setBillingYear] = useState(new Date().getFullYear());
@@ -251,18 +254,30 @@ export default function Invoices() {
     if (!payInv) return;
     setIsProcessing(true);
     try {
-      await recordPayment({
+      const paymentDateStr = paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString();
+      const pData = {
         subscriberId: payInv.subscriberId,
         invoiceId: payInv.id,
         amount: customAmount - payDiscount,
         discount: payDiscount,
         method: payMethod,
-        date: paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString(),
+        date: paymentDateStr,
         agent: "Admin"
-      });
+      };
+      
+      const newPayment = await recordPayment(pData);
       toast.success("Transaction Settled");
+      
+      // Setup receipt data for preview
+      setReceiptPayment({
+        ...pData,
+        id: newPayment.id,
+        invoiceNumber: payInv.number
+      });
+      
       setPayInv(null);
       setPayDiscount(0);
+      setShowReceipt(true);
     } catch (e) {
       toast.error("Settlement failed");
     } finally {
@@ -912,7 +927,7 @@ export default function Invoices() {
               </Button>
             </div>
           </div>
-        </div>
+            </div>
       )}
 
       {/* Bulk Generation Modal */}
@@ -1080,9 +1095,9 @@ export default function Invoices() {
         </div>
       )}
 
-      {showPreview && previewInv && (
-        <Suspense fallback={<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"><Loader2 className="h-8 w-8 animate-spin text-orange-500" /></div>}>
-          <InvoicePreviewModal
+      <Suspense fallback={null}>
+        {showPreview && previewInv && (
+          <InvoicePreviewModal 
             brand={brand}
             customerIdLabel={customerIdLabel}
             invoice={previewInv}
@@ -1093,8 +1108,25 @@ export default function Invoices() {
             plans={plansList}
             subscribers={subscribers}
           />
-        </Suspense>
-      )}
+        )}
+        {showReceipt && receiptPayment && (
+          <PaymentReceiptModal
+            isOpen={showReceipt}
+            onClose={() => {
+              setShowReceipt(false);
+              setReceiptPayment(null);
+            }}
+            payment={receiptPayment}
+            brand={brand}
+            customerIdLabel={customerIdLabel}
+            subscribers={subscribers}
+            isCableMode={isCableMode}
+            plans={plansList}
+            invoices={invoices}
+            payments={payments}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

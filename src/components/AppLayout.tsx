@@ -11,11 +11,14 @@ export default function AppLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-background overflow-hidden text-foreground font-sans selection:bg-orange-500/20 selection:text-orange-900">
+      <div className={cn(
+        "flex h-screen w-full bg-background overflow-hidden text-foreground font-sans selection:bg-orange-500/20 selection:text-orange-900",
+        activeBusinessMode === "broadband" ? "broadband" : ""
+      )}>
         {isLoading && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm transition-all">
             <div className="flex flex-col items-center gap-4 p-6 rounded-2xl app-card shadow-lg">
-              <Loader2 className="h-8 w-8 text-orange-500 animate-spin" />
+              <Loader2 className={cn("h-8 w-8 animate-spin", activeBusinessMode === "cable" ? "text-orange-500" : "text-blue-500")} />
               <p className="text-sm font-medium text-muted-foreground">Loading workspace...</p>
             </div>
           </div>
@@ -47,8 +50,10 @@ function AppLayoutContent() {
           <button
             onClick={() => activeBusinessMode !== "cable" && setActiveBusinessMode("cable")}
             className={cn(
-              "text-xs px-2 py-1 rounded transition-colors",
-              activeBusinessMode === "cable" ? "bg-orange-500 text-white" : "bg-secondary text-muted-foreground"
+              "text-[10px] font-bold px-2.5 py-1 rounded-md transition-all shadow-sm",
+              activeBusinessMode === "cable" 
+                ? "bg-orange-500 text-white shadow-orange-500/20" 
+                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
             )}
           >
             CABLE
@@ -56,8 +61,10 @@ function AppLayoutContent() {
           <button
             onClick={() => activeBusinessMode !== "broadband" && setActiveBusinessMode("broadband")}
             className={cn(
-              "text-xs px-2 py-1 rounded transition-colors",
-              activeBusinessMode === "broadband" ? "bg-orange-500 text-white" : "bg-secondary text-muted-foreground"
+              "text-[10px] font-bold px-2.5 py-1 rounded-md transition-all shadow-sm",
+              activeBusinessMode === "broadband" 
+                ? "bg-blue-600 text-white shadow-blue-600/20" 
+                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
             )}
           >
             BB

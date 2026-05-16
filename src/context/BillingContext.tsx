@@ -521,10 +521,64 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [businessMode]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
-  const generateSequentialId = (prefix: string, list: any[], key: string) => {
-    // Escape special characters for regex
+
+  /**
+   * Atomically generates the next sequential ID by querying the DB for the
+   * current MAX number (if DB is available), falling back to the in-memory
+   * list only when offline. This prevents duplicate IDs under concurrent usage.
+   */
+  const generateSequentialIdFromDB = async (
+    prefix: string,
+    tableName: 'invoices' | 'payments',
+    column: string,
+    fallbackList: any[],
+    fallbackKey: string
+  ): Promise<string> => {
     const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`^${escapedPrefix}(\\d+)$`);
+    const pattern = new RegExp(`^${escapedPrefix}(\\d+)(?:-[A-Z0-9]+)?$`);
+    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    if (db) {
+      try {
+        // Use CAST and regex-friendly LIKE to grab all matching numbers from DB
+        const result = await db.execute({
+          sql: `SELECT ${column} FROM ${tableName} WHERE ${column} LIKE ?`,
+          args: [`${prefix}%`]
+        });
+        let max = 0;
+        result.rows.forEach(r => {
+          const val = String((r as any)[column] || '');
+          const match = val.match(pattern);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > max) max = num;
+          }
+        });
+        const nextNum = String(max + 1).padStart(3, '0');
+        return `${prefix}${nextNum}-${suffix}`;
+      } catch (err) {
+        console.warn('generateSequentialIdFromDB DB query failed, falling back to in-memory list:', err);
+      }
+    }
+
+    // Offline / fallback: scan in-memory list
+    let max = 0;
+    fallbackList.forEach(item => {
+      const val = String(item[fallbackKey] || '');
+      const match = val.match(pattern);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > max) max = num;
+      }
+    });
+    const nextNum = String(max + 1).padStart(3, '0');
+    return `${prefix}${nextNum}-${suffix}`;
+  };
+
+  /** Synchronous fallback kept for legacy callers in the bulk billing loop */
+  const generateSequentialId = (prefix: string, list: any[], key: string) => {
+    const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`^${escapedPrefix}(\\d+)(?:-[A-Z0-9]+)?$`);
     let max = 0;
     list.forEach(item => {
       const val = String(item[key] || '');
@@ -534,7 +588,9 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (num > max) max = num;
       }
     });
-    return `${prefix}${String(max + 1).padStart(2, '0')}`;
+    const nextNum = String(max + 1).padStart(3, '0');
+    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${prefix}${nextNum}-${suffix}`;
   };
 
   // ── Mutations ────────────────────────────────────────────────────────────────
@@ -741,7 +797,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const recordPayment = async (pData: Omit<Payment, 'id'> & { invoiceId?: string, discount?: number }): Promise<Payment> => {
-    const id = generateSequentialId('#SCN-PAY-', payments, 'id');
+    const id = await generateSequentialIdFromDB('#SCN-PAY-', 'payments', 'id', payments, 'id');
     const amount = Number(pData.amount);
     const discount = Number(pData.discount || 0);
     const createdAt = new Date().toISOString();
@@ -1124,7 +1180,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!plan) throw new Error('Plan not found for this subscriber');
 
     const id = `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-    const number = generateSequentialId('#SCN-IN-', invoices, 'number');
+    const number = await generateSequentialIdFromDB('#SCN-IN-', 'invoices', 'number', invoices, 'number');
     const billingDate = normalizeBillingDate(customDate);
     const date = billingDate.toISOString();
     const dueDate = createInvoiceDueDate(billingDate).toISOString();
@@ -1318,10 +1374,26 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             args: [inv.subscriberId, inv.id] 
           });
           const subInvoices = subInvoicesRes.rows;
+
+          // FIX: Fetch total discounts from DB to correctly determine invoice statuses.
+          // Without this, the old formula (newBalance + totalInvoiced + openingBalance)
+          // overstates how much cash was actually paid when discounts exist, causing
+          // pending invoices to be incorrectly marked as 'paid' (Vanishing Discount Bug).
+          const discountRes = await db.execute({
+            sql: 'SELECT COALESCE(SUM(discount), 0) as total_discount FROM payments WHERE subscriber_id = ?',
+            args: [inv.subscriberId]
+          });
+          const totalDiscount = Number(discountRes.rows[0].total_discount || 0);
+
+          // covered = total cash credited to account (balance + all invoiced debt + opening balance)
+          // but we must subtract discounts first because discounts reduce debt, not add cash.
           const totalInvoiced = subInvoices.reduce((s, i) => s + Number(i.amount || 0), 0);
-          const totalPaid = newBalance + totalInvoiced + (restoredOpeningBalance);
-          
-          let covered = totalPaid;
+          const totalDebt = totalInvoiced + restoredOpeningBalance;
+          // Total cash ever paid = newBalance + (debt net of discounts)
+          const totalCash = newBalance + Math.max(0, totalDebt - totalDiscount);
+
+          // Walk through invoices in priority order, marking paid/pending
+          let covered = totalCash + totalDiscount - restoredOpeningBalance;
           for (const remInv of subInvoices) {
             const invAmount = Number(remInv.amount || 0);
             if (covered >= invAmount - 0.01) {
@@ -1358,54 +1430,36 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         LS.set('payments', updatedPays);
       }
       
-      const sub = subscribers.find(s => s.id === inv.subscriberId);
       if (sub) {
-        let newBalance = Number(sub.balance || 0) + Number(inv.amount);
-        if (paymentToDelete) newBalance -= Number(paymentToDelete.amount);
-        
-        // Clear unpaid months if balance is now >= 0, otherwise trim last entry
-        let updatedMonths = [...sub.unpaidMonths];
-        if (newBalance >= 0) {
-          updatedMonths = [];
-        } else if (updatedMonths.length > 0) {
-          updatedMonths = updatedMonths.slice(0, -1);
-        }
-        // If deleting a legacy invoice, restore the opening_balance that was zeroed on generation
-        const restoredOpeningBalance = inv.type === 'legacy'
-          ? (Number(sub.openingBalance) || 0) + Number(inv.amount)
-          : (Number(sub.openingBalance) || 0);
-        const updatedSubs = subscribers.map(s => 
-          s.id === sub.id ? { ...s, balance: newBalance, unpaidMonths: updatedMonths, openingBalance: restoredOpeningBalance } : s
-        );
-        setSubscribers(updatedSubs);
-        LS.set('subscribers', updatedSubs);
-
-        // Sync statuses chronologically (Legacy first) for REMAINING invoices
-        const remainingInvoices = updated
-          .filter(i => i.subscriberId === sub.id)
-          .sort((a, b) => {
-            const typeA = a.type === 'legacy' ? 0 : 1;
-            const typeB = b.type === 'legacy' ? 0 : 1;
-            if (typeA !== typeB) return typeA - typeB;
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-          });
-        
-        const totalInvoiced = remainingInvoices.reduce((s, i) => s + Number(i.amount || 0), 0);
-        const totalPaid = newBalance + totalInvoiced + restoredOpeningBalance;
-        
-        let covered = totalPaid;
-        const finalInvoices = updated.map(i => {
-          if (i.subscriberId !== sub.id) return i;
-          const invAmount = Number(i.amount || 0);
-          if (covered >= invAmount - 0.01) {
-            covered -= invAmount;
-            return { ...i, status: 'paid' as const };
-          } else {
-            return { ...i, status: 'pending' as const };
+        // Deleting an invoice and its guessed payment
+        if (db) {
+          try {
+            const queries = [
+              { sql: 'DELETE FROM invoices WHERE id = ?', args: [id] }
+            ];
+            if (paymentToDelete) {
+              queries.push({ sql: 'DELETE FROM payments WHERE id = ?', args: [paymentToDelete.id] });
+            }
+            
+            await db.batch(queries);
+            await recalculateBalances(inv.subscriberId);
+            await fetchData();
+          } catch (err) {
+            console.error('deleteInvoice DB error:', err);
           }
-        });
-        setInvoices(finalInvoices);
-        LS.set('invoices', finalInvoices);
+        } else {
+          const nextInvoices = invoices.filter(i => i.id !== id);
+          const nextPayments = paymentToDelete 
+            ? payments.filter(p => p.id !== paymentToDelete.id) 
+            : payments;
+            
+          setInvoices(nextInvoices);
+          setPayments(nextPayments);
+          LS.set('invoices', nextInvoices);
+          LS.set('payments', nextPayments);
+          
+          await recalculateBalances(inv.subscriberId);
+        }
       }
     }
   };

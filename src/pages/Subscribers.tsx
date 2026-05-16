@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import * as XLSX from 'xlsx';
 import { formatCurrency, formatDate, formatMonthRanges } from "@/lib/mockData";
@@ -15,12 +16,93 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useBilling } from "@/context/BillingContext";
-import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { useBusinessMode } from "@/lib/turso";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+
+const SubscriberFinancialSummary = memo(({ subscriber: s }: { subscriber: any }) => {
+  const { invoices, payments } = useBilling();
+  
+  const financialData = useMemo(() => {
+    const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
+    
+    const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
+      const paidAgainst = payments
+        .filter(p => p.invoiceId === inv.id)
+        .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
+      return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
+    }, 0);
+
+    const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
+    const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));
+    const openingBalance = Number(s.openingBalance) || 0;
+    const balance = Number(s.balance) || 0;
+    
+    return { legacyDues, planDues, openingBalance, balance };
+  }, [s.id, s.balance, s.openingBalance, invoices, payments]);
+
+  const { legacyDues, planDues, openingBalance, balance } = financialData;
+
+  return (
+    <>
+      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+        <h4 className="font-bold text-slate-700 text-sm flex items-center gap-2">
+          <Wallet className="h-4 w-4 text-orange-500" />
+          Financial Summary
+        </h4>
+      </div>
+      <div className="p-4 space-y-3">
+        <div className="space-y-2 text-xs">
+          <div className="grid grid-cols-2 gap-y-2.5">
+            {openingBalance !== 0 && (
+              <>
+                <span className="text-slate-500">Opening Balance</span>
+                <span className={cn("text-right font-bold", openingBalance > 0 ? "text-red-500" : "text-emerald-600")}>
+                  {formatCurrency(Math.abs(openingBalance))} {openingBalance > 0 ? '(Dr)' : '(Cr)'}
+                </span>
+              </>
+            )}
+            {legacyDues > 0 && (
+              <>
+                <span className="text-slate-500">Legacy Unpaid</span>
+                <span className="text-right font-bold text-red-500">{formatCurrency(legacyDues)}</span>
+              </>
+            )}
+            {planDues > 0 && (
+              <>
+                <span className="text-slate-500">Active Plan Dues</span>
+                <span className="text-right font-bold text-red-500">{formatCurrency(planDues)}</span>
+              </>
+            )}
+          </div>
+
+          <div className="pt-3 mt-1 border-t border-slate-100 flex justify-between items-center">
+            <span className="text-slate-800 font-bold">Net Balance</span>
+            <span className={cn("px-2 py-0.5 rounded text-[11px] font-bold", 
+              balance >= 0 ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-700 border border-red-100"
+            )}>
+              {formatCurrency(balance)}
+            </span>
+          </div>
+
+          {balance > 0 && (
+            <div className="mt-3 p-2 bg-blue-50/50 border border-blue-100 text-blue-700 rounded-lg text-[10px] flex items-start gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-1 shrink-0" />
+              <span>Subscriber has {formatCurrency(balance)} in advance credit.</span>
+            </div>
+          )}
+          {balance === 0 && (
+            <div className="mt-3 p-2 bg-slate-50 border border-slate-200 text-slate-500 rounded-lg text-[10px] text-center">
+              Account is fully settled.
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+});
 
 const Highlight = ({ text, query }: { text: string; query: string }) => {
   if (!query || !text) return <>{text || ""}</>;
@@ -98,15 +180,17 @@ export default function Subscribers() {
   const areas = useMemo(() => ["all", ...new Set(subscribers.map(s => s.area || "Unknown"))], [subscribers]);
 
   const effectiveBalances = useMemo(() => {
+    const invMap: Record<string, number> = {};
+    for (const i of invoices) {
+      invMap[i.subscriberId] = (invMap[i.subscriberId] || 0) + (Number(i.amount) || 0);
+    }
+    const payMap: Record<string, number> = {};
+    for (const p of payments) {
+      payMap[p.subscriberId] = (payMap[p.subscriberId] || 0) + (Number(p.amount) || 0) + (Number(p.discount) || 0);
+    }
     const map: Record<string, number> = {};
     for (const sub of subscribers) {
-      const totalInvoiced = invoices
-        .filter(i => i.subscriberId === sub.id)
-        .reduce((s, i) => s + (Number(i.amount) || 0), 0);
-      const totalPaid = payments
-        .filter(p => p.subscriberId === sub.id)
-        .reduce((s, p) => s + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
-      map[sub.id] = totalPaid - totalInvoiced - (Number(sub.openingBalance) || 0);
+      map[sub.id] = (payMap[sub.id] || 0) - (invMap[sub.id] || 0) - (Number(sub.openingBalance) || 0);
     }
     return map;
   }, [subscribers, invoices, payments]);
@@ -565,78 +649,7 @@ export default function Subscribers() {
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-72 p-0 rounded-xl border-slate-200 shadow-xl overflow-hidden" align="start">
-                            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                              <h4 className="font-bold text-slate-700 text-sm flex items-center gap-2">
-                                <Wallet className="h-4 w-4 text-orange-500" />
-                                Financial Summary
-                              </h4>
-                            </div>
-                            <div className="p-4 space-y-3">
-                              <div className="space-y-2 text-xs">
-                                {(() => {
-                                  const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
-                                  
-                                  const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
-                                    const paidAgainst = payments
-                                      .filter(p => p.invoiceId === inv.id)
-                                      .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
-                                    return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
-                                  }, 0);
-
-                                  const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
-                                  const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));
-                                  const openingBalance = Number(s.openingBalance) || 0;
-                                  
-                                  return (
-                                    <>
-                                      <div className="grid grid-cols-2 gap-y-2.5">
-                                        {openingBalance !== 0 && (
-                                          <>
-                                            <span className="text-slate-500">Opening Balance</span>
-                                            <span className={cn("text-right font-bold", openingBalance > 0 ? "text-red-500" : "text-emerald-600")}>
-                                              {formatCurrency(Math.abs(openingBalance))} {openingBalance > 0 ? '(Dr)' : '(Cr)'}
-                                            </span>
-                                          </>
-                                        )}
-                                        {legacyDues > 0 && (
-                                          <>
-                                            <span className="text-slate-500">Legacy Unpaid</span>
-                                            <span className="text-right font-bold text-red-500">{formatCurrency(legacyDues)}</span>
-                                          </>
-                                        )}
-                                        {planDues > 0 && (
-                                          <>
-                                            <span className="text-slate-500">Active Plan Dues</span>
-                                            <span className="text-right font-bold text-red-500">{formatCurrency(planDues)}</span>
-                                          </>
-                                        )}
-                                      </div>
-
-                                      <div className="pt-3 mt-1 border-t border-slate-100 flex justify-between items-center">
-                                        <span className="text-slate-800 font-bold">Net Balance</span>
-                                        <span className={cn("px-2 py-0.5 rounded text-[11px] font-bold", 
-                                          balance >= 0 ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-700 border border-red-100"
-                                        )}>
-                                          {formatCurrency(balance)}
-                                        </span>
-                                      </div>
-
-                                      {balance > 0 && (
-                                        <div className="mt-3 p-2 bg-blue-50/50 border border-blue-100 text-blue-700 rounded-lg text-[10px] flex items-start gap-2">
-                                          <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-1 shrink-0" />
-                                          <span>Subscriber has {formatCurrency(balance)} in advance credit.</span>
-                                        </div>
-                                      )}
-                                      {balance === 0 && (
-                                        <div className="mt-3 p-2 bg-slate-50 border border-slate-200 text-slate-500 rounded-lg text-[10px] text-center">
-                                          Account is fully settled.
-                                        </div>
-                                      )}
-                                    </>
-                                  );
-                                })()}
-                              </div>
-                            </div>
+                            <SubscriberFinancialSummary subscriber={s} />
                           </PopoverContent>
                         </Popover>
 

@@ -138,9 +138,10 @@ export default function Payments() {
     setIsSubmitting(true);
     try {
       let count = 0;
+      let lastRecordedPayment = null;
       for (const sub of bulkSubscribers) {
         if (sub.amount > 0) {
-          await recordPayment({
+          const res = await recordPayment({
             subscriberId: sub.id,
             amount: sub.amount - sub.discount,
             discount: sub.discount,
@@ -148,10 +149,17 @@ export default function Payments() {
             date: new Date().toISOString(),
             agent: "System Admin"
           });
+          lastRecordedPayment = res;
           count++;
         }
       }
-      toast.success(`Recorded ${count} batch payments`);
+      if (count > 0) {
+        toast.success(`Recorded ${count} batch payments`);
+        if (lastRecordedPayment) {
+          setSelectedPayment(lastRecordedPayment);
+          setIsReceiptOpen(true);
+        }
+      }
       setIsBulkOpen(false);
       setBulkSubscribers([]);
       if (searchParams.get("subscriberIds")) {
@@ -336,8 +344,7 @@ export default function Payments() {
       toast.success("Transaction Record Created");
       closeAddModal();
       setSelectedPayment(newPay);
-      // Removed automatic receipt opening as requested
-      // setIsReceiptOpen(true);
+      setIsReceiptOpen(true);
     } catch (err) { toast.error("Transaction failed"); } finally { setIsSubmitting(false); }
   };
 

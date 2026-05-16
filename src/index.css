@@ -51,6 +51,13 @@
     --sidebar-border: 222 26% 21%;
     --sidebar-ring: 24 92% 50%;
   }
+
+  .broadband {
+    --primary: 217 91% 60%; /* Blue 600 */
+    --ring: 217 91% 60%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-ring: 217 91% 60%;
+  }
 }
 
 @layer base {

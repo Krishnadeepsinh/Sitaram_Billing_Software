@@ -332,8 +332,9 @@ export default function Payments() {
      try {
       setIsSubmitting(true);
       // The amount recorded in the DB is the actual cash collected
-      const cashAmount = Number(formData.amount || 0);
       const discount = Number(formData.discount || 0);
+      const cashAmount = Number(formData.amount || 0) - discount;
+      
       const newPay = await recordPayment({ 
         ...formData, 
         amount: cashAmount, 

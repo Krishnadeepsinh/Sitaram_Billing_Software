@@ -105,10 +105,7 @@ export default function Subscribers() {
         .reduce((s, i) => s + (Number(i.amount) || 0), 0);
       const totalPaid = payments
         .filter(p => p.subscriberId === sub.id)
-        .reduce((s, p) => s + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0) +
-        invoices
-        .filter(i => i.subscriberId === sub.id)
-        .reduce((s, i) => s + (Number(i.discount) || 0), 0);
+        .reduce((s, p) => s + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
       map[sub.id] = totalPaid - totalInvoiced - (Number(sub.openingBalance) || 0);
     }
     return map;
@@ -564,12 +561,12 @@ export default function Subscribers() {
                                   {(() => {
                                     const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
                                     
-                                    const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
-                                      const paidAgainst = payments
-                                        .filter(p => p.invoiceId === inv.id)
-                                        .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
-                                      return sum + Math.max(0, (Number(inv.amount) || 0) - (Number(inv.discount) || 0) - paidAgainst);
-                                    }, 0);
+                                      const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
+                                        const paidAgainst = payments
+                                          .filter(p => p.invoiceId === inv.id)
+                                          .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
+                                        return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
+                                      }, 0);
 
                                     const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
                                     const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));

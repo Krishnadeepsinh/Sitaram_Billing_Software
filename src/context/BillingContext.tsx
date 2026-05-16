@@ -1500,7 +1500,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
 
       const [invRes, payRes, subRes] = await Promise.all([
-        db.execute(targetSubId ? { sql: 'SELECT id, subscriber_id, amount, status, type, date FROM invoices WHERE subscriber_id = ? ORDER BY date ASC', args: [targetSubId] } : 'SELECT id, subscriber_id, amount, status, type, date FROM invoices ORDER BY date ASC'),
+        db.execute(targetSubId ? { sql: 'SELECT id, subscriber_id, amount, discount, status, type, date FROM invoices WHERE subscriber_id = ? ORDER BY date ASC', args: [targetSubId] } : 'SELECT id, subscriber_id, amount, discount, status, type, date FROM invoices ORDER BY date ASC'),
         db.execute(targetSubId ? { sql: 'SELECT subscriber_id, amount, discount FROM payments WHERE subscriber_id = ?', args: [targetSubId] } : 'SELECT subscriber_id, amount, discount FROM payments'),
         db.execute(targetSubId ? { sql: 'SELECT id, opening_balance FROM subscribers WHERE id = ?', args: [targetSubId] } : 'SELECT id, opening_balance FROM subscribers')
       ]);
@@ -1524,15 +1524,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         totalDiscountMap[sid] = (totalDiscountMap[sid] || 0) + disc;
       });
 
-      // Also add discounts that were recorded directly on invoices
-      invRes.rows.forEach(r => {
-        const row = mapRow(invRes.columns, r);
-        const sid = String(row.subscriber_id);
-        const invDisc = Number(row.discount) || 0;
-        if (invDisc > 0) {
-          totalDiscountMap[sid] = (totalDiscountMap[sid] || 0) + invDisc;
-        }
-      });
+
 
       const batch: any[] = [];
       for (const subRow of subRes.rows) {

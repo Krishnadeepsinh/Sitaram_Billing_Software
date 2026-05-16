@@ -417,28 +417,28 @@ export default function Subscribers() {
       </div>
 
       {/* Filters */}
-      <div className="app-card p-3 flex flex-col lg:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="app-card p-3 flex flex-row items-center gap-3 overflow-x-auto no-scrollbar">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder="Search by name, ID, phone or area..."
-            className="h-10 rounded-xl bg-input border-border pl-10 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 w-full"
+            className="h-10 rounded-xl bg-white border-slate-200 pl-10 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 w-full"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-border bg-secondary/30 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-slate-50">
             <Switch
               id="dues-only"
               checked={showDuesOnly}
               onCheckedChange={setShowDuesOnly}
-              className="data-[state=checked]:bg-orange-500"
+              className="data-[state=checked]:bg-orange-500 scale-90"
             />
-            <Label htmlFor="dues-only" className="cursor-pointer text-xs font-bold uppercase tracking-tight text-muted-foreground whitespace-nowrap">Overdue Only</Label>
+            <Label htmlFor="dues-only" className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">Overdue Only</Label>
           </div>
           <select
-            className="h-10 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none min-w-[120px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[110px]"
             value={statusF}
             onChange={(e: any) => setStatusF(e.target.value)}
           >
@@ -447,7 +447,7 @@ export default function Subscribers() {
             <option value="inactive">Inactive</option>
           </select>
           <select
-            className="h-10 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none min-w-[120px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[110px]"
             value={areaF}
             onChange={(e) => setAreaF(e.target.value)}
           >
@@ -455,7 +455,7 @@ export default function Subscribers() {
             {areas.filter(a => a !== "all").map(a => <option key={a} value={a}>{a}</option>)}
           </select>
           <select
-            className="h-10 rounded-lg border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none min-w-[120px]"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400 appearance-none min-w-[110px]"
             value={planF}
             onChange={(e) => setPlanF(e.target.value)}
           >

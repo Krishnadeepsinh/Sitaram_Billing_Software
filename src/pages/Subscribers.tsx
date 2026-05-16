@@ -47,7 +47,11 @@ export default function Subscribers() {
   const activeBusinessMode = useBusinessMode();
   const isCableMode = activeBusinessMode === "cable";
   const customerIdLabel = isCableMode ? "STB Number" : "Customer ID";
-  const { subscribers, plans: dbPlans, invoices, payments, addSubscriber, updateSubscriber, deleteSubscriber, generateInvoice, refreshData } = useBilling();
+  const { 
+    subscribers, plans: dbPlans, invoices, payments, 
+    addSubscriber, updateSubscriber, deleteSubscriber, 
+    generateInvoice, refreshData, runBulkBilling 
+  } = useBilling();
   const [q, setQ] = useState("");
   const debouncedQ = useDebouncedValue(q, 180);
   const [statusF, setStatusF] = useState<"all" | "active" | "inactive">("all");
@@ -67,6 +71,8 @@ export default function Subscribers() {
   const [confirmModal, setConfirmModal] = useState<{type: 'delete', id: string} | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({});
   const [isGlobalRefreshing, setIsGlobalRefreshing] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkBilling, setIsBulkBilling] = useState(false);
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [invoiceSub, setInvoiceSub] = useState<any>(null);
@@ -160,6 +166,60 @@ export default function Subscribers() {
       return matchQ && matchStatus && matchArea && matchPlan && matchDues;
     }).sort((a, b) => (a.customerNo || 0) - (b.customerNo || 0));
   }, [debouncedQ, statusF, areaF, planF, showDuesOnly, subscribers, effectiveBalances]);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map(s => s.id));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkInvoice = async () => {
+    if (selectedIds.length === 0) return;
+    setIsBulkBilling(true);
+    try {
+      const stats = await runBulkBilling(new Date(), 1, false, selectedIds);
+      toast.success(`Generated ${stats.generated} invoices. Skipped ${stats.skipped}.`);
+      setSelectedIds([]);
+      await refreshData();
+    } catch (err: any) {
+      toast.error(err.message || "Bulk generation failed");
+    } finally {
+      setIsBulkBilling(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedIds.length} subscribers?`)) return;
+    
+    setIsSaving(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteSubscriber(id);
+      }
+      toast.success("Subscribers deleted");
+      setSelectedIds([]);
+      await refreshData();
+    } catch (err: any) {
+      toast.error("Bulk deletion failed");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleBulkPayment = () => {
+    if (selectedIds.length === 0) return;
+    // Redirect to payments with selected IDs
+    navigate(`/payments?subscriberIds=${selectedIds.join(',')}`);
+  };
 
   const handleOpenAdd = () => {
     setEditingSub(null);
@@ -409,6 +469,17 @@ export default function Subscribers() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-secondary/60">
+                <th className="px-4 py-3 w-10">
+                  <div 
+                    className={cn(
+                      "h-5 w-5 rounded border border-border flex items-center justify-center cursor-pointer transition-colors",
+                      selectedIds.length === filtered.length && filtered.length > 0 ? "bg-orange-500 border-orange-500" : "bg-background"
+                    )}
+                    onClick={toggleSelectAll}
+                  >
+                    {selectedIds.length === filtered.length && filtered.length > 0 && <Zap className="h-3 w-3 text-white fill-current" />}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap w-16">No.</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subscriber</th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{customerIdLabel} / Area</th>
@@ -433,7 +504,18 @@ export default function Subscribers() {
                 const plan = dbPlans.find(p => p.id === s.planId);
                 const balance = effectiveBalances[s.id] || 0;
                 return (
-                  <tr key={s.id} className="border-b border-border/50 hover:bg-secondary/40 transition-colors group last:border-0">
+                  <tr key={s.id} className={cn("border-b border-border/50 hover:bg-secondary/40 transition-colors group last:border-0", selectedIds.includes(s.id) && "bg-orange-50/50 hover:bg-orange-50/70")}>
+                    <td className="px-4 py-3">
+                      <div 
+                        className={cn(
+                          "h-5 w-5 rounded border border-border flex items-center justify-center cursor-pointer transition-colors",
+                          selectedIds.includes(s.id) ? "bg-orange-500 border-orange-500" : "bg-background group-hover:border-orange-200"
+                        )}
+                        onClick={() => toggleSelect(s.id)}
+                      >
+                        {selectedIds.includes(s.id) && <Zap className="h-3 w-3 text-white fill-current" />}
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="h-8 w-8 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center font-bold text-xs">
                         {s.customerNo || '?'}
@@ -548,11 +630,18 @@ export default function Subscribers() {
           const balance = effectiveBalances[s.id] || 0;
 
           return (
-            <div key={s.id} className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col gap-4 shadow-sm">
+            <div key={s.id} className={cn("rounded-xl border border-slate-200 bg-white p-4 flex flex-col gap-4 shadow-sm relative overflow-hidden", selectedIds.includes(s.id) && "ring-2 ring-orange-500 border-orange-500")}>
+              {selectedIds.includes(s.id) && <div className="absolute top-0 right-0 p-1 bg-orange-500 rounded-bl-lg"><Zap className="h-3 w-3 text-white fill-current" /></div>}
               <div className="flex justify-between items-start">
                 <div className="flex gap-3">
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-medium text-sm">
-                    {s.customerNo || '?'}
+                  <div 
+                    className={cn(
+                      "h-10 w-10 shrink-0 rounded-lg flex items-center justify-center font-medium text-sm cursor-pointer",
+                      selectedIds.includes(s.id) ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 border border-slate-200"
+                    )}
+                    onClick={() => toggleSelect(s.id)}
+                  >
+                    {selectedIds.includes(s.id) ? <Zap className="h-5 w-5 fill-current" /> : (s.customerNo || '?')}
                   </div>
                   <div>
                     <h3 className="font-medium text-slate-700 text-base leading-none mb-1.5"><Highlight text={s.name} query={q} /></h3>
@@ -950,6 +1039,62 @@ export default function Subscribers() {
           </div>
         </div>
       )}
+      {/* Bulk Actions Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-slate-900 text-white rounded-2xl shadow-2xl p-4 flex items-center justify-between gap-4 border border-slate-800/50 backdrop-blur-lg">
+            <div className="flex items-center gap-3 pl-2">
+              <div className="h-10 w-10 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                <Zap className="h-5 w-5 text-white fill-current" />
+              </div>
+              <div>
+                <p className="text-sm font-bold tracking-tight">{selectedIds.length} SELECTED</p>
+                <p className="text-[10px] text-slate-400 uppercase font-semibold">Ready for bulk actions</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="text-slate-400 hover:text-white hover:bg-slate-800 h-9"
+                onClick={() => setSelectedIds([])}
+              >
+                Clear
+              </Button>
+              <div className="w-px h-6 bg-slate-800 mx-1" />
+              <Button 
+                size="sm" 
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold h-9 px-4"
+                disabled={isBulkBilling}
+                onClick={handleBulkInvoice}
+              >
+                {isBulkBilling ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
+                GENERATE INVOICES
+              </Button>
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 px-4 hidden sm:flex"
+                onClick={handleBulkPayment}
+              >
+                <Wallet className="h-4 w-4 mr-2" />
+                PAYMENTS
+              </Button>
+              <Button 
+                size="sm" 
+                variant="destructive"
+                className="font-bold h-9 w-9 p-0"
+                onClick={handleBulkDelete}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modals... */}
+      {/* (Rest of the file remains same) */}
     </div>
   );
 }

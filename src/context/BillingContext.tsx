@@ -1696,7 +1696,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const runSingleMonthBulkBilling = async (customDate?: Date, numMonthsOverride?: number, selectedSubscriberIds?: string[]) => {
-    const plansList = dbPlans.length > 0 ? dbPlans : plans;
+    const activePlans = plansList.length > 0 ? plansList : plans;
     const activeSubs = subscribers.filter(s => 
       s.status === 'active' && 
       (!selectedSubscriberIds || selectedSubscriberIds.includes(s.id))
@@ -1713,7 +1713,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const dueDateStr = createInvoiceDueDate(billingDate).toISOString();
 
     for (const sub of activeSubs) {
-      const plan = plansList.find(p => p.id === sub.planId);
+      const plan = activePlans.find(p => p.id === sub.planId);
       if (!plan) continue;
 
       const currentExpiry = sub.expiryDate ? new Date(sub.expiryDate) : null;

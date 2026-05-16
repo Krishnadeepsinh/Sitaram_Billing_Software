@@ -82,16 +82,19 @@ export default function Invoices() {
   const [areaF, setAreaF] = useState<string>("all");
 
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkSearch, setBulkSearch] = useState("");
   const [bulkConfig, setBulkConfig] = useState<{
     startDate: string;
     numMonths: number;
     includeLegacy: boolean;
     selectionType: 'all' | 'selected';
+    selectedIds: string[];
   }>({
     startDate: new Date().toISOString().slice(0, 10),
     numMonths: 1,
     includeLegacy: true,
-    selectionType: 'all'
+    selectionType: 'all',
+    selectedIds: []
   });
 
   const autoBillingRun = useRef(false);
@@ -270,7 +273,7 @@ export default function Invoices() {
   const handleRunBulk = async () => {
     setIsProcessing(true);
     try {
-      const ids = bulkConfig.selectionType === 'selected' ? selectedInvoices.map(id => invoices.find(inv => inv.id === id)?.subscriberId).filter(Boolean) as string[] : undefined;
+      const ids = bulkConfig.selectionType === 'selected' ? bulkConfig.selectedIds : undefined;
       
       const stats = await runBulkBilling(
         new Date(bulkConfig.startDate),
@@ -281,6 +284,7 @@ export default function Invoices() {
       toast.success(`Generated ${stats.generated} invoices. Skipped ${stats.skipped}.`);
       setShowBulkModal(false);
       setSelectedInvoices([]);
+      setBulkConfig(prev => ({ ...prev, selectedIds: [] }));
     } catch (err: any) {
       toast.error(err.message || "Bulk generation failed");
     } finally {
@@ -935,16 +939,62 @@ export default function Invoices() {
                     All Active Subscribers
                   </button>
                   <button
-                    disabled={selectedInvoices.length === 0}
                     onClick={() => setBulkConfig(prev => ({ ...prev, selectionType: 'selected' }))}
                     className={cn(
-                      "flex-1 py-2 text-xs font-medium rounded-md transition-all disabled:opacity-30",
+                      "flex-1 py-2 text-xs font-medium rounded-md transition-all",
                       bulkConfig.selectionType === 'selected' ? "bg-orange-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    Selected ({selectedInvoices.length})
+                    Selected ({bulkConfig.selectedIds.length})
                   </button>
                 </div>
+
+                {bulkConfig.selectionType === 'selected' && (
+                  <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="relative mb-3">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search subscribers..."
+                        value={bulkSearch}
+                        onChange={(e) => setBulkSearch(e.target.value)}
+                        className="pl-9 h-9 text-xs bg-secondary"
+                      />
+                    </div>
+                    <div className="max-h-48 overflow-y-auto border border-border rounded-lg bg-secondary/30 divide-y divide-border/50 custom-scrollbar">
+                      {subscribers
+                        .filter(s => s.status === 'active')
+                        .filter(s => 
+                          !bulkSearch || 
+                          s.name.toLowerCase().includes(bulkSearch.toLowerCase()) || 
+                          s.customerId?.toLowerCase().includes(bulkSearch.toLowerCase())
+                        )
+                        .map(s => (
+                          <div 
+                            key={s.id} 
+                            className="flex items-center gap-3 p-2 hover:bg-orange-50/30 transition-colors cursor-pointer"
+                            onClick={() => {
+                              const ids = bulkConfig.selectedIds.includes(s.id)
+                                ? bulkConfig.selectedIds.filter(id => id !== s.id)
+                                : [...bulkConfig.selectedIds, s.id];
+                              setBulkConfig(prev => ({ ...prev, selectedIds: ids }));
+                            }}
+                          >
+                            <div className={cn(
+                              "h-4 w-4 rounded border flex items-center justify-center shrink-0 transition-colors",
+                              bulkConfig.selectedIds.includes(s.id) ? "bg-orange-500 border-orange-500" : "border-muted-foreground/30 bg-background"
+                            )}>
+                              {bulkConfig.selectedIds.includes(s.id) && <Check className="h-2.5 w-2.5 text-white" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold truncate">{s.name}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">{s.customerId} • {s.area}</p>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

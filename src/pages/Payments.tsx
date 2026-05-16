@@ -46,6 +46,9 @@ export default function Payments() {
     discount: 0,
     method: "Cash" as const,
   });
+  const [bulkSubscribers, setBulkSubscribers] = useState<any[]>([]);
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
+  const [bulkMethod, setBulkMethod] = useState<"Cash" | "UPI">("Cash");
 
   const getSubscriberDueAmount = (subscriberId: string) => {
     const sub = (subscribers || []).find((item) => item.id === subscriberId);
@@ -73,6 +76,24 @@ export default function Payments() {
   };
 
   useEffect(() => {
+    const sIds = searchParams.get("subscriberIds");
+    if (sIds) {
+      const ids = sIds.split(',').filter(Boolean);
+      const subs = subscribers.filter(s => ids.includes(s.id));
+      if (subs.length > 0) {
+        setBulkSubscribers(subs.map(s => ({
+          id: s.id,
+          name: s.name,
+          customerNo: s.customerNo,
+          due: getSubscriberDueAmount(s.id),
+          amount: getSubscriberDueAmount(s.id),
+          discount: 0
+        })));
+        setIsBulkOpen(true);
+      }
+      return;
+    }
+
     const subscriberId = searchParams.get("subscriberId");
     if (!subscriberId) return;
 
@@ -87,6 +108,38 @@ export default function Payments() {
     });
     setIsAddOpen(true);
   }, [searchParams, subscribers, invoices, payments]);
+
+  const handleBulkSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      let count = 0;
+      for (const sub of bulkSubscribers) {
+        if (sub.amount > 0) {
+          await recordPayment({
+            subscriberId: sub.id,
+            amount: sub.amount - sub.discount,
+            discount: sub.discount,
+            method: bulkMethod,
+            date: new Date().toISOString(),
+            agent: "System Admin"
+          });
+          count++;
+        }
+      }
+      toast.success(`Recorded ${count} batch payments`);
+      setIsBulkOpen(false);
+      setBulkSubscribers([]);
+      if (searchParams.get("subscriberIds")) {
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.delete("subscriberIds");
+        setSearchParams(nextParams, { replace: true });
+      }
+    } catch (err) {
+      toast.error("Batch processing failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -632,6 +685,115 @@ export default function Payments() {
           </table>
         </div>
       </div>
+
+      {/* Bulk Payment Modal */}
+      {isBulkOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-2xl app-card shadow-xl overflow-hidden my-auto">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                  <Banknote className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">Bulk Payment Collection</h2>
+                  <p className="text-xs text-muted-foreground">Recording payments for {bulkSubscribers.length} customers</p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setIsBulkOpen(false)} className="h-8 w-8 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></Button>
+            </div>
+            
+            <div className="p-4 max-h-[60vh] overflow-y-auto space-y-3">
+              <div className="flex gap-2 p-1 bg-secondary rounded-lg border border-border mb-4">
+                {['Cash', 'UPI'].map(m => (
+                  <button 
+                    key={m} 
+                    type="button" 
+                    onClick={() => setBulkMethod(m as any)} 
+                    className={cn(
+                      "flex-1 h-8 rounded-md text-sm font-medium transition-colors",
+                      bulkMethod === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+
+              {bulkSubscribers.map((sub, idx) => (
+                <div key={sub.id} className="p-3 bg-card border border-border rounded-xl space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-foreground">{sub.name}</span>
+                      <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded font-mono-num">#{sub.customerNo}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Current Due</span>
+                      <span className="text-sm font-bold text-red-500">₹{sub.due.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Amount (₹)</label>
+                      <Input 
+                        type="number" 
+                        value={sub.amount || ""} 
+                        onChange={(e) => {
+                          const newSubs = [...bulkSubscribers];
+                          newSubs[idx].amount = Number(e.target.value);
+                          setBulkSubscribers(newSubs);
+                        }}
+                        className="h-8 bg-input border-border text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Discount (₹)</label>
+                      <Input 
+                        type="number" 
+                        value={sub.discount || ""} 
+                        onChange={(e) => {
+                          const newSubs = [...bulkSubscribers];
+                          newSubs[idx].discount = Number(e.target.value);
+                          setBulkSubscribers(newSubs);
+                        }}
+                        className="h-8 bg-input border-border text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 border-t border-border bg-secondary/30">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <span className="text-xs text-muted-foreground block">Total Collection</span>
+                  <span className="text-xl font-bold text-orange-600">
+                    ₹{bulkSubscribers.reduce((sum, s) => sum + (s.amount - s.discount), 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-muted-foreground block">Total Discounts</span>
+                  <span className="text-sm font-bold text-foreground">
+                    ₹{bulkSubscribers.reduce((sum, s) => sum + s.discount, 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button variant="ghost" className="flex-1 h-10 bg-secondary hover:bg-secondary/80 text-foreground" onClick={() => setIsBulkOpen(false)}>Cancel</Button>
+                <Button 
+                  onClick={handleBulkSubmit}
+                  disabled={isSubmitting} 
+                  className="flex-1 h-10 bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                  Confirm All Payments
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Creation Modal */}
       {isAddOpen && (

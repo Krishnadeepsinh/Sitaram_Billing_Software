@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 @layer base {
   :root {
@@ -54,9 +54,12 @@
 }
 
 @layer base {
-  * { @apply border-border; }
+  * { border-color: hsl(var(--border)); }
   body {
-    @apply bg-background text-foreground antialiased;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-family: 'Inter', system-ui, sans-serif;
   }
   h1, h2, h3, h4, h5 {
@@ -72,7 +75,11 @@
 @layer components {
   /* Card surface — slightly lifted from page background */
   .app-card {
-    @apply bg-card rounded-xl border border-border shadow-sm;
+    background-color: hsl(var(--card));
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-color: hsl(var(--border));
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
   }
   .app-card:hover {
@@ -81,34 +88,70 @@
 
   /* Page section heading */
   .section-label {
-    @apply text-xs font-semibold uppercase tracking-wider text-muted-foreground;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
   }
 
   /* Table styles */
   .data-table {
-    @apply w-full bg-card rounded-xl border border-border overflow-hidden shadow-sm;
+    width: 100%;
+    background-color: hsl(var(--card));
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-color: hsl(var(--border));
+    overflow: hidden;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   }
   .data-table thead tr {
-    @apply bg-secondary/60 border-b border-border;
+    background-color: hsl(var(--secondary) / 0.6);
+    border-bottom-width: 1px;
+    border-color: hsl(var(--border));
   }
   .data-table thead th {
-    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    text-align: left;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
   }
   .data-table tbody tr {
-    @apply border-b border-border/50 hover:bg-secondary/40 transition-colors;
+    border-bottom-width: 1px;
+    border-color: hsl(var(--border) / 0.5);
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .data-table tbody tr:hover {
+    background-color: hsl(var(--secondary) / 0.4);
   }
   .data-table tbody tr:last-child {
-    @apply border-b-0;
+    border-bottom-width: 0px;
   }
   .data-table tbody td {
-    @apply px-4 py-3 text-sm text-foreground;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: hsl(var(--foreground));
   }
 
   /* Custom scrollbar */
   .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
-  .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/40; }
+  .custom-scrollbar::-webkit-scrollbar-track { background-color: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: hsl(var(--border)); border-radius: 9999px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: hsl(var(--muted-foreground) / 0.4); }
 
   /* Smooth page transition */
   .animate-fade-in {
@@ -121,7 +164,9 @@
 
   /* Skeleton loader */
   .skeleton {
-    @apply bg-secondary animate-pulse rounded-lg;
+    background-color: hsl(var(--secondary));
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    border-radius: 0.5rem;
   }
 }
 

@@ -1524,6 +1524,16 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         totalDiscountMap[sid] = (totalDiscountMap[sid] || 0) + disc;
       });
 
+      // Also add discounts that were recorded directly on invoices
+      invRes.rows.forEach(r => {
+        const row = mapRow(invRes.columns, r);
+        const sid = String(row.subscriber_id);
+        const invDisc = Number(row.discount) || 0;
+        if (invDisc > 0) {
+          totalDiscountMap[sid] = (totalDiscountMap[sid] || 0) + invDisc;
+        }
+      });
+
       const batch: any[] = [];
       for (const subRow of subRes.rows) {
         const sub = mapRow(subRes.columns, subRow);

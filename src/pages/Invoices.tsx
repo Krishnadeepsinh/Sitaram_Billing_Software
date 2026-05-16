@@ -176,7 +176,7 @@ export default function Invoices() {
         return sum + Number(payment.amount || 0) + Number(payment.discount || 0);
       }, 0);
 
-    return Math.max(0, Number(invoice.amount || 0) - paidAgainstInvoice);
+    return Math.max(0, Number(invoice.amount || 0) - Number(invoice.discount || 0) - paidAgainstInvoice);
   };
 
   const resetDateRange = () => {

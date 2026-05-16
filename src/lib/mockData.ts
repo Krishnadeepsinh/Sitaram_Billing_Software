@@ -55,6 +55,8 @@ export interface Invoice {
   type?: "plan" | "legacy";
   billingPeriod?: string;
   discount?: number;
+  serviceStart?: string;
+  serviceEnd?: string;
 }
 
 export interface Payment {

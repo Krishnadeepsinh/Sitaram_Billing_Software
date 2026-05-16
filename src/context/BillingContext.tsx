@@ -71,21 +71,25 @@ const getMonthsInRange = (startDate: Date, numMonths: number): string[] => {
 const getMonthsCoveredByInvoice = (inv: Invoice): string[] => {
   if (inv.type === 'legacy') return [];
   
-  // If we have billingPeriod, we could try to parse it, but it's formatted for display.
-  // Better to use the start date and assume a month-based cycle for duplicate prevention.
-  // Most invoices are 1 month. If they are more, we should ideally have stored the duration.
-  // Since we don't store duration in the DB yet, we'll try to guess from amount vs plan price?
-  // Or just use a 1-month window as a fallback, but check if billingPeriod contains "TO".
-  
-  const start = new Date(inv.date);
-  start.setHours(12, 0, 0, 0);
-  
-  if (inv.billingPeriod && inv.billingPeriod.includes(' TO ')) {
-    // It's a range. Try to extract duration.
-    // However, it's easier to just return the start month if we can't be sure.
-    // Let's improve this by checking the billingPeriod string more carefully if possible.
+  // If we have machine-readable dates, use them
+  if (inv.serviceStart && inv.serviceEnd) {
+    const start = new Date(inv.serviceStart);
+    const end = new Date(inv.serviceEnd);
+    const months: string[] = [];
+    
+    let current = new Date(start.getFullYear(), start.getMonth(), 1);
+    const targetEnd = new Date(end.getFullYear(), end.getMonth(), 1);
+    
+    while (current <= targetEnd) {
+      months.push(current.toLocaleString('default', { month: 'long', year: 'numeric' }));
+      current.setMonth(current.getMonth() + 1);
+    }
+    return months;
   }
   
+  // Fallback to billing date if service dates are missing
+  const start = new Date(inv.date);
+  start.setHours(12, 0, 0, 0);
   return [start.toLocaleString('default', { month: 'long', year: 'numeric' })];
 };
 
@@ -230,7 +234,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           'CREATE TABLE IF NOT EXISTS subscribers (id TEXT PRIMARY KEY, code TEXT, name TEXT, phone TEXT, area TEXT, customer_id TEXT, customer_username TEXT, customer_password TEXT, email TEXT, plan_id TEXT, status TEXT, expiry_date TEXT, balance REAL, auto_billing INTEGER, unpaid_months TEXT, house_no TEXT, landmark TEXT, installation_date TEXT, opening_balance REAL, customer_no INTEGER)',
           'CREATE TABLE IF NOT EXISTS plans (id TEXT PRIMARY KEY, name TEXT, price REAL, validity_days INTEGER, speed_mbps INTEGER, price_without_gst REAL, provider_plan_id TEXT, category TEXT)',
           'CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, subscriber_id TEXT, amount REAL, method TEXT, agent TEXT, date TEXT, discount REAL, invoice_id TEXT, balance_at_payment REAL, created_at TEXT)',
-          'CREATE TABLE IF NOT EXISTS invoices (id TEXT PRIMARY KEY, number TEXT, subscriber_id TEXT, amount REAL, gst_amount REAL, date TEXT, due_date TEXT, status TEXT, type TEXT, billing_period TEXT, discount REAL)',
+          'CREATE TABLE IF NOT EXISTS invoices (id TEXT PRIMARY KEY, number TEXT, subscriber_id TEXT, amount REAL, gst_amount REAL, date TEXT, due_date TEXT, status TEXT, type TEXT, billing_period TEXT, discount REAL, service_start TEXT, service_end TEXT)',
           'CREATE TABLE IF NOT EXISTS expenses (id TEXT PRIMARY KEY, category TEXT, description TEXT, amount REAL, date TEXT)',
           'CREATE TABLE IF NOT EXISTS reminders (id TEXT PRIMARY KEY, subscriber_id TEXT, type TEXT, channel TEXT, status TEXT, scheduled_at TEXT, sent_at TEXT)',
           'CREATE TABLE IF NOT EXISTS agents (id TEXT PRIMARY KEY, name TEXT, phone TEXT, areas TEXT, status TEXT, join_date TEXT)',
@@ -248,6 +252,9 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         try { await db.execute('ALTER TABLE subscribers ADD COLUMN installation_date TEXT'); } catch(e) {}
         try { await db.execute('ALTER TABLE subscribers ADD COLUMN opening_balance REAL'); } catch(e) {}
         try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_no INTEGER'); } catch(e) {}
+        
+        try { await db.execute('ALTER TABLE invoices ADD COLUMN service_start TEXT'); } catch(e) {}
+        try { await db.execute('ALTER TABLE invoices ADD COLUMN service_end TEXT'); } catch(e) {}
         try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_id TEXT'); } catch(e) {}
         try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_username TEXT'); } catch(e) {}
         try { await db.execute('ALTER TABLE subscribers ADD COLUMN customer_password TEXT'); } catch(e) {}
@@ -420,7 +427,9 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           gstAmount: r.gst_amount, 
           type: r.type || 'plan',
           billingPeriod: r.billing_period,
-          discount: Number(r.discount || 0)
+          discount: Number(r.discount || 0),
+          serviceStart: r.service_start,
+          serviceEnd: r.service_end
         } as unknown as Invoice;
       }));
       setExpenses(expRes.rows.map(row => {
@@ -1089,8 +1098,6 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!sub) throw new Error('Subscriber not found');
     
     const numMonths = Array.isArray(months) ? months.length : months;
-    const isLegacy = numMonths === 0;
-
     if (!isLegacy && sub.status !== 'active') {
       throw new Error('Cannot generate regular plan invoice for inactive subscriber');
     }
@@ -1106,101 +1113,100 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     if (numMonths === 0 && !includePreviousDue) return;
 
-    const prevDue = includePreviousDue ? (sub.openingBalance || 0) : 0;
-    // If includePreviousDue is true and numMonths is 0, we are generating a separate legacy invoice
-    // If numMonths > 0 and includePreviousDue is true, we might still be mixing them (but user wants them separate)
-    // To enforce separation, we'll assume if numMonths > 0, we don't include legacy due UNLESS explicitly requested.
-    // Actually, to follow the user request "generate separately", we'll make it so if numMonths > 0, prevDue is 0.
-    
     const validityDays = Number(plan.validityDays || 30);
     const cycleMonths = Math.max(1, Math.round(validityDays / 30));
     const serviceStartDate = billingDate;
-    const serviceEndDate = createServiceEndDate(
-      serviceStartDate,
-      numMonths > 0 ? (validityDays * (numMonths / cycleMonths)) : 30
-    );
-    const finalPlanCharge = numMonths > 0 ? (Number(plan.price || 0) * (numMonths / cycleMonths)) : 0;
-    const finalPriceWithoutGst = numMonths > 0 ? (Number(plan.priceWithoutGst || plan.price || 0) * (numMonths / cycleMonths)) : 0;
-    const finalPrevDue = numMonths === 0 ? prevDue : 0; 
-    
-    const total = (finalPlanCharge + finalPrevDue) - discount;
-    const gst = numMonths > 0 ? (finalPlanCharge - finalPriceWithoutGst) : 0;
 
-    const newExpiryDate = numMonths > 0 
-      ? serviceEndDate.toISOString()
-      : sub.expiryDate;
-
-    const selectedMonthNames = numMonths > 0 
-      ? getMonthsInRange(serviceStartDate, numMonths)
-      : ["Previous Year Billing"];
-
-    const billingPeriod = numMonths > 0 
-      ? (() => {
-          const dateObjects = Array.from({ length: numMonths }).map((_, i) => {
-            const d = new Date(serviceStartDate);
-            d.setMonth(d.getMonth() + i);
-            return d;
-          });
-          return formatMonthRanges(dateObjects).toUpperCase();
-        })()
-      : 'PREVIOUS YEAR';
-
-    // Check for existing invoices for these months or legacy type
-    const hasExisting = invoices.some(inv => {
-      if (inv.subscriberId !== subId) return false;
-      if (numMonths === 0) {
-        return inv.type === 'legacy';
-      }
-      const existingMonths = getMonthsCoveredByInvoice(inv);
-      return inv.type !== 'legacy' && selectedMonthNames.some(mName => existingMonths.includes(mName));
-    });
-
-    if (hasExisting) {
-      console.warn('Invoice already exists for one or more selected months');
-      return null;
+    let monthsToProcess: Date[] = [];
+    if (numMonths > 0) {
+      monthsToProcess = Array.from({ length: numMonths }).map((_, i) => {
+        const d = new Date(serviceStartDate);
+        d.setMonth(d.getMonth() + i);
+        return d;
+      });
     }
 
-    const invType = numMonths === 0 ? 'legacy' : 'plan';
+    // Smart Merge: Filter out months that are already invoiced
+    const alreadyInvoicedMonths: string[] = [];
+    const monthsToInvoice = monthsToProcess.filter(mDate => {
+      const mName = mDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      const hasOverlap = invoices.some(inv => {
+        if (inv.subscriberId !== subId || inv.type === 'legacy') return false;
+        const covered = getMonthsCoveredByInvoice(inv);
+        return covered.includes(mName);
+      });
+      if (hasOverlap) alreadyInvoicedMonths.push(mName);
+      return !hasOverlap;
+    });
+
+    if (numMonths > 0 && monthsToInvoice.length === 0) {
+      throw new Error(`The selected period (${alreadyInvoicedMonths.join(', ')}) is already covered by an existing invoice. No new invoice created.`);
+    }
+
+    // Adjust counts based on what's actually being invoiced
+    const actualMonthsCount = monthsToInvoice.length;
+    const finalPlanCharge = actualMonthsCount > 0 ? (Number(plan.price || 0) * (actualMonthsCount / cycleMonths)) : 0;
+    const finalPriceWithoutGst = actualMonthsCount > 0 ? (Number(plan.priceWithoutGst || plan.price || 0) * (actualMonthsCount / cycleMonths)) : 0;
+    
+    const prevDue = includePreviousDue ? (sub.openingBalance || 0) : 0;
+    const finalPrevDue = actualMonthsCount === 0 ? prevDue : 0; 
+    
+    const total = (finalPlanCharge + finalPrevDue) - discount;
+    const gst = actualMonthsCount > 0 ? (finalPlanCharge - finalPriceWithoutGst) : 0;
+
+    const serviceEndDate = actualMonthsCount > 0 
+      ? createServiceEndDate(monthsToInvoice[0], validityDays * (actualMonthsCount / cycleMonths))
+      : serviceStartDate;
+
+    const billingPeriod = actualMonthsCount > 0 
+      ? formatMonthRanges(monthsToInvoice).toUpperCase()
+      : 'PREVIOUS YEAR';
+
+    const invType = actualMonthsCount === 0 ? 'legacy' : 'plan';
+    const serviceStartStr = actualMonthsCount > 0 ? monthsToInvoice[0].toISOString() : null;
+    const serviceEndStr = actualMonthsCount > 0 ? serviceEndDate.toISOString() : null;
 
     if (db) {
       try {
-        // If we are formalizing legacy dues, the debt is already in sub.balance.
-        // We only subtract the NEW charges (plan charges) and ignore the part that is just moving legacy debt.
         const planChargeInInvoice = finalPlanCharge;
         const newBalance = (Number(sub.balance) || 0) - (planChargeInInvoice - Number(discount || 0));
-        const isPaid = newBalance >= 0;
         
-        let updatedMonths = [...sub.unpaidMonths];
-        for (const mName of selectedMonthNames) {
-          if (!isPaid && !updatedMonths.includes(mName)) {
+        let updatedMonths = [...(sub.unpaidMonths || [])];
+        for (const mDate of monthsToInvoice) {
+          const mName = mDate.toLocaleString('default', { month: 'short' });
+          if (!updatedMonths.includes(mName)) {
             updatedMonths.push(mName);
           }
         }
 
         await db.batch([
           {
-            sql: 'INSERT INTO invoices (id, number, subscriber_id, amount, gst_amount, date, due_date, status, type, billing_period, discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            args: [id, number, subId, total, gst, date, dueDate, isPaid ? 'paid' : 'pending', invType, billingPeriod, discount]
+            sql: 'INSERT INTO invoices (id, number, subscriber_id, amount, gst_amount, date, due_date, status, type, billing_period, discount, service_start, service_end) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            args: [id, number, subId, total, gst, date, dueDate, 'pending', invType, billingPeriod, discount, serviceStartStr, serviceEndStr]
           },
           {
             sql: 'UPDATE subscribers SET balance = ?, unpaid_months = ?, expiry_date = ?, opening_balance = ? WHERE id = ?',
             args: [
               newBalance, 
               JSON.stringify(updatedMonths), 
-              newExpiryDate, 
+              invType === 'plan' ? serviceEndStr : sub.expiryDate, 
               includePreviousDue ? 0 : (sub.openingBalance || 0),
               subId
             ]
           }
         ]);
         
-        // Final Truth Sync: Ensure all invoices (including previous ones) are correctly marked based on total payment history
+        if (alreadyInvoicedMonths.length > 0) {
+          const msg = `${alreadyInvoicedMonths.join(', ')} already invoiced. Generated for: ${monthsToInvoice.map(d => d.toLocaleString('default', { month: 'long' })).join(', ')}`;
+          console.log(msg);
+          alert(msg);
+        }
+        
         await recalculateBalances(subId);
-      } catch (err) { console.error('generateInvoice DB error:', err); }
+      } catch (err) { console.error('generateInvoice DB error:', err); throw err; }
       if (!skipFetch) await fetchData();
     } else {
       const newBalance = (sub.balance || 0) - total;
-      const isPaid = newBalance >= 0;
       
       const newInv: Invoice = {
         id,
@@ -1210,34 +1216,37 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         gstAmount: gst,
         date,
         dueDate,
-        status: isPaid ? 'paid' : 'pending',
-        type: invType,
+        status: 'pending',
+        type: invType as any,
         billingPeriod,
-        discount
-      };
-
+        discount,
+        serviceStart: serviceStartStr || undefined,
+        serviceEnd: serviceEndStr || undefined
       const updatedInvoices = [newInv, ...invoices];
       setInvoices(updatedInvoices);
-      LS.set('invoices', updatedInvoices);
-
-      let updatedMonths = [...sub.unpaidMonths];
-      for (const mName of selectedMonthNames) {
-        if (!isPaid && !updatedMonths.includes(mName)) {
-          updatedMonths.push(mName);
+      
+      const subIndex = subscribers.findIndex(s => s.id === subId);
+      if (subIndex !== -1) {
+        const s = subscribers[subIndex];
+        let updatedMonths = [...(s.unpaidMonths || [])];
+        for (const mDate of monthsToInvoice) {
+          const mName = mDate.toLocaleString('default', { month: 'short' });
+          if (!updatedMonths.includes(mName)) {
+            updatedMonths.push(mName);
+          }
         }
-      }
-
-      const updatedSubs = subscribers.map(s => 
-        s.id === subId ? { 
+        
+        const updatedSub = { 
           ...s, 
           balance: newBalance, 
-          unpaidMonths: updatedMonths, 
-          expiryDate: newExpiryDate,
-          openingBalance: includePreviousDue ? 0 : (s.openingBalance || 0)
-        } : s
-      );
-      setSubscribers(updatedSubs);
-      LS.set('subscribers', updatedSubs);
+          unpaidMonths: updatedMonths,
+          expiryDate: invType === 'plan' ? (serviceEndStr || s.expiryDate) : s.expiryDate,
+          openingBalance: includePreviousDue ? 0 : s.openingBalance 
+        };
+        const updatedSubs = [...subscribers];
+        updatedSubs[subIndex] = updatedSub;
+        setSubscribers(updatedSubs);
+      }
     }
   };
 
@@ -1728,49 +1737,50 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         continue;
       }
 
-      // Determine duration: override if provided, otherwise use plan cycle
+      // Determine duration
       const validityDays = Number(plan.validityDays || 30);
       const cycleMonths = Math.max(1, Math.round(validityDays / 30));
       const targetNumMonths = numMonthsOverride || cycleMonths;
       
-      const targetMonths = getMonthsInRange(billingDate, targetNumMonths);
-
-      // Prevent generating overlapping invoices
-      const hasOverlap = invoices.some(inv => {
-        if (inv.subscriberId !== sub.id) return false;
-        if (inv.type === 'legacy') return false; 
-        const existingMonths = getMonthsCoveredByInvoice(inv);
-        return targetMonths.some(m => existingMonths.includes(m));
+      const requestedMonths = Array.from({ length: targetNumMonths }).map((_, i) => {
+        const d = new Date(billingDate);
+        d.setMonth(d.getMonth() + i);
+        return d;
       });
-      
-      if (hasOverlap) {
+
+      // Filter months already covered
+      const monthsToInvoice = requestedMonths.filter(mDate => {
+        const mName = mDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        return !invoices.some(inv => {
+          if (inv.subscriberId !== sub.id || inv.type === 'legacy') return false;
+          return getMonthsCoveredByInvoice(inv).includes(mName);
+        });
+      });
+
+      if (monthsToInvoice.length === 0) {
         stats.skipped++;
         continue;
       }
 
+      const actualMonthsCount = monthsToInvoice.length;
       const id = `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       const number = generateSequentialId('#SCN-IN-', [...invoices, ...newInvoices], 'number');
       
-      // Calculate total for the target duration
-      const total = Number(plan.price || 0) * (targetNumMonths / cycleMonths);
-      const gst = Number(plan.priceWithoutGst ? (plan.price - plan.priceWithoutGst) : 0) * (targetNumMonths / cycleMonths);
+      // Calculate total based on actual months being invoiced
+      const total = Number(plan.price || 0) * (actualMonthsCount / cycleMonths);
+      const gst = Number(plan.priceWithoutGst ? (plan.price - plan.priceWithoutGst) : 0) * (actualMonthsCount / cycleMonths);
 
-      const serviceEndDate = createServiceEndDate(billingDate, validityDays * (targetNumMonths / cycleMonths));
+      const serviceEndDate = createServiceEndDate(monthsToInvoice[0], validityDays * (actualMonthsCount / cycleMonths));
       const newExpiryDate = serviceEndDate.toISOString();
       
-      const billingPeriod = (() => {
-        const dateObjects = Array.from({ length: targetNumMonths }).map((_, i) => {
-          const d = new Date(billingDate);
-          d.setMonth(d.getMonth() + i);
-          return d;
-        });
-        return formatMonthRanges(dateObjects).toUpperCase();
-      })();
+      const billingPeriod = formatMonthRanges(monthsToInvoice).toUpperCase();
 
       const newInv: Invoice = {
         id, number, subscriberId: sub.id, amount: total, status: 'pending', 
         date: billingDateStr, dueDate: dueDateStr, gstAmount: gst, 
-        type: 'plan', billingPeriod, discount: 0
+        type: 'plan', billingPeriod, discount: 0,
+        serviceStart: monthsToInvoice[0].toISOString(),
+        serviceEnd: serviceEndDate.toISOString()
       };
       newInvoices.push(newInv);
 

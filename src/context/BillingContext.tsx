@@ -1328,7 +1328,8 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const deleteInvoice = async (id: string, skipFetch = false) => {
     const inv = invoices.find(i => i.id === id);
     if (!inv) return;
-    
+    const sub = subscribers.find(s => s.id === inv.subscriberId);
+
     // Find matching payment if any
     const matchingPayments = payments.filter(p => p.subscriberId === inv.subscriberId && Number(p.amount) === Number(inv.amount));
     matchingPayments.sort((a, b) => Math.abs(new Date(a.date).getTime() - new Date(inv.date).getTime()) - Math.abs(new Date(b.date).getTime() - new Date(inv.date).getTime()));

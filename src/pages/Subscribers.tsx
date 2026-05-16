@@ -560,12 +560,16 @@ export default function Subscribers() {
                                 <div className="space-y-2 text-xs">
                                   {(() => {
                                     const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
-                                    const legacyDues = subInvoices
-                                      .filter(i => i.type === 'legacy')
-                                      .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-                                    const planDues = subInvoices
-                                      .filter(i => i.type === 'plan')
-                                      .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+                                    
+                                    const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
+                                      const paidAgainst = payments
+                                        .filter(p => p.invoiceId === inv.id)
+                                        .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
+                                      return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
+                                    }, 0);
+
+                                    const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
+                                    const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));
                                     const openingBalance = Number(s.openingBalance) || 0;
                                     
                                     return (
@@ -767,12 +771,16 @@ export default function Subscribers() {
                           <div className="space-y-2 text-xs">
                             {(() => {
                               const subInvoices = invoices.filter(i => i.subscriberId === s.id && i.status === 'pending');
-                              const legacyDues = subInvoices
-                                .filter(i => i.type === 'legacy')
-                                .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-                              const planDues = subInvoices
-                                .filter(i => i.type === 'plan')
-                                .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+                              
+                              const getActualDue = (invList: typeof invoices) => invList.reduce((sum, inv) => {
+                                const paidAgainst = payments
+                                  .filter(p => p.invoiceId === inv.id)
+                                  .reduce((ps, p) => ps + (Number(p.amount) || 0) + (Number(p.discount) || 0), 0);
+                                return sum + Math.max(0, (Number(inv.amount) || 0) - paidAgainst);
+                              }, 0);
+
+                              const legacyDues = getActualDue(subInvoices.filter(i => i.type === 'legacy'));
+                              const planDues = getActualDue(subInvoices.filter(i => i.type === 'plan'));
                               const openingBalance = Number(s.openingBalance) || 0;
                               
                               return (

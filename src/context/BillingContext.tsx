@@ -1108,15 +1108,16 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // To enforce separation, we'll assume if numMonths > 0, we don't include legacy due UNLESS explicitly requested.
     // Actually, to follow the user request "generate separately", we'll make it so if numMonths > 0, prevDue is 0.
     
-    const isManualPlanCycle = numMonths > 0 && !Array.isArray(months);
+    const validityDays = Number(plan.validityDays || 30);
+    const cycleMonths = Math.max(1, Math.round(validityDays / 30));
     const serviceStartDate = billingDate;
     const serviceEndDate = createServiceEndDate(
       serviceStartDate,
-      isManualPlanCycle ? Number(plan.validityDays || 30) * numMonths : numMonths * 30
+      numMonths > 0 ? (validityDays * (numMonths / cycleMonths)) : 30
     );
-    const finalPlanCharge = numMonths > 0 ? (plan.price * numMonths) : 0;
-    const finalPriceWithoutGst = numMonths > 0 ? (plan.priceWithoutGst || plan.price) * numMonths : 0;
-    const finalPrevDue = numMonths === 0 ? prevDue : 0; // Only include legacy if months is 0
+    const finalPlanCharge = numMonths > 0 ? (Number(plan.price || 0) * (numMonths / cycleMonths)) : 0;
+    const finalPriceWithoutGst = numMonths > 0 ? (Number(plan.priceWithoutGst || plan.price || 0) * (numMonths / cycleMonths)) : 0;
+    const finalPrevDue = numMonths === 0 ? prevDue : 0; 
     
     const total = (finalPlanCharge + finalPrevDue) - discount;
     const gst = numMonths > 0 ? (finalPlanCharge - finalPriceWithoutGst) : 0;
@@ -1161,7 +1162,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       try {
         // If we are formalizing legacy dues, the debt is already in sub.balance.
         // We only subtract the NEW charges (plan charges) and ignore the part that is just moving legacy debt.
-        const planChargeInInvoice = numMonths === 0 ? 0 : Number(plan?.price || 0) * numMonths;
+        const planChargeInInvoice = finalPlanCharge;
         const newBalance = (Number(sub.balance) || 0) - (planChargeInInvoice - Number(discount || 0));
         const isPaid = newBalance >= 0;
         
@@ -1874,7 +1875,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, 0);
 
     const pendingDues = subscribers.reduce((sum, s) => {
-      return s.status === 'active' ? sum + Math.abs(Math.min(0, Number(s.balance) || 0)) : sum;
+      return sum + Math.abs(Math.min(0, Number(s.balance) || 0));
     }, 0);
 
     const expiringCount = subscribers.reduce((count, s) => {

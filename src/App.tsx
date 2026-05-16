@@ -4,18 +4,21 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Loader2, ShieldCheck, Activity } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import AppLayout from "./components/AppLayout";
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+import { ErrorBoundary } from "./components/ErrorBoundary";
+
+const Dashboard   = lazy(() => import("./pages/Dashboard"));
 const Subscribers = lazy(() => import("./pages/Subscribers"));
-const Plans = lazy(() => import("./pages/Plans"));
-const Invoices = lazy(() => import("./pages/Invoices"));
-const Payments = lazy(() => import("./pages/Payments"));
-const Reports = lazy(() => import("./pages/Reports"));
-const Expenses = lazy(() => import("./pages/Expenses"));
-const Reminders = lazy(() => import("./pages/Reminders"));
-const Settings = lazy(() => import("./pages/Settings"));
-const Backup = lazy(() => import("./pages/Backup"));
+const Plans       = lazy(() => import("./pages/Plans"));
+const Invoices    = lazy(() => import("./pages/Invoices"));
+const Payments    = lazy(() => import("./pages/Payments"));
+const Reports     = lazy(() => import("./pages/Reports"));
+const Expenses    = lazy(() => import("./pages/Expenses"));
+const Reminders   = lazy(() => import("./pages/Reminders"));
+const Settings    = lazy(() => import("./pages/Settings"));
+const Backup      = lazy(() => import("./pages/Backup"));
+
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import { BillingProvider } from "./context/BillingContext";
@@ -58,9 +61,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     };
 
     verifySession();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   if (status === "checking") {
@@ -86,32 +87,48 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Convenience helper so each page route gets its own boundary + suspense
+const Page = ({ component: C }: { component: React.ComponentType }) => (
+  <ErrorBoundary>
+    <Suspense fallback={<RouteLoader />}>
+      <C />
+    </Suspense>
+  </ErrorBoundary>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BillingProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Suspense fallback={<RouteLoader />}><Dashboard /></Suspense>} />
-              <Route path="/subscribers" element={<Suspense fallback={<RouteLoader />}><Subscribers /></Suspense>} />
-              <Route path="/plans" element={<Suspense fallback={<RouteLoader />}><Plans /></Suspense>} />
-              <Route path="/invoices" element={<Suspense fallback={<RouteLoader />}><Invoices /></Suspense>} />
-              <Route path="/payments" element={<Suspense fallback={<RouteLoader />}><Payments /></Suspense>} />
-              <Route path="/reports" element={<Suspense fallback={<RouteLoader />}><Reports /></Suspense>} />
-              <Route path="/expenses" element={<Suspense fallback={<RouteLoader />}><Expenses /></Suspense>} />
-              <Route path="/reminders" element={<Suspense fallback={<RouteLoader />}><Reminders /></Suspense>} />
-              <Route path="/settings" element={<Suspense fallback={<RouteLoader />}><Settings /></Suspense>} />
-              <Route path="/backup" element={<Suspense fallback={<RouteLoader />}><Backup /></Suspense>} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </BillingProvider>
+    {/*
+      Outer ErrorBoundary — catches crashes from BillingProvider itself
+      (e.g. DB connection failure on first render / missing env vars).
+      Renders a "Database Connection Error" screen instead of white page.
+    */}
+    <ErrorBoundary>
+      <BillingProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route path="/"            element={<Page component={Dashboard}   />} />
+                <Route path="/subscribers" element={<Page component={Subscribers} />} />
+                <Route path="/plans"       element={<Page component={Plans}       />} />
+                <Route path="/invoices"    element={<Page component={Invoices}    />} />
+                <Route path="/payments"    element={<Page component={Payments}    />} />
+                <Route path="/reports"     element={<Page component={Reports}     />} />
+                <Route path="/expenses"    element={<Page component={Expenses}    />} />
+                <Route path="/reminders"   element={<Page component={Reminders}   />} />
+                <Route path="/settings"    element={<Page component={Settings}    />} />
+                <Route path="/backup"      element={<Page component={Backup}      />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </BillingProvider>
+    </ErrorBoundary>
   </QueryClientProvider>
 );
 

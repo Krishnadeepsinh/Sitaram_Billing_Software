@@ -185,6 +185,7 @@ interface BillingContextType {
   runAutoLegacyBilling: () => Promise<void>;
   recalculateBalances: (targetSubId?: string) => Promise<boolean>;
   importBackupData: (data: any) => Promise<void>;
+  dbError: string | null;
 }
 
 const BillingContext = createContext<BillingContextType | undefined>(undefined);
@@ -208,6 +209,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     upiId: BRAND_UPI,
   });
   const [isLoading, setIsLoading]     = useState(true);
+  const [dbError, setDbError]         = useState<string | null>(null);
   const [filterStartDate, setFilterStartDate] = useState(() => {
     const d = new Date();
     d.setDate(1);
@@ -479,7 +481,9 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       return true;
     } catch (err) {
-      console.error('Turso fetch error:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('Turso fetch error:', msg);
+      setDbError(msg);
       return false;
     }
   }, [businessMode]);
@@ -504,13 +508,25 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+    setDbError(null);
     try {
       if (db) {
         const ok = await fetchFromDB();
-        if (!ok) fetchFromLS();
+        if (!ok) {
+          // DB returned false (connection failed) — fall back to localStorage
+          // so the UI still renders with any cached data instead of crashing.
+          console.warn('[BillingContext] DB fetch failed — falling back to localStorage cache.');
+          fetchFromLS();
+        }
       } else {
         fetchFromLS();
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[BillingContext] fetchData unhandled error:', msg);
+      setDbError(msg);
+      // Always try the local fallback so the app renders something
+      try { fetchFromLS(); } catch (_) {}
     } finally {
       setIsLoading(false);
     }
@@ -2044,7 +2060,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   return (
     <BillingContext.Provider value={{
-      subscribers, agents, plans: plansList, payments, invoices, expenses, reminders, isLoading,
+      subscribers, agents, plans: plansList, payments, invoices, expenses, reminders, isLoading, dbError,
       addSubscriber, updateSubscriber, deleteSubscriber,
       addPlan, updatePlan, deletePlan,
       generateInvoice, deleteInvoice, bulkDeleteInvoices, runBulkBilling, runAutoLegacyBilling,

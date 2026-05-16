@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { Menu, Loader2 } from "lucide-react";
+import { Menu, Loader2, DatabaseZap } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
@@ -34,6 +34,7 @@ export default function AppLayout() {
 function AppLayoutContent() {
   const { setOpenMobile } = useSidebar();
   const activeBusinessMode = useBusinessMode();
+  const { dbError } = useBilling();
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden min-w-0">
@@ -73,6 +74,20 @@ function AppLayoutContent() {
       </div>
 
       <main className="flex-1 overflow-y-auto bg-background">
+        {dbError && (
+          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 m-4 md:mx-6 md:mt-6 rounded-r-md shadow-sm">
+            <div className="flex items-center gap-3">
+              <DatabaseZap className="h-5 w-5 text-orange-600 shrink-0" />
+              <div>
+                <h3 className="text-sm font-bold text-orange-800">Operating in Offline Mode</h3>
+                <p className="text-xs text-orange-700 mt-1">
+                  Could not connect to the database. Displaying cached data. Changes will not be saved to the server.
+                  <br/><span className="opacity-75 font-mono mt-1 inline-block">{dbError}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="max-w-screen-xl mx-auto p-4 md:p-6 animate-fade-in">
           <Outlet />
         </div>

@@ -116,7 +116,10 @@ def make_qr_image(text):
     img = qr.make_image(fill_color="#1B2B4B", back_color="white")
     
     img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
+    try:
+        img.save(img_byte_arr, format='PNG')
+    except TypeError:
+        img.save(img_byte_arr)
     img_byte_arr.seek(0)
     return ImageReader(img_byte_arr)
 
@@ -124,7 +127,7 @@ def draw_logo(c, x, y, size):
     """loads logo from public dir and draws with size 14x14mm as requested"""
     # Robust path discovery for different environments (local vs Vercel)
     possible_roots = [os.getcwd(), os.path.dirname(os.path.abspath(__file__)), "/var/task", "/var/task/public"]
-    possible_names = ["logo-mark.png", "sitaram_logo_512x512.png", "logo-transparent.png", "logo.png", "logo.jpg"]
+    possible_names = ["logo.png", "logo-mark.png", "sitaram_logo_512x512.png", "logo-transparent.png", "logo.jpg"]
     
     logo_img = None
     for root in possible_roots:

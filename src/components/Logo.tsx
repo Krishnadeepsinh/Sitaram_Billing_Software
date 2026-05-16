@@ -31,7 +31,7 @@ export function Logo({ className, iconClassName, showText = true, showModeLabel 
         iconClassName
       )}>
         <img
-          src="/logo-mark.png"
+          src="/logo.png"
           alt="Sitaram Cable & Broadband"
           className={cn("h-full w-full object-contain", currentSize.image)}
         />

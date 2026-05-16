@@ -21,11 +21,11 @@ export function InvoiceHeader({ brand, invoiceLabel }: InvoiceHeaderProps) {
         <div className="flex gap-6 items-center">
           <div className="h-18 w-18 bg-white rounded-2xl p-2 flex items-center justify-center">
              <img 
-               src="/logo-transparent.png" 
+               src="/logo.png" 
                alt="Logo" 
                className="h-14 w-14 object-contain" 
                onError={(e) => {
-                 (e.target as HTMLImageElement).src = '/logo.jpg';
+                 (e.target as HTMLImageElement).src = '/logo.png';
                }}
              />
           </div>

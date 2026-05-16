@@ -66,7 +66,10 @@ def make_qr_image(text):
     img = qr.make_image(fill_color="#1B2B4B", back_color="white")
     
     img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
+    try:
+        img.save(img_byte_arr, format='PNG')
+    except TypeError:
+        img.save(img_byte_arr)
     img_byte_arr.seek(0)
     return ImageReader(img_byte_arr)
 
@@ -76,7 +79,7 @@ def draw_logo(c, x, y, size):
     logo_path = "sitaram_logo_512x512.png"
     if not os.path.exists(logo_path):
         # Check potential locations
-        alt_paths = ["public/logo-transparent.png", "public/logo-mark.png"]
+        alt_paths = ["public/logo.png", "public/logo-transparent.png", "public/logo-mark.png"]
         for p in alt_paths:
             if os.path.exists(p):
                 logo_path = p

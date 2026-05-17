@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, formatDate, formatMonthRanges } from "@/lib/mockData";
 import { useBusinessMode } from "@/lib/turso";
-import { useBilling } from "@/context/BillingContext";
+import { useBilling, calculateMajorityMonth } from "@/context/BillingContext";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -137,6 +137,15 @@ export default function Dashboard() {
       const planDates = pendingInvoices
         .filter(i => i.type === 'plan')
         .flatMap(i => {
+          const sStart = i.serviceStart || (i as any).service_start;
+          const sEnd = i.serviceEnd || (i as any).service_end;
+          if (sStart && sEnd) {
+            const majority = calculateMajorityMonth(sStart, sEnd);
+            const parsed = new Date(majority);
+            if (!isNaN(parsed.getTime())) {
+              return [parsed];
+            }
+          }
           const plan = plansList.find(p => p.id === sub.planId);
           const price = plan?.price || 1;
           const count = Math.max(1, Math.round((Number(i.amount) + Number(i.discount || 0)) / price));

@@ -15,7 +15,7 @@ import {
   Info
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useBilling } from "@/context/BillingContext";
+import { useBilling, calculateMajorityMonth } from "@/context/BillingContext";
 import { useBusinessMode } from "@/lib/turso";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useNavigate } from "react-router-dom";
@@ -208,6 +208,15 @@ export default function Subscribers() {
     const planDates = pendingInvoices
       .filter(i => i.type === 'plan')
       .flatMap(i => {
+        const sStart = i.serviceStart || (i as any).service_start;
+        const sEnd = i.serviceEnd || (i as any).service_end;
+        if (sStart && sEnd) {
+          const majority = calculateMajorityMonth(sStart, sEnd);
+          const parsed = new Date(majority);
+          if (!isNaN(parsed.getTime())) {
+            return [parsed];
+          }
+        }
         const sub = subscribers.find(s => s.id === subId);
         const plan = dbPlans.find(p => p.id === sub?.planId);
         const price = plan?.price || 1;

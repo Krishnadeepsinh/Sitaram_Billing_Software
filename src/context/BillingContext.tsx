@@ -68,7 +68,7 @@ const getMonthsInRange = (startDate: Date, numMonths: number): string[] => {
   return months;
 };
 
-const calculateMajorityMonth = (startStr: string, endStr: string): string => {
+export const calculateMajorityMonth = (startStr: string, endStr: string): string => {
   const start = new Date(startStr);
   const end = new Date(endStr);
   start.setHours(12, 0, 0, 0);
@@ -934,6 +934,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
 
           await db.batch(batch);
+          await recalculateBalances(pData.subscriberId);
         }
       } catch (err) { 
         console.error('recordPayment DB error:', err);
@@ -1106,6 +1107,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
 
           await db.batch(batch);
+          await recalculateBalances(sub.id);
         } else {
           await db.execute({ sql: 'DELETE FROM payments WHERE id = ?', args: [id] });
         }
@@ -1656,7 +1658,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
 
       const [invRes, payRes, subRes] = await Promise.all([
-        db.execute(targetSubId ? { sql: 'SELECT id, subscriber_id, amount, discount, status, type, date FROM invoices WHERE subscriber_id = ? ORDER BY date ASC', args: [targetSubId] } : 'SELECT id, subscriber_id, amount, discount, status, type, date FROM invoices ORDER BY date ASC'),
+        db.execute(targetSubId ? { sql: 'SELECT id, subscriber_id, amount, discount, status, type, date, service_start, service_end FROM invoices WHERE subscriber_id = ? ORDER BY date ASC', args: [targetSubId] } : 'SELECT id, subscriber_id, amount, discount, status, type, date, service_start, service_end FROM invoices ORDER BY date ASC'),
         db.execute(targetSubId ? { sql: 'SELECT subscriber_id, amount, discount FROM payments WHERE subscriber_id = ?', args: [targetSubId] } : 'SELECT subscriber_id, amount, discount FROM payments'),
         db.execute(targetSubId ? { sql: 'SELECT id, opening_balance FROM subscribers WHERE id = ?', args: [targetSubId] } : 'SELECT id, opening_balance FROM subscribers')
       ]);
@@ -1710,7 +1712,14 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const sortedDesc = [...subInvoices].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             for (const inv of sortedDesc) {
                 if (runningSum < targetAbs) {
-                    const mName = new Date(String(inv.date)).toLocaleString('default', { month: 'long', year: 'numeric' });
+                    let mName = "";
+                    const sStart = inv.service_start || inv.serviceStart;
+                    const sEnd = inv.service_end || inv.serviceEnd;
+                    if (sStart && sEnd) {
+                        mName = calculateMajorityMonth(sStart, sEnd);
+                    } else {
+                        mName = new Date(String(inv.date)).toLocaleString('default', { month: 'long', year: 'numeric' });
+                    }
                     if (!updatedMonths.includes(mName)) updatedMonths.unshift(mName);
                     runningSum += Number(inv.amount || 0);
                 } else break;

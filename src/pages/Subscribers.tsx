@@ -459,10 +459,24 @@ export default function Subscribers() {
   }, [historySub, invoices]);
 
   const chronologicalLedger = useMemo(() => {
-    const combined = [
-      ...subPayments.map(p => ({ ...p, ledgerType: 'payment' as const })),
+    const combined: any[] = [
+      ...subPayments.flatMap(p => {
+        const rows: any[] = [{ ...p, ledgerType: 'payment' as const }];
+        // Inject a synthetic discount row immediately after the cash payment row
+        if (Number(p.discount) > 0) {
+          rows.push({
+            ...p,
+            id: `${p.id}-disc`,
+            amount: Number(p.discount),
+            ledgerType: 'discount' as const,
+          });
+        }
+        return rows;
+      }),
       ...subInvoices.map(i => ({ ...i, ledgerType: 'invoice' as const }))
     ];
+    // Sort by date desc; discount rows share exact same date as their payment
+    // so they naturally stay together (stable sort keeps insertion order)
     return combined.sort((a, b) => +new Date(b.date) - +new Date(a.date));
   }, [subPayments, subInvoices]);
 
@@ -925,12 +939,19 @@ export default function Subscribers() {
                 chronologicalLedger.map(item => (
                   <div key={item.id} className={cn(
                     "p-4 rounded-xl border flex items-center justify-between",
-                    item.ledgerType === 'payment' ? "bg-green-50 border-green-100" : "bg-slate-50 border-slate-200"
+                    item.ledgerType === 'payment' ? "bg-green-50 border-green-100" :
+                    item.ledgerType === 'discount' ? "bg-green-50 border-green-100 border-dashed" :
+                    "bg-slate-50 border-slate-200"
                   )}>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
-                        <span className={cn("font-bold text-base", item.ledgerType === 'payment' ? "text-green-700" : "text-slate-700")}>
-                          {item.ledgerType === 'payment' ? "+" : "-"}{formatCurrency(item.amount)}
+                        <span className={cn(
+                          "font-bold text-base",
+                          item.ledgerType === 'payment' ? "text-green-700" :
+                          item.ledgerType === 'discount' ? "text-green-600" :
+                          "text-slate-700"
+                        )}>
+                          {item.ledgerType === 'invoice' ? "-" : "+"}{formatCurrency(item.amount)}
                         </span>
                         {item.ledgerType === 'invoice' && item.discount > 0 && (
                           <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
@@ -938,8 +959,16 @@ export default function Subscribers() {
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                        {item.ledgerType === 'payment' ? `Payment (${item.method})` : `Invoice (${item.number})`}
+                      <span className={cn(
+                        "text-[10px] uppercase tracking-widest font-bold",
+                        item.ledgerType === 'discount' ? "text-orange-500" : "text-slate-400"
+                      )}>
+                        {item.ledgerType === 'payment'
+                          ? `Payment (${item.method})`
+                          : item.ledgerType === 'discount'
+                          ? `Discount (Gift)`
+                          : `Invoice (${item.number})`
+                        }
                       </span>
                       {item.ledgerType === 'invoice' && item.billingPeriod && (
                         <span className="text-[10px] text-indigo-600 font-bold mt-1 uppercase">
@@ -949,7 +978,10 @@ export default function Subscribers() {
                     </div>
                     <div className="text-right flex flex-col items-end">
                       <span className="text-sm font-medium text-slate-600">{formatDate(item.date)}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">#{item.id.slice(-6).toUpperCase()}</span>
+                      {/* For discount rows, show the parent payment's ID (strip the -disc suffix) */}
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        #{(item.ledgerType === 'discount' ? item.id.replace(/-disc$/, '') : item.id).slice(-6).toUpperCase()}
+                      </span>
                     </div>
                   </div>
                 ))

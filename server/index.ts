@@ -226,7 +226,7 @@ const getRateLimitState = (key: string) => {
   const now = Date.now();
   const current = loginAttempts.get(key);
   if (!current || now - current.firstAttemptAt > loginWindowMs) {
-    const next = { count: 0, firstAttemptAt: now };
+    const next: { count: number; firstAttemptAt: number; blockedUntil?: number } = { count: 0, firstAttemptAt: now };
     loginAttempts.set(key, next);
     return next;
   }

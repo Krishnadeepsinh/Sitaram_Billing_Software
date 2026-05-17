@@ -138,7 +138,7 @@ export const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => 
       status TEXT DEFAULT 'active',
       created_at TEXT
     )
-  );
+  `);
 
   try {
     await db.execute("ALTER TABLE admin_users ADD COLUMN password_text TEXT");

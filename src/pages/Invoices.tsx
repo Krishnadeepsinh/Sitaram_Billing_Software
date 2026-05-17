@@ -51,7 +51,7 @@ export default function Invoices() {
   const customerIdLabel = isCableMode ? "STB" : "CID";
   const { 
     invoices, subscribers, payments, plans: plansList, generateInvoice, runBulkBilling, 
-    runAutoLegacyBilling, deleteInvoice, bulkDeleteInvoices, recordPayment, companySettings, 
+    runAutoLegacyBilling, deleteInvoiceWithPayments, bulkDeleteInvoices, recordPayment, companySettings, 
     recalculateBalances, filterStartDate, setFilterStartDate, filterEndDate, setFilterEndDate 
   } = useBilling();
   const brand = getBrandSettings(companySettings);
@@ -229,7 +229,7 @@ export default function Invoices() {
 
   const executeDelete = async (id: string) => {
     try {
-      await deleteInvoice(id);
+      await deleteInvoiceWithPayments(id);
       toast.success("Registry Object Expunged");
     } catch (e) {
       toast.error("Deletion failed");

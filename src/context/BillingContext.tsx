@@ -157,7 +157,7 @@ interface BillingContextType {
   updatePlan: (id: string, updates: Partial<typeof plans[0]>) => Promise<void>;
   deletePlan: (id: string) => Promise<void>;
   generateInvoice: (subId: string, months?: number | string[], skipFetch?: boolean, customDate?: Date, includePreviousDue?: boolean, subObj?: Subscriber, discount?: number) => Promise<void>;
-  deleteInvoice: (id: string, skipFetch?: boolean) => Promise<void>;
+  deleteInvoiceWithPayments: (id: string, skipFetch?: boolean) => Promise<void>;
   runBulkBilling: (startDate?: Date, numMonths?: number, includePreviousDue?: boolean, selectedSubscriberIds?: string[]) => Promise<{ legacyGenerated: number; total: number; generated: number; skipped: number }>;
   bulkDeleteInvoices: (ids: string[]) => Promise<void>;
   recordPayment: (payment: Omit<Payment, 'id'> & { invoiceId?: string, discount?: number }) => Promise<Payment>;
@@ -1337,7 +1337,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const deleteInvoice = async (id: string, skipFetch = false) => {
+  const deleteInvoiceWithPayments = async (id: string, skipFetch = false) => {
     const inv = invoices.find(i => i.id === id);
     if (!inv) return;
 
@@ -1362,6 +1362,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // PRAGMA foreign_keys=ON (set at connection time) would cascade this,
         // but we do it explicitly too for safety.
         const batch: any[] = [
+          { sql: 'PRAGMA foreign_keys = ON', args: [] },
           ...paymentsToDelete.map(p => ({ sql: 'DELETE FROM payments WHERE id = ?', args: [p.id] })),
           { sql: 'DELETE FROM invoices WHERE id = ?', args: [id] },
         ];
@@ -1381,7 +1382,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // Never delta-add/subtract — always recalculate from source of truth.
         await recalculateBalances(inv.subscriberId);
       } catch (err) {
-        console.error('deleteInvoice DB error:', err);
+        console.error('deleteInvoiceWithPayments DB error:', err);
         throw err;
       }
       if (!skipFetch) await fetchData();
@@ -2019,7 +2020,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       subscribers, agents, plans: plansList, payments, invoices, expenses, reminders, isLoading, dbError,
       addSubscriber, updateSubscriber, deleteSubscriber,
       addPlan, updatePlan, deletePlan,
-      generateInvoice, deleteInvoice, bulkDeleteInvoices, runBulkBilling, runAutoLegacyBilling,
+      generateInvoice, deleteInvoiceWithPayments, bulkDeleteInvoices, runBulkBilling, runAutoLegacyBilling,
       recordPayment, deletePayment,
       addExpense, deleteExpense,
       stats, filterStartDate, setFilterStartDate, filterEndDate, setFilterEndDate, companySettings, hasTursoDB, updateCompanySettings,

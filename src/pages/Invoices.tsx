@@ -1103,7 +1103,6 @@ export default function Invoices() {
         )}
         {showReceipt && receiptPayment && (
           <PaymentReceiptModal
-            isOpen={showReceipt}
             onClose={() => {
               setShowReceipt(false);
               setReceiptPayment(null);

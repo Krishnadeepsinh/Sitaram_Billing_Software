@@ -1002,6 +1002,33 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const payment = payments.find(p => p.id === id);
     if (!payment) return;
 
+    if (businessMode === 'cable' && db) {
+      try {
+        const subId = payment.subscriberId;
+        const invId = (payment as any).invoiceId;
+
+        // Delete payment only, NEVER the invoice
+        const batch: any[] = [{ sql: 'DELETE FROM payments WHERE id = ?', args: [id] }];
+        
+        // Reset linked invoice(s) back to pending
+        if (invId) {
+          batch.push({ sql: "UPDATE invoices SET status = 'pending' WHERE id = ?", args: [invId] });
+        } else {
+          // Fallback if no exact link: set all to pending so recalculateBalances can reassign them correctly
+          batch.push({ sql: "UPDATE invoices SET status = 'pending' WHERE subscriber_id = ? AND status = 'paid'", args: [subId] });
+        }
+        
+        await db.batch(batch);
+        
+        // Restore balance and recalculate from scratch
+        await recalculateBalances(subId);
+      } catch (err) {
+        console.error('deletePayment Cable error:', err);
+      }
+      await fetchData();
+      return;
+    }
+
     if (db) {
       try {
         const sub = subscribers.find(s => s.id === payment.subscriberId);
@@ -1340,6 +1367,51 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const deleteInvoiceWithPayments = async (id: string, skipFetch = false) => {
     const inv = invoices.find(i => i.id === id);
     if (!inv) return;
+
+    if (businessMode === 'cable' && db) {
+      try {
+        // Find every single payment row linked to this invoice
+        const exactLinked = payments.filter(p => (p as any).invoiceId === id);
+        let paymentsToDelete = exactLinked;
+        
+        if (paymentsToDelete.length === 0) {
+          // Fallback heuristic for older cable records
+          paymentsToDelete = payments.filter(p => 
+            p.subscriberId === inv.subscriberId && 
+            Number(p.amount) === Number(inv.amount) && 
+            Math.abs(new Date(p.date).getTime() - new Date(inv.date).getTime()) < 35 * 24 * 60 * 60 * 1000
+          );
+        }
+
+        const batch: any[] = [];
+        
+        // Delete all linked payments from the Cable payments table
+        for (const p of paymentsToDelete) {
+          batch.push({ sql: 'DELETE FROM payments WHERE id = ?', args: [p.id] });
+        }
+        
+        // Delete the Cable invoice
+        batch.push({ sql: 'DELETE FROM invoices WHERE id = ?', args: [id] });
+
+        // Restore opening balance if legacy
+        if (inv.type === 'legacy') {
+          const subRow = await db.execute({ sql: 'SELECT opening_balance FROM subscribers WHERE id = ?', args: [inv.subscriberId] });
+          if (subRow.rows[0]) {
+            const curOB = Number((mapRow(subRow.columns, subRow.rows[0])).opening_balance || 0);
+            batch.push({ sql: 'UPDATE subscribers SET opening_balance = ? WHERE id = ?', args: [curOB + Number(inv.amount), inv.subscriberId] });
+          }
+        }
+
+        await db.batch(batch);
+        
+        // Recalculate the subscriber balance from scratch
+        await recalculateBalances(inv.subscriberId);
+      } catch (err) {
+        console.error('deleteInvoiceWithPayments Cable error:', err);
+      }
+      if (!skipFetch) await fetchData();
+      return;
+    }
 
     // Collect ALL payments linked to this invoice:
     // Primary: exact invoice_id match

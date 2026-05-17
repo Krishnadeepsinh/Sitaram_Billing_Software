@@ -1006,17 +1006,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       try {
         const sub = subscribers.find(s => s.id === payment.subscriberId);
         if (sub) {
-          // BUG 2 & 3 FIX: Also delete the linked invoice when deleting a payment.
-          // Use invoice_id field for precise matching (not amount-based fuzzy match).
-          const linkedInvoiceId: string | null = (payment as any).invoiceId || null;
-
-          // Recalculate balance without this payment (and without the linked invoice's debt).
-          // We exclude the linked invoice from sumInvoiced because it will be deleted too.
+          // Recalculate balance without this payment. The linked invoice stays.
           const calcInvoicesRes = await db.execute({
-            sql: linkedInvoiceId
-              ? "SELECT SUM(amount) as total FROM invoices WHERE subscriber_id = ? AND id != ?"
-              : "SELECT SUM(amount) as total FROM invoices WHERE subscriber_id = ?",
-            args: linkedInvoiceId ? [sub.id, linkedInvoiceId] : [sub.id]
+            sql: "SELECT SUM(amount) as total FROM invoices WHERE subscriber_id = ?",
+            args: [sub.id]
           });
           const sumInvoiced = Number(calcInvoicesRes.rows[0].total || 0);
 
@@ -1051,17 +1044,10 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             { sql: 'UPDATE subscribers SET balance = ?, unpaid_months = ? WHERE id = ?', args: [newBalance, JSON.stringify(updatedMonths), sub.id] }
           ];
 
-          // Also delete the linked invoice
-          if (linkedInvoiceId) {
-            batch.push({ sql: 'DELETE FROM invoices WHERE id = ?', args: [linkedInvoiceId] });
-          }
-
-          // Recalculate status of REMAINING invoices (exclude the deleted one)
+          // Recalculate status of ALL remaining invoices
           const subInvoicesRes = await db.execute({
-            sql: linkedInvoiceId
-              ? "SELECT id, amount, status, type, discount FROM invoices WHERE subscriber_id = ? AND id != ? ORDER BY CASE WHEN type = 'legacy' THEN 0 ELSE 1 END, date ASC"
-              : "SELECT id, amount, status, type, discount FROM invoices WHERE subscriber_id = ? ORDER BY CASE WHEN type = 'legacy' THEN 0 ELSE 1 END, date ASC",
-            args: linkedInvoiceId ? [sub.id, linkedInvoiceId] : [sub.id]
+            sql: "SELECT id, amount, status, type, discount FROM invoices WHERE subscriber_id = ? ORDER BY CASE WHEN type = 'legacy' THEN 0 ELSE 1 END, date ASC",
+            args: [sub.id]
           });
           const subInvoices = subInvoicesRes.rows.map(r => mapRow(subInvoicesRes.columns, r));
 
@@ -1087,18 +1073,15 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
       await fetchData();
     } else {
-      // LS branch: delete payment + linked invoice + recalculate balance
+      // LS branch: delete payment only + recalculate balance
       const sub = subscribers.find(s => s.id === payment.subscriberId);
-      const linkedInvoiceId: string | null = (payment as any).invoiceId || null;
 
       const updatedPayments = payments.filter(p => p.id !== id);
       setPayments(updatedPayments);
       LS.set('payments', updatedPayments);
 
-      // Delete linked invoice too
-      const updatedInvoicesAfterDel = linkedInvoiceId
-        ? invoices.filter(inv => inv.id !== linkedInvoiceId)
-        : invoices;
+      // We do NOT delete the invoice.
+      const updatedInvoicesAfterDel = invoices;
 
       if (sub) {
         // Absolute recalculation (same formula as DB branch)

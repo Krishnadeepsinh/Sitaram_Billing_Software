@@ -932,9 +932,19 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const sub = subscribers.find(s => s.id === pData.subscriberId);
       if (sub) {
         const plan = plansList.find(pl => pl.id === sub.planId);
-        const newBalance = (Number(sub.balance) || 0) + amount + discount;
+
+        // BUG 1 FIX: Use absolute recalculation (same as DB branch).
+        // Discount must ONLY appear as debt reduction, never added to balance.
+        const allPayments = [...payments, newPayment].filter(p => p.subscriberId === sub.id);
+        const allCash = allPayments.reduce((s, p) => s + Number(p.amount || 0), 0);
+        const allDisc = allPayments.reduce((s, p) => s + Number(p.discount || 0), 0);
+        const subInvoicesForCalc = invoices.filter(inv => inv.subscriberId === sub.id);
+        const sumInvoiced = subInvoicesForCalc.reduce((s, i) => s + Number(i.amount || 0), 0);
+        const openingBal = Number(sub.openingBalance || 0);
+        const totalDebt = sumInvoiced + openingBal;
+        const newBalance = allCash - Math.max(0, totalDebt - allDisc);
+
         let updatedMonths = [...(sub.unpaidMonths || [])];
-        
         if (plan && plan.price > 0) {
           if (newBalance >= -0.01) {
             updatedMonths = [];
@@ -945,24 +955,15 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             }
           }
         }
-        
-        let currentInvoices = invoices.map(inv => {
-          if (inv.id === pData.invoiceId && discount > 0) {
-            return { ...inv, amount: inv.amount - discount, discount: (inv.discount || 0) + discount };
-          }
-          return inv;
-        });
 
-        const updatedSubs = subscribers.map(s => 
+        const updatedSubs = subscribers.map(s =>
           s.id === sub.id ? { ...s, balance: newBalance, unpaidMonths: updatedMonths } : s
         );
         setSubscribers(updatedSubs);
         LS.set('subscribers', updatedSubs);
 
-        // Sync statuses with custom priority:
-        // 1. Specific target invoice
-        // 2. Legacy invoices
-        // 3. Plan invoices (chronological)
+        // Sync invoice statuses (priority: selected invoice → legacy → chronological)
+        const currentInvoices = invoices;
         const subInvoices = currentInvoices
           .filter(inv => inv.subscriberId === sub.id)
           .sort((a, b) => {
@@ -973,22 +974,18 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             if (typeA !== typeB) return typeA - typeB;
             return new Date(a.date).getTime() - new Date(b.date).getTime();
           });
-        
-        const totalInvoiced = subInvoices.reduce((s, i) => s + Number(i.amount || 0), 0);
-        const totalPaid = newBalance + totalInvoiced + (Number(sub.openingBalance) || 0);
-        
-        let covered = totalPaid;
+
+        let covered = (allCash + allDisc) - openingBal;
         const finalInvoices = currentInvoices.map(inv => {
           if (inv.subscriberId !== sub.id) return inv;
-          // Find this invoice in sorted subInvoices to maintain consistency
           const sortedInv = subInvoices.find(si => si.id === inv.id);
           if (!sortedInv) return inv;
-
           const invAmount = Number(inv.amount || 0);
           if (covered >= invAmount - 0.01) {
             covered -= invAmount;
             return { ...inv, status: 'paid' as const };
           } else {
+            covered -= invAmount;
             return { ...inv, status: 'pending' as const };
           }
         });
@@ -1007,28 +1004,33 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       try {
         const sub = subscribers.find(s => s.id === payment.subscriberId);
         if (sub) {
-          const calcInvoicesRes = await db.execute({ 
-            sql: "SELECT SUM(amount) as total FROM invoices WHERE subscriber_id = ?", 
-            args: [sub.id] 
+          // BUG 2 & 3 FIX: Also delete the linked invoice when deleting a payment.
+          // Use invoice_id field for precise matching (not amount-based fuzzy match).
+          const linkedInvoiceId: string | null = (payment as any).invoiceId || null;
+
+          // Recalculate balance without this payment (and without the linked invoice's debt).
+          // We exclude the linked invoice from sumInvoiced because it will be deleted too.
+          const calcInvoicesRes = await db.execute({
+            sql: linkedInvoiceId
+              ? "SELECT SUM(amount) as total FROM invoices WHERE subscriber_id = ? AND id != ?"
+              : "SELECT SUM(amount) as total FROM invoices WHERE subscriber_id = ?",
+            args: linkedInvoiceId ? [sub.id, linkedInvoiceId] : [sub.id]
           });
           const sumInvoiced = Number(calcInvoicesRes.rows[0].total || 0);
-          
-          const subPaymentsRes = await db.execute({ 
-            sql: "SELECT SUM(amount) as cash, SUM(discount) as disc FROM payments WHERE subscriber_id = ? AND id != ?", 
-            args: [sub.id, id] 
+
+          const subPaymentsRes = await db.execute({
+            sql: "SELECT SUM(amount) as cash, SUM(discount) as disc FROM payments WHERE subscriber_id = ? AND id != ?",
+            args: [sub.id, id]
           });
           const newCash = Number(subPaymentsRes.rows[0].cash || 0);
           const newDisc = Number(subPaymentsRes.rows[0].disc || 0);
-          
+
           const openingBal = Number(sub.openingBalance || 0);
           const totalDebt = sumInvoiced + openingBal;
-          
           const newBalance = newCash - Math.max(0, totalDebt - newDisc);
-          
+
           const plan = plansList.find(p => p.id === sub.planId);
           let updatedMonths = [...(sub.unpaidMonths || [])];
-          
-          // Reconstruct unpaid months if balance becomes negative and list was empty
           if (plan && plan.price > 0 && newBalance < -0.01) {
             const monthsOwed = Math.ceil(Math.abs(newBalance) / plan.price);
             if (updatedMonths.length === 0) {
@@ -1047,33 +1049,29 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             { sql: 'UPDATE subscribers SET balance = ?, unpaid_months = ? WHERE id = ?', args: [newBalance, JSON.stringify(updatedMonths), sub.id] }
           ];
 
-          // Sync statuses chronologically (Legacy first)
-          const subInvoicesRes = await db.execute({ 
-            sql: "SELECT id, amount, status, type, discount FROM invoices WHERE subscriber_id = ? ORDER BY CASE WHEN type = 'legacy' THEN 0 ELSE 1 END, date ASC", 
-            args: [sub.id]
-          });
-          
-          const subInvoices = subInvoicesRes.rows.map(r => mapRow(subInvoicesRes.columns, r));
-          const totalInvoiced = subInvoices.reduce((s, i) => s + Number(i.amount || 0), 0);
-          const totalPaid = newBalance + totalInvoiced + (Number(sub.openingBalance) || 0);
-          
-          let covered = totalPaid;
-          const currentOpeningBal = Number(sub.openingBalance) || 0;
-          covered -= currentOpeningBal;
+          // Also delete the linked invoice
+          if (linkedInvoiceId) {
+            batch.push({ sql: 'DELETE FROM invoices WHERE id = ?', args: [linkedInvoiceId] });
+          }
 
+          // Recalculate status of REMAINING invoices (exclude the deleted one)
+          const subInvoicesRes = await db.execute({
+            sql: linkedInvoiceId
+              ? "SELECT id, amount, status, type, discount FROM invoices WHERE subscriber_id = ? AND id != ? ORDER BY CASE WHEN type = 'legacy' THEN 0 ELSE 1 END, date ASC"
+              : "SELECT id, amount, status, type, discount FROM invoices WHERE subscriber_id = ? ORDER BY CASE WHEN type = 'legacy' THEN 0 ELSE 1 END, date ASC",
+            args: linkedInvoiceId ? [sub.id, linkedInvoiceId] : [sub.id]
+          });
+          const subInvoices = subInvoicesRes.rows.map(r => mapRow(subInvoicesRes.columns, r));
+
+          let covered = (newCash + newDisc) - openingBal;
           for (const inv of subInvoices) {
             const invAmount = Number(inv.amount || 0);
-            
             if (covered >= invAmount - 0.01) {
-              if (inv.status !== 'paid') {
-                batch.push({ sql: "UPDATE invoices SET status = 'paid' WHERE id = ?", args: [String(inv.id)] });
-              }
+              if (inv.status !== 'paid') batch.push({ sql: "UPDATE invoices SET status = 'paid' WHERE id = ?", args: [String(inv.id)] });
               covered -= invAmount;
             } else {
-              if (inv.status === 'paid') {
-                batch.push({ sql: "UPDATE invoices SET status = 'pending' WHERE id = ?", args: [String(inv.id)] });
-              }
-              covered -= invAmount; // Keep reducing to track deficit correctly
+              if (inv.status === 'paid') batch.push({ sql: "UPDATE invoices SET status = 'pending' WHERE id = ?", args: [String(inv.id)] });
+              covered -= invAmount;
             }
           }
 
@@ -1081,23 +1079,38 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } else {
           await db.execute({ sql: 'DELETE FROM payments WHERE id = ?', args: [id] });
         }
-      } catch (err) { 
+      } catch (err) {
         console.error('deletePayment DB error:', err);
-        throw err; // Throw so UI can catch and show error toast
+        throw err;
       }
       await fetchData();
     } else {
+      // LS branch: delete payment + linked invoice + recalculate balance
       const sub = subscribers.find(s => s.id === payment.subscriberId);
+      const linkedInvoiceId: string | null = (payment as any).invoiceId || null;
+
       const updatedPayments = payments.filter(p => p.id !== id);
       setPayments(updatedPayments);
       LS.set('payments', updatedPayments);
 
+      // Delete linked invoice too
+      const updatedInvoicesAfterDel = linkedInvoiceId
+        ? invoices.filter(inv => inv.id !== linkedInvoiceId)
+        : invoices;
+
       if (sub) {
-        const amount = Number(payment.amount);
-        const newBalance = (Number(sub.balance) || 0) - amount;
+        // Absolute recalculation (same formula as DB branch)
+        const remainingPayments = updatedPayments.filter(p => p.subscriberId === sub.id);
+        const allCash = remainingPayments.reduce((s, p) => s + Number(p.amount || 0), 0);
+        const allDisc = remainingPayments.reduce((s, p) => s + Number(p.discount || 0), 0);
+        const remainingInvoices = updatedInvoicesAfterDel.filter(inv => inv.subscriberId === sub.id);
+        const sumInvoiced = remainingInvoices.reduce((s, inv) => s + Number(inv.amount || 0), 0);
+        const openingBal = Number(sub.openingBalance || 0);
+        const totalDebt = sumInvoiced + openingBal;
+        const newBalance = allCash - Math.max(0, totalDebt - allDisc);
+
         const plan = plansList.find(p => p.id === sub.planId);
         let updatedMonths = [...(sub.unpaidMonths || [])];
-        
         if (plan && plan.price > 0 && newBalance < -0.01 && updatedMonths.length === 0) {
           const monthsOwed = Math.ceil(Math.abs(newBalance) / plan.price);
           const start = new Date(payment.date);
@@ -1108,45 +1121,38 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
         }
 
-        const updatedSubs = subscribers.map(s => 
+        const updatedSubs = subscribers.map(s =>
           s.id === sub.id ? { ...s, balance: newBalance, unpaidMonths: updatedMonths } : s
         );
         setSubscribers(updatedSubs);
         LS.set('subscribers', updatedSubs);
-        // Restore discount if applicable
-        let currentInvoices = invoices.map(inv => {
-          if (inv.id === payment.invoiceId && Number(payment.discount || 0) > 0) {
-            return { ...inv, amount: inv.amount + Number(payment.discount), discount: Math.max(0, (inv.discount || 0) - Number(payment.discount)) };
-          }
-          return inv;
-        });
 
-        // Sync statuses chronologically (Legacy first)
-        const subInvoices = currentInvoices
-          .filter(inv => inv.subscriberId === sub.id)
-          .sort((a, b) => {
-            const typeA = a.type === 'legacy' ? 0 : 1;
-            const typeB = b.type === 'legacy' ? 0 : 1;
-            if (typeA !== typeB) return typeA - typeB;
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-          });
-        
-        const totalInvoiced = subInvoices.reduce((s, i) => s + Number(i.amount || 0), 0);
-        const totalPaid = newBalance + totalInvoiced + (Number(sub.openingBalance) || 0);
-        
-        let covered = totalPaid;
-        const updatedInvoices = currentInvoices.map(inv => {
+        // Recalculate invoice statuses for remaining invoices
+        let covered = (allCash + allDisc) - openingBal;
+        const subInvoicesSorted = remainingInvoices.sort((a, b) => {
+          const typeA = a.type === 'legacy' ? 0 : 1;
+          const typeB = b.type === 'legacy' ? 0 : 1;
+          if (typeA !== typeB) return typeA - typeB;
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        });
+        const finalInvoices = updatedInvoicesAfterDel.map(inv => {
           if (inv.subscriberId !== sub.id) return inv;
+          const sortedInv = subInvoicesSorted.find(si => si.id === inv.id);
+          if (!sortedInv) return inv;
           const invAmount = Number(inv.amount || 0);
           if (covered >= invAmount - 0.01) {
             covered -= invAmount;
             return { ...inv, status: 'paid' as const };
           } else {
+            covered -= invAmount;
             return { ...inv, status: 'pending' as const };
           }
         });
-        setInvoices(updatedInvoices);
-        LS.set('invoices', updatedInvoices);
+        setInvoices(finalInvoices);
+        LS.set('invoices', finalInvoices);
+      } else {
+        setInvoices(updatedInvoicesAfterDel);
+        LS.set('invoices', updatedInvoicesAfterDel);
       }
     }
   };
@@ -1351,10 +1357,15 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!inv) return;
     const sub = subscribers.find(s => s.id === inv.subscriberId);
 
-    // Find matching payment if any
-    const matchingPayments = payments.filter(p => p.subscriberId === inv.subscriberId && Number(p.amount) === Number(inv.amount));
-    matchingPayments.sort((a, b) => Math.abs(new Date(a.date).getTime() - new Date(inv.date).getTime()) - Math.abs(new Date(b.date).getTime() - new Date(inv.date).getTime()));
-    const paymentToDelete = matchingPayments.length > 0 && Math.abs(new Date(matchingPayments[0].date).getTime() - new Date(inv.date).getTime()) < 35 * 24 * 60 * 60 * 1000 ? matchingPayments[0] : null;
+    // BUG 2 FIX: Find linked payment by invoice_id field (precise), NOT amount-matching (fragile).
+    // Fall back to amount+date proximity only when invoice_id is not set (legacy records).
+    let paymentToDelete = payments.find(p => (p as any).invoiceId === id) || null;
+    if (!paymentToDelete) {
+      // Legacy fallback: amount + date proximity within 35 days
+      const matchingPayments = payments.filter(p => p.subscriberId === inv.subscriberId && Number(p.amount) === Number(inv.amount));
+      matchingPayments.sort((a, b) => Math.abs(new Date(a.date).getTime() - new Date(inv.date).getTime()) - Math.abs(new Date(b.date).getTime() - new Date(inv.date).getTime()));
+      paymentToDelete = matchingPayments.length > 0 && Math.abs(new Date(matchingPayments[0].date).getTime() - new Date(inv.date).getTime()) < 35 * 24 * 60 * 60 * 1000 ? matchingPayments[0] : null;
+    }
     
     if (db) {
       try {

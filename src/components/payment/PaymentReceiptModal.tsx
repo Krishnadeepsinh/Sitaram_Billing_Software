@@ -80,7 +80,7 @@ const ReceiptContent = ({
     : billingPeriodLabel;
 
   const styles: Record<string, React.CSSProperties> = {
-    page: { fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif", fontSize: 13, color: "#1a1a2e", background: "#ffffff", width: 794, minHeight: 1123, margin: "0 auto", boxSizing: "border-box", padding: 0, position: "relative" },
+    page: { fontFamily: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif", fontSize: 13, color: "#1a1a2e", background: "#ffffff", width: 794, minHeight: 1123, height: "auto", margin: "0 auto", boxSizing: "border-box", paddingBottom: 60, position: "relative", display: "flex", flexDirection: "column" },
     header: { background: "#1a2e5a", color: "#ffffff", padding: "36px 40px 30px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" },
     headerLeft: { display: "flex", alignItems: "center", gap: 18 },
     logoBox: { width: 76, height: 76, background: "#ffffff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 },
@@ -99,7 +99,7 @@ const ReceiptContent = ({
     amountLabel: { fontSize: 13, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", opacity: 0.85, marginBottom: 10 },
     amountValue: { fontSize: 56, fontWeight: 900, letterSpacing: -1, lineHeight: 1 },
     amountWords: { fontSize: 14, opacity: 0.8, marginTop: 10 },
-    body: { padding: "22px 36px 28px" },
+    body: { padding: "22px 36px 28px", display: "flex", flexDirection: "column", flexGrow: 1 },
     twoCol: { display: "flex", gap: 16, marginBottom: 16 },
     infoBox: { flex: 1 },
     sectionTitle: { background: "#1a2e5a", color: "#ffffff", fontSize: 12, fontWeight: 700, padding: "10px 16px", letterSpacing: 0.8, textTransform: "uppercase", borderRadius: "4px 4px 0 0" },
@@ -113,7 +113,7 @@ const ReceiptContent = ({
     allocRow: { display: "flex", justifyContent: "space-between", padding: "12px 16px", fontSize: 13, borderBottom: "1px solid #eef1f6", color: "#4a5568", lineHeight: 1.2, alignItems: "center" },
     allocRowTotal: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", fontSize: 14, fontWeight: 700, color: "#1a2e5a", borderBottom: "1px solid #eef1f6", background: "#f0f4fa", lineHeight: 1.2 },
     allocRowBalance: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "16px 16px", fontSize: 14, fontWeight: 700, color: "#1b5e20", background: "#e8f5e9", lineHeight: 1.4 },
-    verifiedArea: { display: "flex", justifyContent: "center", marginTop: 80, marginBottom: 30 },
+    verifiedArea: { display: "flex", justifyContent: "center", marginTop: "auto", marginBottom: 40, paddingBottom: 30 },
     verifiedStamp: { border: "3px solid #2e7d32", borderRadius: "50%", width: 150, height: 150, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#2e7d32", fontWeight: 800, fontSize: 20, letterSpacing: 1, textTransform: "uppercase", position: "relative" },
     checkmark: { fontSize: 56, lineHeight: 1, marginBottom: 2 },
     footer: { background: "#1a2e5a", color: "#a0b4d0", fontSize: 10, textAlign: "center", padding: "10px 20px", marginTop: 20 },
@@ -361,22 +361,20 @@ export default function PaymentReceiptModal({
 
     try {
       console.log("Starting PDF generation for element:", element.id);
-      const { toPng } = await import("html-to-image");
+      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
 
       // Give browser time to paint the hidden element
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const dataUrl = await toPng(element, {
-        quality: 1.0,
-        pixelRatio: 2, 
-        backgroundColor: "#ffffff",
-        cacheBust: true,
-        style: {
-          visibility: "visible",
-          display: "block",
-        }
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY,
+        windowHeight: element.scrollHeight, // capture full height not viewport
       });
+
+      const dataUrl = canvas.toDataURL("image/png");
 
       const pdf = new jsPDF({
         orientation: "portrait",
@@ -384,11 +382,10 @@ export default function PaymentReceiptModal({
         format: "a4",
       });
 
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+      pdf.addImage(dataUrl, "PNG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
       return pdf.output("blob");
     } catch (err) {
       console.error("PDF Gen Error:", err);

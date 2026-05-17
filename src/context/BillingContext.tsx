@@ -1239,22 +1239,31 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
     }
 
-    // Smart Merge: Filter out months that are already invoiced
+    // Replace duplicate calendar month check with precise date range overlap check
     const alreadyInvoicedMonths: string[] = [];
-    const monthsToInvoice = monthsToProcess.filter(mDate => {
-      const mName = mDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-      const hasOverlap = invoices.some(inv => {
-        if (inv.subscriberId !== subId || inv.type === 'legacy') return false;
-        const covered = getMonthsCoveredByInvoice(inv);
-        return covered.includes(mName);
-      });
-      if (hasOverlap) alreadyInvoicedMonths.push(mName);
-      return !hasOverlap;
-    });
+    if (numMonths > 0) {
+      const newStart = new Date(serviceStartDate);
+      const newEnd = createServiceEndDate(serviceStartDate, validityDays * (numMonths / cycleMonths));
+      newStart.setHours(12, 0, 0, 0);
+      newEnd.setHours(12, 0, 0, 0);
 
-    if (numMonths > 0 && monthsToInvoice.length === 0) {
-      throw new Error(`The selected period (${alreadyInvoicedMonths.join(', ')}) is already covered by an existing invoice. No new invoice created.`);
+      const overlappingInvoice = invoices.find(inv => {
+        if (inv.subscriberId !== subId || inv.type === 'legacy') return false;
+        const existingStart = new Date(inv.serviceStart || inv.date);
+        const existingEnd = new Date(inv.serviceEnd || inv.date);
+        existingStart.setHours(12, 0, 0, 0);
+        existingEnd.setHours(12, 0, 0, 0);
+        return newStart < existingEnd && newEnd > existingStart;
+      });
+
+      if (overlappingInvoice) {
+        const startStr = new Date(overlappingInvoice.serviceStart || overlappingInvoice.date).toLocaleDateString('en-GB');
+        const endStr = new Date(overlappingInvoice.serviceEnd || overlappingInvoice.date).toLocaleDateString('en-GB');
+        throw new Error(`The selected period is already covered by an existing invoice (${startStr} - ${endStr}) for this subscriber. No new invoice created.`);
+      }
     }
+
+    const monthsToInvoice = monthsToProcess;
 
     // Adjust counts based on what's actually being invoiced
     const actualMonthsCount = monthsToInvoice.length;
@@ -1863,19 +1872,27 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return d;
       });
 
-      // Filter months already covered
-      const monthsToInvoice = requestedMonths.filter(mDate => {
-        const mName = mDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-        return !invoices.some(inv => {
-          if (inv.subscriberId !== sub.id || inv.type === 'legacy') return false;
-          return getMonthsCoveredByInvoice(inv).includes(mName);
-        });
+      // Replace duplicate calendar month check with precise date range overlap check
+      const newStart = new Date(billingDate);
+      const newEnd = createServiceEndDate(billingDate, validityDays * (targetNumMonths / cycleMonths));
+      newStart.setHours(12, 0, 0, 0);
+      newEnd.setHours(12, 0, 0, 0);
+
+      const hasOverlap = invoices.some(inv => {
+        if (inv.subscriberId !== sub.id || inv.type === 'legacy') return false;
+        const existingStart = new Date(inv.serviceStart || inv.date);
+        const existingEnd = new Date(inv.serviceEnd || inv.date);
+        existingStart.setHours(12, 0, 0, 0);
+        existingEnd.setHours(12, 0, 0, 0);
+        return newStart < existingEnd && newEnd > existingStart;
       });
 
-      if (monthsToInvoice.length === 0) {
+      if (hasOverlap) {
         stats.skipped++;
         continue;
       }
+
+      const monthsToInvoice = requestedMonths;
 
       const actualMonthsCount = monthsToInvoice.length;
       const id = `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;

@@ -100,13 +100,13 @@ const ReceiptContent = ({
     amountValue: { fontSize: 56, fontWeight: 900, letterSpacing: -1, lineHeight: 1 },
     amountWords: { fontSize: 14, opacity: 0.8, marginTop: 10 },
     body: { padding: "22px 36px 28px", display: "flex", flexDirection: "column", flexGrow: 1 },
-    twoCol: { display: "flex", gap: 16, marginBottom: 16 },
-    infoBox: { flex: 1 },
+    twoCol: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16, width: "100%" },
+    infoBox: { overflow: "hidden", wordBreak: "break-word" },
     sectionTitle: { background: "#1a2e5a", color: "#ffffff", fontSize: 12, fontWeight: 700, padding: "10px 16px", letterSpacing: 0.8, textTransform: "uppercase", borderRadius: "4px 4px 0 0" },
     infoContent: { border: "1px solid #dce4ef", borderTop: "none", padding: "18px 20px", borderRadius: "0 0 4px 4px", background: "#fcfdff" },
-    infoRow: { display: "flex", marginBottom: 10, fontSize: 13, lineHeight: 1.4, alignItems: "center" },
-    infoKey: { color: "#7a8fa6", fontWeight: 600, width: 100, flexShrink: 0, fontSize: 12 },
-    infoVal: { color: "#1a2e5a", fontWeight: 700, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+    infoRow: { display: "flex", marginBottom: 10, fontSize: 13, lineHeight: 1.4, alignItems: "flex-start", wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "normal" },
+    infoKey: { color: "#7a8fa6", fontWeight: 600, minWidth: 80, width: 100, flexShrink: 0, fontSize: 12 },
+    infoVal: { color: "#1a2e5a", fontWeight: 700, flex: 1, wordBreak: "break-word", overflowWrap: "anywhere", whiteSpace: "normal" },
     addressText: { color: "#1a2e5a", fontWeight: 500, lineHeight: 1.6, fontSize: 14 },
     allocBox: { border: "1px solid #dce4ef", borderRadius: 4, overflow: "hidden", marginTop: 0 },
     allocTitle: { background: "#1a2e5a", color: "#ffffff", fontSize: 12, fontWeight: 700, padding: "10px 16px", letterSpacing: 0.8, textTransform: "uppercase" },
@@ -253,7 +253,11 @@ const ReceiptContent = ({
               {customerInfo.map((item) => (
                 <div style={styles.infoRow} key={item.k}>
                   <span style={styles.infoKey}>{item.k}:</span>
-                  <span style={styles.infoVal}>{item.v}</span>
+                  <span style={{
+                    ...styles.infoVal as any,
+                    fontSize: item.k === "Transaction ID" ? 11 : 13,
+                    maxWidth: item.k === "Area" ? 200 : undefined
+                  }}>{item.v}</span>
                 </div>
               ))}
             </div>
@@ -367,12 +371,16 @@ export default function PaymentReceiptModal({
       // Give browser time to paint the hidden element
       await new Promise(resolve => setTimeout(resolve, 1500));
 
+      element.style.width = '794px';
       const canvas = await html2canvas(element, {
         scale: 2,
+        width: 794,
+        windowWidth: 794,
         useCORS: true,
         scrollY: -window.scrollY,
         windowHeight: element.scrollHeight, // capture full height not viewport
       });
+      element.style.width = '';
 
       const dataUrl = canvas.toDataURL("image/png");
 

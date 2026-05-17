@@ -31,12 +31,12 @@ const maxLoginAttempts = 8;
 
 const configs = {
   broadband: {
-    url: process.env.BROADBAND_TURSO_DATABASE_URL || process.env.VITE_BROADBAND_TURSO_DATABASE_URL || process.env.VITE_TURSO_DATABASE_URL,
-    authToken: process.env.BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_BROADBAND_TURSO_AUTH_TOKEN || process.env.VITE_TURSO_AUTH_TOKEN,
+    url: process.env.BROADBAND_TURSO_DATABASE_URL || process.env.BROADBAND_TURSO_DATABASE_URL || process.env.BROADBAND_TURSO_DATABASE_URL,
+    authToken: process.env.BROADBAND_TURSO_AUTH_TOKEN || process.env.BROADBAND_TURSO_AUTH_TOKEN || process.env.BROADBAND_TURSO_AUTH_TOKEN,
   },
   cable: {
-    url: process.env.CABLE_TURSO_DATABASE_URL || process.env.VITE_CABLE_TURSO_DATABASE_URL,
-    authToken: process.env.CABLE_TURSO_AUTH_TOKEN || process.env.VITE_CABLE_TURSO_AUTH_TOKEN,
+    url: process.env.CABLE_TURSO_DATABASE_URL || process.env.CABLE_TURSO_DATABASE_URL,
+    authToken: process.env.CABLE_TURSO_AUTH_TOKEN || process.env.CABLE_TURSO_AUTH_TOKEN,
   },
 };
 

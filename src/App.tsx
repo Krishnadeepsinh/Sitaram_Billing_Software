@@ -4,7 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import AppLayout from "./components/AppLayout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
@@ -34,58 +34,7 @@ const RouteLoader = () => (
   </div>
 );
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [status, setStatus] = useState<"checking" | "authenticated" | "unauthenticated">("checking");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const verifySession = async () => {
-      try {
-        const response = await fetch("/api/session", { credentials: "include" });
-        if (cancelled) return;
-
-        if (response.ok) {
-          localStorage.setItem("isAuthenticated", "true");
-          setStatus("authenticated");
-          return;
-        }
-      } catch (error) {
-        console.error("Session check failed", error);
-      }
-
-      if (!cancelled) {
-        localStorage.removeItem("isAuthenticated");
-        setStatus("unauthenticated");
-      }
-    };
-
-    verifySession();
-    return () => { cancelled = true; };
-  }, []);
-
-  if (status === "checking") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
-        <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-white border border-slate-200 shadow-lg">
-          <div className="h-16 w-16 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center">
-            <ShieldCheck className="h-8 w-8 text-orange-500 animate-pulse" />
-          </div>
-          <div className="space-y-1 text-center">
-            <h2 className="text-sm font-bold text-slate-800">Verifying Session</h2>
-            <p className="text-xs text-slate-500">Checking authentication...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "unauthenticated") {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-};
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // Convenience helper so each page route gets its own boundary + suspense
 const Page = ({ component: C }: { component: React.ComponentType }) => (

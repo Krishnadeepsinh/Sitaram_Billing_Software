@@ -119,4 +119,4 @@ CREATE TABLE IF NOT EXISTS company_settings (
 );
 
 INSERT OR IGNORE INTO company_settings (id, name, address, phone, email, gstin, upi_id)
-VALUES (1, 'SITARAM CABLE & BROADBAND', 'Chitra, Bhavnagar 364004', '9825039825', '', '', '9825039825@ybl');
+VALUES (1, 'Your Company Name', 'Your City, State 000000', '', '', '', '');

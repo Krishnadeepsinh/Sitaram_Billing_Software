@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -12,6 +11,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +29,8 @@ export default function Login() {
       if (response.ok) {
         localStorage.setItem("isAuthenticated", "true");
         toast.success(`Welcome back, ${String(data.displayName || "Administrator")}`);
-        navigate("/");
+        const from = (location.state as any)?.from?.pathname || "/";
+        navigate(from, { replace: true });
         window.location.reload();
       } else {
         toast.error(String(data.error || "Invalid credentials. Access denied."));

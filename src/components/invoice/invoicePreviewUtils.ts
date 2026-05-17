@@ -20,10 +20,39 @@ export const getInvoiceStatusLabel = (invoice: any, isCableMode: boolean) => {
   return isCableMode ? "CABLE BILL" : "BROADBAND BILL";
 };
 
+const calculateMajorityMonth = (startStr: string, endStr: string): string => {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  start.setHours(12, 0, 0, 0);
+  end.setHours(12, 0, 0, 0);
+
+  const monthCounts = new Map<string, number>();
+  const current = new Date(start);
+  while (current <= end) {
+    const key = current.toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+    monthCounts.set(key, (monthCounts.get(key) || 0) + 1);
+    current.setDate(current.getDate() + 1);
+  }
+
+  let majorityMonth = "";
+  let maxDays = -1;
+  for (const [month, count] of monthCounts.entries()) {
+    if (count > maxDays) {
+      maxDays = count;
+      majorityMonth = month;
+    }
+  }
+  return majorityMonth;
+};
+
 export const getBillingPeriodLabel = (invoice: any, subscriber?: any, plans?: any[]) => {
   if (invoice?.billingPeriod) return invoice.billingPeriod;
   if (invoice?.type === "legacy") return "PREVIOUS YEAR";
   
+  if (invoice?.serviceStart && invoice?.serviceEnd) {
+    return calculateMajorityMonth(invoice.serviceStart, invoice.serviceEnd);
+  }
+
   if (subscriber && plans) {
     const planId = invoice?.planId || subscriber?.planId;
     const plan = plans.find((item) => item.id === planId);

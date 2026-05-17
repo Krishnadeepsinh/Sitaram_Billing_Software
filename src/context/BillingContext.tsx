@@ -68,23 +68,38 @@ const getMonthsInRange = (startDate: Date, numMonths: number): string[] => {
   return months;
 };
 
+const calculateMajorityMonth = (startStr: string, endStr: string): string => {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  start.setHours(12, 0, 0, 0);
+  end.setHours(12, 0, 0, 0);
+
+  const monthCounts = new Map<string, number>();
+  const current = new Date(start);
+  while (current <= end) {
+    const key = current.toLocaleString('default', { month: 'long', year: 'numeric' });
+    monthCounts.set(key, (monthCounts.get(key) || 0) + 1);
+    current.setDate(current.getDate() + 1);
+  }
+
+  let majorityMonth = "";
+  let maxDays = -1;
+  for (const [month, count] of monthCounts.entries()) {
+    if (count > maxDays) {
+      maxDays = count;
+      majorityMonth = month;
+    }
+  }
+  return majorityMonth;
+};
+
 const getMonthsCoveredByInvoice = (inv: Invoice): string[] => {
   if (inv.type === 'legacy') return [];
   
   // If we have machine-readable dates, use them
   if (inv.serviceStart && inv.serviceEnd) {
-    const start = new Date(inv.serviceStart);
-    const end = new Date(inv.serviceEnd);
-    const months: string[] = [];
-    
-    let current = new Date(start.getFullYear(), start.getMonth(), 1);
-    const targetEnd = new Date(end.getFullYear(), end.getMonth(), 1);
-    
-    while (current <= targetEnd) {
-      months.push(current.toLocaleString('default', { month: 'long', year: 'numeric' }));
-      current.setMonth(current.getMonth() + 1);
-    }
-    return months;
+    const majority = calculateMajorityMonth(inv.serviceStart, inv.serviceEnd);
+    return majority ? [majority] : [];
   }
   
   // Fallback to billing date if service dates are missing
@@ -1280,13 +1295,14 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       ? createServiceEndDate(monthsToInvoice[0], validityDays * (actualMonthsCount / cycleMonths))
       : serviceStartDate;
 
-    const billingPeriod = actualMonthsCount > 0 
-      ? formatMonthRanges(monthsToInvoice).toUpperCase()
+    const serviceStartStr = actualMonthsCount > 0 ? monthsToInvoice[0].toISOString() : null;
+    const serviceEndStr = actualMonthsCount > 0 ? serviceEndDate.toISOString() : null;
+
+    const billingPeriod = actualMonthsCount > 0 && serviceStartStr && serviceEndStr
+      ? calculateMajorityMonth(serviceStartStr, serviceEndStr).toUpperCase()
       : 'PREVIOUS YEAR';
 
     const invType = actualMonthsCount === 0 ? 'legacy' : 'plan';
-    const serviceStartStr = actualMonthsCount > 0 ? monthsToInvoice[0].toISOString() : null;
-    const serviceEndStr = actualMonthsCount > 0 ? serviceEndDate.toISOString() : null;
 
     if (db) {
       try {
@@ -1905,7 +1921,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const serviceEndDate = createServiceEndDate(monthsToInvoice[0], validityDays * (actualMonthsCount / cycleMonths));
       const newExpiryDate = serviceEndDate.toISOString();
       
-      const billingPeriod = formatMonthRanges(monthsToInvoice).toUpperCase();
+      const billingPeriod = calculateMajorityMonth(monthsToInvoice[0].toISOString(), serviceEndDate.toISOString()).toUpperCase();
 
       const newInv: Invoice = {
         id, number, subscriberId: sub.id, amount: total, status: 'pending', 

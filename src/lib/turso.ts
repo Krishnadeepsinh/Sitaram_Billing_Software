@@ -3,10 +3,10 @@ import { useSyncExternalStore } from "react";
 export type BusinessMode = "cable" | "broadband";
 
 export const getActiveBusinessMode = (): BusinessMode => {
-  if (typeof window === "undefined") return "broadband";
+  if (typeof window === "undefined") return "cable";
   const saved = localStorage.getItem("businessMode");
   if (saved === "cable" || saved === "broadband") return saved;
-  return "broadband"; // Default to broadband if not set
+  return "cable"; // Default to cable if not set
 };
 
 export let activeBusinessMode = getActiveBusinessMode();
@@ -29,7 +29,7 @@ const notifyBusinessModeChange = () => {
 };
 
 export const useBusinessMode = () =>
-  useSyncExternalStore(subscribeBusinessMode, getActiveBusinessMode, () => "broadband");
+  useSyncExternalStore(subscribeBusinessMode, getActiveBusinessMode, () => "cable");
 
 const postJson = async (path: string, body: unknown) => {
   const response = await fetch(path, {

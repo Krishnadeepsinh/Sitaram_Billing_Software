@@ -155,10 +155,6 @@ export default function Payments() {
       }
       if (count > 0) {
         toast.success(`Recorded ${count} batch payments`);
-        if (lastRecordedPayment) {
-          setSelectedPayment(lastRecordedPayment);
-          setIsReceiptOpen(true);
-        }
       }
       setIsBulkOpen(false);
       setBulkSubscribers([]);
@@ -342,10 +338,8 @@ export default function Payments() {
         date: new Date().toISOString(), 
         agent: "System Admin" 
       });
-      toast.success("Transaction Record Created");
+      toast.success("Payment recorded successfully");
       closeAddModal();
-      setSelectedPayment(newPay);
-      setIsReceiptOpen(true);
     } catch (err) { toast.error("Transaction failed"); } finally { setIsSubmitting(false); }
   };
 

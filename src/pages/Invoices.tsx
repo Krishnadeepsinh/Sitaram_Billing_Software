@@ -266,18 +266,10 @@ export default function Invoices() {
       };
       
       const newPayment = await recordPayment(pData);
-      toast.success("Transaction Settled");
-      
-      // Setup receipt data for preview
-      setReceiptPayment({
-        ...pData,
-        id: newPayment.id,
-        invoiceNumber: payInv.number
-      });
+      toast.success("Payment recorded successfully");
       
       setPayInv(null);
       setPayDiscount(0);
-      setShowReceipt(true);
     } catch (e) {
       toast.error("Settlement failed");
     } finally {

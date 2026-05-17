@@ -1378,7 +1378,6 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           // Fallback heuristic for older cable records
           paymentsToDelete = payments.filter(p => 
             p.subscriberId === inv.subscriberId && 
-            Number(p.amount) === Number(inv.amount) && 
             Math.abs(new Date(p.date).getTime() - new Date(inv.date).getTime()) < 35 * 24 * 60 * 60 * 1000
           );
         }
@@ -1527,7 +1526,7 @@ export const BillingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     toDelete.forEach(inv => {
       if (!inv.subscriberId) return;
       
-      const matchingPayments = payments.filter(p => p.subscriberId === inv.subscriberId && Number(p.amount) === Number(inv.amount) && !paymentsToDelete.has(p.id));
+      const matchingPayments = payments.filter(p => p.subscriberId === inv.subscriberId && !paymentsToDelete.has(p.id));
       matchingPayments.sort((a, b) => Math.abs(new Date(a.date).getTime() - new Date(inv.date).getTime()) - Math.abs(new Date(b.date).getTime() - new Date(inv.date).getTime()));
       const pToDelete = matchingPayments.length > 0 && Math.abs(new Date(matchingPayments[0].date).getTime() - new Date(inv.date).getTime()) < 35 * 24 * 60 * 60 * 1000 ? matchingPayments[0] : null;
       

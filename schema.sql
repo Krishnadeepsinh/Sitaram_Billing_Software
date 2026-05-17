@@ -1,4 +1,7 @@
 -- Turso/SQLite Schema for Sitaram Broadband Billing Software
+-- IMPORTANT: Run `PRAGMA foreign_keys = ON;` on every new DB connection
+-- so that ON DELETE CASCADE constraints are enforced by SQLite.
+-- This is done automatically in BillingContext.tsx → fetchFromDB().
 
 CREATE TABLE IF NOT EXISTS subscribers (
   id TEXT PRIMARY KEY,
@@ -45,7 +48,9 @@ CREATE TABLE IF NOT EXISTS payments (
   invoice_id TEXT,
   balance_at_payment REAL,
   created_at TEXT,
-  FOREIGN KEY (subscriber_id) REFERENCES subscribers(id)
+  FOREIGN KEY (subscriber_id) REFERENCES subscribers(id),
+  -- Cascade-delete this payment when its linked invoice is deleted
+  FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS invoices (

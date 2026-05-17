@@ -120,3 +120,17 @@ CREATE TABLE IF NOT EXISTS company_settings (
 
 INSERT OR IGNORE INTO company_settings (id, name, address, phone, email, gstin, upi_id)
 VALUES (1, 'Your Company Name', 'Your City, State 000000', '', '', '', '');
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+  ip TEXT PRIMARY KEY,
+  attempts INTEGER NOT NULL,
+  last_attempt_at INTEGER NOT NULL,
+  blocked_until INTEGER
+);
+
+-- Indexes to prevent full table scans and speed up performance
+CREATE INDEX IF NOT EXISTS idx_invoices_subscriber_id ON invoices(subscriber_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+CREATE INDEX IF NOT EXISTS idx_payments_subscriber_id ON payments(subscriber_id);
+CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_reminders_subscriber_id ON reminders(subscriber_id);

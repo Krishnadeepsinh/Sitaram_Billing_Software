@@ -147,6 +147,27 @@ const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => {
   } catch {
     // Column already exists.
   }
+
+  // Ensure login_attempts table exists for persistent rate limiting
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS login_attempts (
+      ip TEXT PRIMARY KEY,
+      attempts INTEGER NOT NULL,
+      last_attempt_at INTEGER NOT NULL,
+      blocked_until INTEGER
+    )
+  `);
+
+  // Ensure crucial performance indexes exist to prevent full table scans
+  try {
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_invoices_subscriber_id ON invoices(subscriber_id)");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status)");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_payments_subscriber_id ON payments(subscriber_id)");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id)");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_reminders_subscriber_id ON reminders(subscriber_id)");
+  } catch (err) {
+    console.warn("Index creation warning:", err);
+  }
 };
 
 const resolveAdminCredentials = () => {
@@ -155,7 +176,13 @@ const resolveAdminCredentials = () => {
   return { username, password };
 };
 
+let localAdminSynced = false;
+
 const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
+  if (localAdminSynced) {
+    return;
+  }
+
   try {
     await ensureAdminSchema(db);
     const { username, password } = resolveAdminCredentials();
@@ -184,6 +211,7 @@ const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
         args: [`admin-${crypto.randomUUID()}`, username, password, "Administrator", "admin", "active", new Date().toISOString()],
       });
     }
+    localAdminSynced = true;
   } catch (error) {
     console.error("Critical error in ensureAdminUser local sync:", error);
   }

@@ -138,12 +138,33 @@ export const ensureAdminSchema = async (db: ReturnType<typeof createClient>) => 
       status TEXT DEFAULT 'active',
       created_at TEXT
     )
-  `);
+  );
 
   try {
     await db.execute("ALTER TABLE admin_users ADD COLUMN password_text TEXT");
   } catch {
     // Column already exists.
+  }
+
+  // Ensure login_attempts table exists for persistent rate limiting
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS login_attempts (
+      ip TEXT PRIMARY KEY,
+      attempts INTEGER NOT NULL,
+      last_attempt_at INTEGER NOT NULL,
+      blocked_until INTEGER
+    )
+  `);
+
+  // Ensure crucial performance indexes exist to prevent full table scans
+  try {
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_invoices_subscriber_id ON invoices(subscriber_id)");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status)");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_payments_subscriber_id ON payments(subscriber_id)");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments(invoice_id)");
+    await db.execute("CREATE INDEX IF NOT EXISTS idx_reminders_subscriber_id ON reminders(subscriber_id)");
+  } catch (err) {
+    console.warn("Index creation warning:", err);
   }
 };
 
@@ -153,7 +174,13 @@ const resolveAdminCredentials = () => {
   return { username, password };
 };
 
+let adminSynced = false;
+
 export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
+  if (adminSynced) {
+    return { skipped: true };
+  }
+
   try {
     await ensureAdminSchema(db);
     const { username, password } = resolveAdminCredentials();
@@ -182,9 +209,11 @@ export const ensureAdminUser = async (db: ReturnType<typeof createClient>) => {
         sql: "INSERT INTO admin_users (id, username, password_hash, password_text, display_name, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         args: [`admin-${crypto.randomUUID()}`, username, hashPassword(password), '', "Administrator", "admin", "active", new Date().toISOString()],
       });
+      adminSynced = true;
       return { created: !userExists, updated: userExists, skipped: false };
     }
     
+    adminSynced = true;
     return { created: false, updated: false, skipped: false };
   } catch (error) {
     console.error("Critical error in ensureAdminUser sync:", error);

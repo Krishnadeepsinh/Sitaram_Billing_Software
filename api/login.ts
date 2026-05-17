@@ -8,13 +8,12 @@ type LoginUserRow = {
   password_text?: string;
 };
 
-interface RateLimit {
-  count: number;
-  firstAttemptAt: number;
-  blockedUntil?: number;
+interface DbRateLimit {
+  attempts: number;
+  lastAttemptAt: number;
+  blockedUntil: number | null;
 }
 
-const loginAttempts = new Map<string, RateLimit>();
 const loginWindowMs = 15 * 60 * 1000; // 15 minutes
 const maxLoginAttempts = 5;
 
@@ -27,33 +26,57 @@ const getRequestIp = (req: VercelRequest): string => {
   return req.socket?.remoteAddress || "127.0.0.1";
 };
 
-const getRateLimitState = (key: string): RateLimit => {
-  const now = Date.now();
-  const current = loginAttempts.get(key);
-  if (!current || now - current.firstAttemptAt > loginWindowMs) {
-    const next = { count: 0, firstAttemptAt: now };
-    loginAttempts.set(key, next);
-    return next;
+const getDbRateLimit = async (db: ReturnType<typeof getDb>, ip: string): Promise<DbRateLimit | null> => {
+  try {
+    const result = await db.execute({
+      sql: "SELECT attempts, last_attempt_at, blocked_until FROM login_attempts WHERE ip = ? LIMIT 1",
+      args: [ip],
+    });
+    if (result.rows.length === 0) return null;
+    const row = result.rows[0];
+    return {
+      attempts: Number(row.attempts || 0),
+      lastAttemptAt: Number(row.last_attempt_at || 0),
+      blockedUntil: row.blocked_until ? Number(row.blocked_until) : null,
+    };
+  } catch (err) {
+    console.error("Error reading database rate limit:", err);
+    return null;
   }
-  return current;
 };
 
-const isBlocked = (key: string): boolean => {
-  const current = loginAttempts.get(key);
-  return Boolean(current?.blockedUntil && current.blockedUntil > Date.now());
-};
-
-const recordFailedLogin = (key: string) => {
-  const current = getRateLimitState(key);
-  current.count += 1;
-  if (current.count >= maxLoginAttempts) {
-    current.blockedUntil = Date.now() + loginWindowMs;
+const recordFailedDbLogin = async (db: ReturnType<typeof getDb>, ip: string) => {
+  try {
+    const now = Date.now();
+    const current = await getDbRateLimit(db, ip);
+    
+    if (!current || now - current.lastAttemptAt > loginWindowMs) {
+      await db.execute({
+        sql: "INSERT OR REPLACE INTO login_attempts (ip, attempts, last_attempt_at, blocked_until) VALUES (?, 1, ?, NULL)",
+        args: [ip, now],
+      });
+    } else {
+      const nextAttempts = current.attempts + 1;
+      const blockedUntil = nextAttempts >= maxLoginAttempts ? now + loginWindowMs : null;
+      await db.execute({
+        sql: "UPDATE login_attempts SET attempts = ?, last_attempt_at = ?, blocked_until = ? WHERE ip = ?",
+        args: [nextAttempts, now, blockedUntil, ip],
+      });
+    }
+  } catch (err) {
+    console.error("Error writing database rate limit:", err);
   }
-  loginAttempts.set(key, current);
 };
 
-const clearFailedLogins = (key: string) => {
-  loginAttempts.delete(key);
+const clearFailedDbLogins = async (db: ReturnType<typeof getDb>, ip: string) => {
+  try {
+    await db.execute({
+      sql: "DELETE FROM login_attempts WHERE ip = ?",
+      args: [ip],
+    });
+  } catch (err) {
+    console.error("Error clearing database rate limit:", err);
+  }
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -63,9 +86,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const ipKey = `ip:${getRequestIp(req)}`;
+  const ip = getRequestIp(req);
+  const db = getDb("broadband");
 
-  if (isBlocked(ipKey)) {
+  // Dynamic schema & user boot sync (runs once per warm container boot lifecycle)
+  const syncResult = await ensureAdminUser(db);
+  if (syncResult && "error" in syncResult) {
+    console.warn("Database sync encountered an issue, but attempting login anyway...");
+  }
+
+  // Check persistent rate limit state
+  const rateLimit = await getDbRateLimit(db, ip);
+  if (rateLimit && rateLimit.blockedUntil && rateLimit.blockedUntil > Date.now()) {
     return res.status(429).json({ error: "Too many login attempts. Please try again in 15 minutes." });
   }
 
@@ -74,12 +106,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userTrimmed = String(body.username || "").trim();
     const passString = String(body.password || "");
 
-    const db = getDb("broadband");
-    const syncResult = await ensureAdminUser(db);
-    if (syncResult && "error" in syncResult) {
-      console.warn("Database sync encountered an issue, but attempting login anyway...");
-    }
-    
     console.log("Database connected. Searching for user:", userTrimmed);
     
     const result = await db.execute({
@@ -89,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (result.rows.length === 0) {
       console.log(`Login attempt failed: User '${userTrimmed}' not found or inactive.`);
-      recordFailedLogin(ipKey);
+      await recordFailedDbLogin(db, ip);
       await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000));
       return res.status(401).json({ error: "Invalid username or password." });
     }
@@ -108,13 +134,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     if (!valid) {
       console.log(`Login attempt failed: Password mismatch for user '${userTrimmed}'.`);
-      recordFailedLogin(ipKey);
+      await recordFailedDbLogin(db, ip);
       await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000));
       return res.status(401).json({ error: "Invalid username or password." });
     }
 
     console.log("Login successful for:", userTrimmed);
-    clearFailedLogins(ipKey);
+    await clearFailedDbLogins(db, ip);
 
     const session = createSession(String(user.id));
     res.setHeader("Set-Cookie", `sitaram_session=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${Math.floor(sessionTtlMs / 1000)}${isProduction ? "; Secure" : ""}`);
